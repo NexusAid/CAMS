@@ -1,0 +1,193 @@
+{% extends "base/club_leader.html" %}
+{% block title %}Members | CAMS{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+<div class="content-header rounded mb-4">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-users me-2"></i> Club Members
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{{ url_for('club_leader.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Members</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card card-primary card-outline">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="m-0"><i class="fas fa-id-card mr-2" style="color:var(--g600);"></i> Member Directory</h5>
+            <div class="card-tools">
+                <div class="input-group input-group-sm" style="width: 250px;">
+                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search members...">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-default">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background-color: var(--g50);">
+                        <tr>
+                            <th class="border-0 px-4 py-3">Member Name</th>
+                            <th class="border-0 py-3">Email Address</th>
+                            <th class="border-0 py-3">Registration ID</th>
+                            <th class="border-0 py-3">Course</th>
+                            <th class="border-0 py-3">Role</th>
+                            <th class="border-0 py-3 text-right pr-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td class="px-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mr-3" style="width:40px; height:40px;">
+                                        <i class="fas fa-user-graduate text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 font-weight-bold">{{ member.user.full_name }}</h6>
+                                        <small class="text-muted">Joined: {{ member.join_date.strftime('%b %Y') }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3 text-muted">{{ member.user.email }}</td>
+                            <td class="py-3">
+                                <span style="font-family:monospace; background:var(--slate100); padding:4px 8px; border-radius:4px;">
+                                    {{ member.user.registration_number or 'N/A' }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-muted">{{ member.user.course or 'N/A' }}</td>
+                            <td class="py-3">
+                                {% if member.role in ['president', 'secretary', 'treasurer'] %}
+                                    <span class="badge" style="background-color:#dcfce7; color:#16a34a; padding:6px 12px; border-radius:20px;">
+                                        <i class="fas fa-star mr-1" style="font-size:10px;"></i> {{ member.role|capitalize }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge" style="background-color:#e2e8f0; color:#475569; padding:6px 12px; border-radius:20px;">
+                                        {{ member.role|capitalize }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-right pr-4">
+                                <button class="btn btn-sm btn-info text-white mr-1" data-toggle="modal" data-target="#profileModal{{ member.id }}" title="View Profile">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                {% if member.user.id != current_user.id %}
+                                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#removeModal{{ member.id }}" title="Remove Member">
+                                    <i class="fas fa-user-times"></i> Remove
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Profile Modal -->
+                        <div class="modal fade" id="profileModal{{ member.id }}" tabindex="-1" aria-labelledby="profileModalLabel{{ member.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content" style="border-radius:15px; border:none; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+                                    <div class="modal-header" style="background:linear-gradient(135deg, var(--g800), var(--g600)); color:white; border-radius:15px 15px 0 0; border:none;">
+                                        <h5 class="modal-title font-weight-bold" id="profileModalLabel{{ member.id }}">
+                                            <i class="fas fa-id-card mr-2"></i> Member Profile
+                                        </h5>
+                                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:1;">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <div class="text-center mb-4">
+                                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width:80px; height:80px; font-size:2rem; box-shadow:inset 0 2px 5px rgba(0,0,0,0.05);">
+                                                <i class="fas fa-user text-secondary"></i>
+                                            </div>
+                                            <h4 class="font-weight-bold mb-0">{{ member.user.full_name }}</h4>
+                                            <p class="text-muted mb-1">{{ member.role|capitalize }} | {{ member.club.name }}</p>
+                                        </div>
+                                        
+                                        <ul class="list-group list-group-unbordered mb-3">
+                                            <li class="list-group-item">
+                                                <b>Email</b> <a class="float-right text-dark text-decoration-none">{{ member.user.email }}</a>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <b>Registration No.</b> <a class="float-right text-dark text-decoration-none">{{ member.user.registration_number or 'Not Provided' }}</a>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <b>Course</b> <a class="float-right text-dark text-decoration-none">{{ member.user.course or 'Not Provided' }}</a>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <b>Joined Date</b> <a class="float-right text-dark text-decoration-none">{{ member.join_date.strftime('%d %B %Y') }}</a>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <b>Status</b> <a class="float-right text-success font-weight-bold text-decoration-none">Active</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer" style="border:none;">
+                                        <button type="button" class="btn btn-default rounded-pill px-4" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remove Modal -->
+                        <div class="modal fade" id="removeModal{{ member.id }}" tabindex="-1" aria-labelledby="removeModalLabel{{ member.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content" style="border-radius:15px; border:none; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+                                    <div class="modal-header bg-danger text-white" style="border-radius:15px 15px 0 0; border:none;">
+                                        <h5 class="modal-title font-weight-bold" id="removeModalLabel{{ member.id }}">
+                                            <i class="fas fa-exclamation-triangle mr-2"></i> Remove Member
+                                        </h5>
+                                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:1;">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form action="{{ url_for('club_leader.remove_member', id=member.id) }}" method="POST">
+                                        <div class="modal-body p-4">
+                                            <p>Are you sure you want to remove <strong>{{ member.user.full_name }}</strong> from the club?</p>
+                                            <p class="text-danger small"><i class="fas fa-info-circle mr-1"></i> An email notification will automatically be sent to the student notifying them of their removal.</p>
+                                            
+                                            <div class="form-group mt-3">
+                                                <label for="reason{{ member.id }}" class="font-weight-bold">Reason for Removal <span class="text-danger">*</span></label>
+                                                <textarea class="form-control" id="reason{{ member.id }}" name="reason" rows="3" placeholder="Please specify why the student is being removed from the club..." required style="border-radius:8px;"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0; border-radius:0 0 15px 15px;">
+                                            <button type="button" class="btn btn-default rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger rounded-pill px-4">
+                                                <i class="fas fa-user-times mr-1"></i> Confirm Removal
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center p-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-users-slash text-secondary" style="font-size: 3rem; opacity:0.5;"></i>
+                                </div>
+                                <h5 class="text-secondary font-weight-bold">No Members Found</h5>
+                                <p class="text-muted">There are no active members in this club yet.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

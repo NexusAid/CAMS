@@ -1,0 +1,261 @@
+{% extends "base/admin_base.html" %}
+{% block title %}Cast Your Vote — CAMS{% endblock %}
+{% block page_title %}Voting Booth{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('elections.election_list') }}">Elections</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('elections.election_detail', election_id=election.id) }}">{{ election.title }}</a></li>
+<li class="breadcrumb-item active">Vote</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.vote-wrap { max-width: 760px; margin: 0 auto; }
+
+.vote-banner {
+    background: linear-gradient(135deg, var(--g800), var(--g600));
+    border-radius: 16px; padding: 1.5rem 2rem; color: white;
+    margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+}
+.vote-banner i { font-size: 2.5rem; opacity: .8; }
+.vote-banner h5 { font-family:'Outfit',sans-serif; font-weight:800; margin:0; font-size:1.1rem; }
+.vote-banner p  { color:rgba(255,255,255,.8); margin:0; font-size:.875rem; }
+
+/* Countdown timer */
+.vote-timer {
+    display: flex; gap: .6rem; justify-content: flex-end; align-items: center;
+    font-size: .78rem; color: rgba(255,255,255,.8);
+}
+.timer-unit {
+    background: rgba(255,255,255,.15); border-radius: 8px;
+    padding: .3rem .6rem; text-align: center; min-width: 48px;
+}
+.timer-unit .num { font-family:'Outfit',sans-serif; font-weight:800; font-size:1.1rem; color:white; display:block; }
+.timer-unit .lbl { font-size:.55rem; text-transform:uppercase; letter-spacing:.07em; }
+
+.position-section {
+    background: white; border-radius: 16px;
+    box-shadow: 0 2px 14px rgba(0,0,0,.08);
+    overflow: hidden; margin-bottom: 1.5rem;
+}
+.position-header {
+    background: var(--g50); padding: 1rem 1.5rem;
+    border-bottom: 2px solid var(--g100);
+    display: flex; align-items: center; gap: .6rem;
+}
+.position-header h6 { font-family:'Outfit',sans-serif; font-weight:800; color:var(--g800); margin:0; }
+.position-num {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--g600); color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family:'Outfit',sans-serif; font-weight:800; font-size:.85rem; flex-shrink:0;
+}
+.position-body { padding: 1.25rem 1.5rem; }
+
+/* Candidate ballot option */
+.ballot-option {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.25rem; border-radius: 12px;
+    border: 2px solid var(--slate200); margin-bottom: .75rem;
+    cursor: pointer; transition: all .22s; background: white;
+    user-select: none;
+}
+.ballot-option:hover { border-color: var(--g400); background: var(--g50); }
+.ballot-option input[type=radio] { display: none; }
+.ballot-option:has(input:checked) {
+    border-color: var(--g600);
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    box-shadow: 0 0 0 3px rgba(34,197,94,.12);
+}
+
+.ballot-radio {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--slate300); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+}
+.ballot-option:has(input:checked) .ballot-radio {
+    border-color: var(--g600); background: var(--g600);
+}
+.ballot-option:has(input:checked) .ballot-radio::after {
+    content: ''; width: 9px; height: 9px;
+    border-radius: 50%; background: white;
+}
+
+.ballot-avatar {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--g700), var(--g400));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 1.1rem;
+    font-family: 'Outfit', sans-serif;
+}
+.ballot-name     { font-weight: 700; color: var(--slate800); font-size: .95rem; }
+.ballot-manifesto {
+    font-size: .78rem; color: #94a3b8; margin-top: .2rem;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 400px;
+}
+
+/* Confirm overlay */
+.confirm-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(15, 23, 42, .65); z-index: 9999;
+    align-items: center; justify-content: center;
+}
+.confirm-overlay.show { display: flex; }
+.confirm-box {
+    background: white; border-radius: 20px; padding: 2.5rem; max-width: 440px; width: 90%;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    animation: popIn .25s ease;
+}
+@keyframes popIn {
+    from { opacity:0; transform:scale(.9); }
+    to   { opacity:1; transform:scale(1); }
+}
+.confirm-box .big-icon { font-size: 3rem; color: var(--g500); margin-bottom: 1rem; }
+.confirm-box h5 { font-family:'Outfit',sans-serif; font-weight:800; margin-bottom:.5rem; }
+.confirm-box p  { color:#64748b; font-size:.875rem; margin-bottom:1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="vote-wrap">
+
+    <!-- Banner with countdown -->
+    <div class="vote-banner">
+        <i class="fas fa-vote-yea"></i>
+        <div class="flex-grow-1">
+            <h5>{{ election.title }}</h5>
+            <p>{{ election.club.name }} · Your vote is anonymous and cannot be changed once submitted.</p>
+        </div>
+        {% if election.voting_end %}
+        <div>
+            <div style="font-size:.72rem;color:rgba(255,255,255,.7);text-align:center;margin-bottom:.4rem;">
+                Voting closes in
+            </div>
+            <div class="vote-timer">
+                <div class="timer-unit"><span class="num" id="cdH">--</span><span class="lbl">hrs</span></div>
+                <div class="timer-unit"><span class="num" id="cdM">--</span><span class="lbl">min</span></div>
+                <div class="timer-unit"><span class="num" id="cdS">--</span><span class="lbl">sec</span></div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <form method="POST" action="{{ url_for('elections.vote', election_id=election.id) }}" id="voteForm">
+
+        {% for pos, candidates in positions_with_candidates %}
+        <div class="position-section">
+            <div class="position-header">
+                <span class="position-num">{{ loop.index }}</span>
+                <div>
+                    <h6>{{ pos.title }}</h6>
+                    {% if pos.description %}
+                    <span style="font-size:.78rem;color:#94a3b8;">{{ pos.description }}</span>
+                    {% endif %}
+                </div>
+                <span class="ml-auto" style="font-size:.75rem;color:#94a3b8;">
+                    {{ candidates|length }} candidate{{ 's' if candidates|length != 1 }}
+                </span>
+            </div>
+            <div class="position-body">
+                {% for candidate in candidates %}
+                <label class="ballot-option">
+                    <input type="radio" name="position_{{ pos.id }}"
+                           value="{{ candidate.id }}" required>
+                    <div class="ballot-radio"></div>
+                    <div class="ballot-avatar">{{ candidate.member.name[0]|upper }}</div>
+                    <div class="flex-grow-1">
+                        <div class="ballot-name">{{ candidate.member.name }}</div>
+                        {% if candidate.manifesto %}
+                        <div class="ballot-manifesto">
+                            "{{ candidate.manifesto[:90] }}{% if candidate.manifesto|length > 90 %}…{% endif %}"
+                        </div>
+                        {% else %}
+                        <div class="ballot-manifesto">No manifesto provided.</div>
+                        {% endif %}
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Submit -->
+        <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+            <a href="{{ url_for('elections.election_detail', election_id=election.id) }}"
+               class="btn btn-default">
+                <i class="fas fa-arrow-left mr-1"></i> Back
+            </a>
+            <button type="button" class="btn btn-primary px-5" onclick="showConfirm()">
+                <i class="fas fa-check-circle mr-2"></i>Submit My Votes
+            </button>
+        </div>
+    </form>
+
+</div>
+
+<!-- Confirmation modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <div class="big-icon"><i class="fas fa-shield-alt"></i></div>
+        <h5>Confirm Your Votes</h5>
+        <p>You are about to submit your votes for <strong>{{ election.title }}</strong>.
+           This action cannot be undone. Are you sure?</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <button type="button" class="btn btn-default px-4" onclick="hideConfirm()">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-primary px-5" onclick="submitVotes()">
+                <i class="fas fa-vote-yea mr-2"></i>Yes, Submit
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Countdown timer
+{% if election.voting_end %}
+const deadline = new Date("{{ election.voting_end.strftime('%Y-%m-%dT%H:%M:%S') }}Z").getTime();
+function tick() {
+    const diff = deadline - Date.now();
+    if (diff <= 0) {
+        document.getElementById('cdH').textContent = '00';
+        document.getElementById('cdM').textContent = '00';
+        document.getElementById('cdS').textContent = '00';
+        return;
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cdH').textContent = String(h).padStart(2, '0');
+    document.getElementById('cdM').textContent = String(m).padStart(2, '0');
+    document.getElementById('cdS').textContent = String(s).padStart(2, '0');
+}
+tick();
+setInterval(tick, 1000);
+{% endif %}
+
+function showConfirm() {
+    // Validate all positions have a selection
+    const form = document.getElementById('voteForm');
+    const radios = form.querySelectorAll('input[type=radio]');
+    const names = [...new Set([...radios].map(r => r.name))];
+    const allSelected = names.every(n => form.querySelector(`input[name="${n}"]:checked`));
+
+    if (!allSelected) {
+        alert('Please make a selection for every position before submitting.');
+        return;
+    }
+    document.getElementById('confirmOverlay').classList.add('show');
+}
+
+function hideConfirm() {
+    document.getElementById('confirmOverlay').classList.remove('show');
+}
+
+function submitVotes() {
+    document.getElementById('voteForm').submit();
+}
+</script>
+{% endblock %}

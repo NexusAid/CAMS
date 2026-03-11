@@ -1,0 +1,705 @@
+{% extends "base/admin_base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── DESIGN TOKENS ──────────────────────────────────────── */
+  :root {
+    --g900: #052e16;
+    --g800: #064e24;
+    --g700: #065f33;
+    --g600: #16a34a;
+    --g500: #22c55e;
+    --g400: #4ade80;
+    --g300: #86efac;
+    --g100: #dcfce7;
+    --g50:  #f0fdf4;
+
+    --slate900: #0f172a;
+    --slate800: #1e293b;
+    --slate700: #334155;
+    --slate500: #64748b;
+    --slate300: #cbd5e1;
+    --slate100: #f1f5f9;
+    --slate50:  #f8fafc;
+
+    --amber500: #f59e0b;
+    --amber100: #fef3c7;
+    --red500:   #ef4444;
+    --red100:   #fee2e2;
+    --blue500:  #3b82f6;
+    --blue100:  #dbeafe;
+    --teal500:  #14b8a6;
+    --teal100:  #ccfbf1;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,.12);
+    --shadow-green: 0 4px 20px rgba(34,197,94,.20);
+  }
+
+  /* ── BASE ───────────────────────────────────────────────── */
+  body { background: var(--slate50); }
+
+  /* ── SECTION LABEL ──────────────────────────────────────── */
+  .section-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--slate500);
+    margin: 1.75rem 0 .75rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: var(--slate300);
+    border-radius: 99px;
+  }
+
+  /* ── STAT CARDS ─────────────────────────────────────────── */
+  .stat-card {
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.6rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform .22s ease, box-shadow .22s ease;
+    cursor: default;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg) !important;
+  }
+
+  /* colour variants */
+  .stat-card.green  { background: linear-gradient(135deg, var(--g800), var(--g600)); }
+  .stat-card.teal   { background: linear-gradient(135deg, #0d9488, var(--teal500)); }
+  .stat-card.amber  { background: linear-gradient(135deg, #b45309, var(--amber500)); }
+  .stat-card.red    { background: linear-gradient(135deg, #991b1b, var(--red500)); }
+  .stat-card.blue   { background: linear-gradient(135deg, #1d4ed8, var(--blue500)); }
+  .stat-card.slate  { background: linear-gradient(135deg, var(--slate800), var(--slate700)); }
+  .stat-card.dark   { background: linear-gradient(135deg, #111827, #1f2937); }
+
+  .stat-card .stat-bg-icon {
+    position: absolute;
+    right: -10px;
+    bottom: -12px;
+    font-size: 5.5rem;
+    opacity: .12;
+    color: #fff;
+    pointer-events: none;
+    line-height: 1;
+    transition: opacity .22s, transform .22s;
+  }
+  .stat-card:hover .stat-bg-icon { opacity: .2; transform: scale(1.08) rotate(-5deg); }
+
+  .stat-card .stat-label {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: rgba(255,255,255,.65);
+    margin-bottom: .35rem;
+  }
+  .stat-card .stat-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: .5rem;
+  }
+  .stat-card .stat-sub {
+    font-size: .75rem;
+    color: rgba(255,255,255,.6);
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+  }
+  .stat-card .stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    background: rgba(255,255,255,.18);
+    border-radius: 99px;
+    padding: .15rem .55rem;
+    font-size: .68rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* ── CHART CARDS ────────────────────────────────────────── */
+  .chart-card {
+    background: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .22s;
+    overflow: hidden;
+  }
+  .chart-card:hover { box-shadow: var(--shadow-md); }
+
+  .chart-card .chart-header {
+    padding: 1.1rem 1.4rem .7rem;
+    border-bottom: 2px solid var(--g100);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .chart-card .chart-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    color: var(--g800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .chart-card .chart-title i { color: var(--g500); }
+  .chart-card .chart-body { padding: 1.25rem; }
+
+  /* ── ALERT / LIST CARDS ─────────────────────────────────── */
+  .list-card {
+    background: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow .22s;
+  }
+  .list-card:hover { box-shadow: var(--shadow-md); }
+
+  .list-card .list-header {
+    padding: 1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    border-bottom: 2px solid var(--g100);
+  }
+  .list-card .list-header h6 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: .92rem;
+    color: var(--g800);
+    margin: 0;
+  }
+  .list-card .list-header .header-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem;
+    flex-shrink: 0;
+  }
+  .list-card .list-header .count-badge {
+    margin-left: auto;
+    font-family: 'Outfit', sans-serif;
+    font-size: .7rem;
+    font-weight: 800;
+    padding: .18rem .6rem;
+    border-radius: 99px;
+    border: none;
+  }
+
+  .list-card .list-item {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .8rem 1.4rem;
+    border-bottom: 1px solid var(--slate100);
+    transition: background .15s;
+  }
+  .list-card .list-item:last-child { border-bottom: none; }
+  .list-card .list-item:hover { background: var(--g50); }
+
+  .list-card .list-item .item-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .list-card .list-item .item-club {
+    font-weight: 600;
+    font-size: .875rem;
+    color: var(--slate800);
+    flex: 1;
+  }
+  .list-card .list-item .item-msg {
+    font-size: .78rem;
+    color: var(--slate500);
+    flex: 2;
+  }
+  .list-card .list-item .item-badge {
+    font-size: .65rem;
+    font-weight: 700;
+    padding: .22rem .65rem;
+    border-radius: 99px;
+    border: none;
+    flex-shrink: 0;
+    letter-spacing: .04em;
+  }
+
+  .list-card .list-empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--slate500);
+    font-size: .875rem;
+  }
+  .list-card .list-empty i {
+    font-size: 2rem;
+    color: var(--g300);
+    display: block;
+    margin-bottom: .5rem;
+  }
+
+  /* status dot colours */
+  .dot-red    { background: var(--red500); }
+  .dot-amber  { background: var(--amber500); }
+  .dot-blue   { background: var(--blue500); }
+  .dot-teal   { background: var(--teal500); }
+  .dot-slate  { background: var(--slate500); }
+
+  /* ── BADGE COLOURS ──────────────────────────────────────── */
+  .badge-red   { background: var(--red100);  color: #991b1b; }
+  .badge-amber { background: var(--amber100); color: #78350f; }
+  .badge-teal  { background: var(--teal100); color: #134e4a; }
+  .badge-slate { background: var(--slate100); color: var(--slate700); }
+
+  /* ── ANIMATIONS ─────────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .anim { animation: fadeUp .45s ease both; }
+  .anim-d1 { animation-delay: .05s; }
+  .anim-d2 { animation-delay: .10s; }
+  .anim-d3 { animation-delay: .15s; }
+  .anim-d4 { animation-delay: .20s; }
+  .anim-d5 { animation-delay: .25s; }
+  .anim-d6 { animation-delay: .30s; }
+  .anim-d7 { animation-delay: .35s; }
+  .anim-d8 { animation-delay: .40s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 pb-5">
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PRIMARY STATS                                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-chart-line"></i> Overview</div>
+
+  <div class="row g-3">
+
+    <!-- Total Clubs -->
+    <div class="col-xl-3 col-md-6 anim anim-d1">
+      <div class="stat-card green shadow-md h-100">
+        <div class="stat-label">Total Clubs</div>
+        <div class="stat-value">{{ stats.total_clubs }}</div>
+        <div class="stat-sub">
+          <span class="stat-badge"><i class="fas fa-shield-alt mr-1"></i> Registered</span>
+        </div>
+        <div class="stat-bg-icon"><i class="fas fa-users"></i></div>
+      </div>
+    </div>
+
+    <!-- Active Members -->
+    <div class="col-xl-3 col-md-6 anim anim-d2">
+      <div class="stat-card teal shadow-md h-100">
+        <div class="stat-label">Active Members</div>
+        <div class="stat-value">{{ stats.total_members }}</div>
+        <div class="stat-sub">
+          <span class="stat-badge"><i class="fas fa-check-circle mr-1"></i> Verified</span>
+        </div>
+        <div class="stat-bg-icon"><i class="fas fa-user-check"></i></div>
+      </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="col-xl-3 col-md-6 anim anim-d3">
+      <div class="stat-card amber shadow-md h-100">
+        <div class="stat-label">Upcoming Events</div>
+        <div class="stat-value">{{ stats.upcoming_events }}</div>
+        <div class="stat-sub">
+          <span class="stat-badge"><i class="fas fa-calendar mr-1"></i> Scheduled</span>
+        </div>
+        <div class="stat-bg-icon"><i class="fas fa-calendar-alt"></i></div>
+      </div>
+    </div>
+
+    <!-- Pending Approvals -->
+    <div class="col-xl-3 col-md-6 anim anim-d4">
+      <div class="stat-card red shadow-md h-100">
+        <div class="stat-label">Pending Approvals</div>
+        <div class="stat-value">{{ stats.pending_approvals }}</div>
+        <div class="stat-sub">
+          <span class="stat-badge"><i class="fas fa-hourglass-half mr-1"></i> Awaiting</span>
+        </div>
+        <div class="stat-bg-icon"><i class="fas fa-clock"></i></div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- COMPLIANCE STATS                                        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-balance-scale"></i> Compliance Snapshot</div>
+
+  <div class="row g-3">
+
+    <!-- Elections Due -->
+    <div class="col-xl-3 col-md-6 anim anim-d1">
+      <div class="stat-card blue shadow-md h-100">
+        <div class="stat-label">Elections Due</div>
+        <div class="stat-value">{{ stats.elections_due }}</div>
+        <div class="stat-sub">
+          <span class="stat-badge"><i class="fas fa-vote-yea mr-1"></i> Action Required</span>
+        </div>
+        <div class="stat-bg-icon"><i class="fas fa-vote-yea"></i></div>
+      </div>
+    </div>
+
+    <!-- Overdue Financial Reports -->
+    <div class="col-xl-3 col-md-6 anim anim-d2">
+      <div class="stat-card amber shadow-md h-100">
+        <div class="stat-label">Overdue Financials</div>
+        <div class="stat-value">{{ stats.overdue_financials }}</div>
+        <div class="stat-sub">
+          <span class="stat-badge"><i class="fas fa-file-invoice-dollar mr-1"></i> Reports</span>
+        </div>
+        <div class="stat-bg-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+      </div>
+    </div>
+
+    <!-- Dormant Clubs -->
+    <div class="col-xl-3 col-md-6 anim anim-d3">
+      <div class="stat-card slate shadow-md h-100">
+        <div class="stat-label">Dormant Clubs</div>
+        <div class="stat-value">{{ stats.dormant_clubs }}</div>
+        <div class="stat-sub">
+          <span class="stat-badge"><i class="fas fa-moon mr-1"></i> 6+ months</span>
+        </div>
+        <div class="stat-bg-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      </div>
+    </div>
+
+    <!-- Non-Compliant Clubs -->
+    <div class="col-xl-3 col-md-6 anim anim-d4">
+      <div class="stat-card red shadow-md h-100">
+        <div class="stat-label">Non-Compliant</div>
+        <div class="stat-value">{{ stats.non_compliant_clubs }}</div>
+        <div class="stat-sub">
+          <span class="stat-badge"><i class="fas fa-times-circle mr-1"></i> Clubs</span>
+        </div>
+        <div class="stat-bg-icon"><i class="fas fa-balance-scale"></i></div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- CHARTS ROW                                              -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-chart-bar"></i> Analytics</div>
+
+  <div class="row g-3 anim anim-d5">
+
+    <!-- Monthly Members Trend -->
+    <div class="col-xl-8 col-md-12">
+      <div class="chart-card h-100">
+        <div class="chart-header">
+          <h6 class="chart-title">
+            <i class="fas fa-user-plus"></i> Monthly Member Registrations
+          </h6>
+          <span style="font-size:.72rem;color:var(--slate500);font-weight:600;">
+            This Year
+          </span>
+        </div>
+        <div class="chart-body">
+          <canvas id="membersChart" style="height:240px;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Club Distribution Donut -->
+    <div class="col-xl-4 col-md-12">
+      <div class="chart-card h-100">
+        <div class="chart-header">
+          <h6 class="chart-title">
+            <i class="fas fa-layer-group"></i> Clubs by Category
+          </h6>
+        </div>
+        <div class="chart-body d-flex align-items-center justify-content-center">
+          <canvas id="clubChart" style="max-height:260px;"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- COMPLIANCE ALERTS + ELECTIONS DUE                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-bell"></i> Alerts & Actions</div>
+
+  <div class="row g-3">
+
+    <!-- Compliance Alerts -->
+    <div class="col-md-6 anim anim-d6">
+      <div class="list-card h-100">
+        <div class="list-header">
+          <div class="header-icon" style="background:var(--red100);color:var(--red500);">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
+          <h6>Compliance Alerts</h6>
+          {% if compliance_alerts %}
+          <span class="count-badge badge-red count-badge">{{ compliance_alerts|length }}</span>
+          {% endif %}
+        </div>
+
+        {% if compliance_alerts %}
+          {% for alert in compliance_alerts %}
+          <div class="list-item">
+            <span class="item-dot dot-red"></span>
+            <span class="item-club">{{ alert.club_name }}</span>
+            <span class="item-msg">{{ alert.message }}</span>
+            <span class="item-badge badge-red">Alert</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="list-empty">
+            <i class="fas fa-check-circle" style="color:var(--g400);"></i>
+            No compliance issues detected
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Elections Due -->
+    <div class="col-md-6 anim anim-d7">
+      <div class="list-card h-100">
+        <div class="list-header">
+          <div class="header-icon" style="background:var(--blue100);color:var(--blue500);">
+            <i class="fas fa-vote-yea"></i>
+          </div>
+          <h6>Elections Due</h6>
+          {% if elections_due_list %}
+          <span class="count-badge" style="background:var(--blue100);color:#1d4ed8;">{{ elections_due_list|length }}</span>
+          {% endif %}
+        </div>
+
+        {% if elections_due_list %}
+          {% for club in elections_due_list %}
+          <div class="list-item">
+            <span class="item-dot dot-blue"></span>
+            <span class="item-club flex-grow-1">{{ club.name }}</span>
+            <span class="item-badge badge-amber">Due</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="list-empty">
+            <i class="fas fa-check-circle" style="color:var(--g400);"></i>
+            No elections pending
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- OVERDUE FINANCIALS + DORMANT CLUBS                     -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="row g-3 mt-0">
+
+    <!-- Overdue Financial Reports -->
+    <div class="col-md-6 anim anim-d7">
+      <div class="list-card h-100">
+        <div class="list-header">
+          <div class="header-icon" style="background:var(--amber100);color:#b45309;">
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+          <h6>Overdue Financial Reports</h6>
+          {% if overdue_financial_list %}
+          <span class="count-badge badge-amber">{{ overdue_financial_list|length }}</span>
+          {% endif %}
+        </div>
+
+        {% if overdue_financial_list %}
+          {% for club in overdue_financial_list %}
+          <div class="list-item">
+            <span class="item-dot dot-amber"></span>
+            <span class="item-club flex-grow-1">{{ club.name }}</span>
+            <span class="item-badge badge-red">Overdue</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="list-empty">
+            <i class="fas fa-check-circle" style="color:var(--g400);"></i>
+            All financial reports up to date
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Dormant Clubs -->
+    <div class="col-md-6 anim anim-d8">
+      <div class="list-card h-100">
+        <div class="list-header">
+          <div class="header-icon" style="background:var(--slate100);color:var(--slate700);">
+            <i class="fas fa-moon"></i>
+          </div>
+          <h6>Dormant Clubs <span style="font-size:.72rem;font-weight:500;color:var(--slate500);">(6+ months)</span></h6>
+          {% if dormant_clubs_list %}
+          <span class="count-badge badge-slate">{{ dormant_clubs_list|length }}</span>
+          {% endif %}
+        </div>
+
+        {% if dormant_clubs_list %}
+          {% for club in dormant_clubs_list %}
+          <div class="list-item">
+            <span class="item-dot dot-slate"></span>
+            <span class="item-club flex-grow-1">{{ club.name }}</span>
+            <span class="item-badge badge-slate">Dormant</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="list-empty">
+            <i class="fas fa-check-circle" style="color:var(--g400);"></i>
+            No dormant clubs
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const GREEN_PALETTE = [
+  '#065f33','#16a34a','#22c55e','#4ade80','#86efac',
+  '#14b8a6','#0d9488','#3b82f6','#f59e0b','#ef4444',
+];
+
+// ── Members Trend Line Chart ─────────────────────────────
+const ctxLine = document.getElementById('membersChart').getContext('2d');
+new Chart(ctxLine, {
+  type: 'line',
+  data: {
+    labels: ["Jan","Feb","Mar","Apr","May","Jun",
+             "Jul","Aug","Sep","Oct","Nov","Dec"],
+    datasets: [{
+      label: 'New Members',
+      data: {{ monthly_members | tojson }},
+      fill: true,
+      backgroundColor: 'rgba(34,197,94,.08)',
+      borderColor: '#16a34a',
+      borderWidth: 2.5,
+      pointBackgroundColor: '#16a34a',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      tension: 0.4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#86efac',
+        bodyColor: '#fff',
+        padding: 10,
+        cornerRadius: 8,
+        callbacks: {
+          label: ctx => ` ${ctx.raw} new members`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { font: { family: 'DM Sans', weight: '600', size: 11 }, color: '#94a3b8' }
+      },
+      y: {
+        grid: { color: 'rgba(0,0,0,.05)', drawBorder: false },
+        ticks: { font: { family: 'DM Sans', size: 11 }, color: '#94a3b8' }
+      }
+    }
+  }
+});
+
+// ── Club Distribution Doughnut ───────────────────────────
+const ctxDoughnut = document.getElementById('clubChart').getContext('2d');
+new Chart(ctxDoughnut, {
+  type: 'doughnut',
+  data: {
+    labels: {{ club_labels | tojson }},
+    datasets: [{
+      data: {{ club_data | tojson }},
+      backgroundColor: GREEN_PALETTE,
+      borderWidth: 3,
+      borderColor: '#fff',
+      hoverBorderColor: '#fff',
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '62%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 14,
+          usePointStyle: true,
+          pointStyleWidth: 10,
+          font: { family: 'DM Sans', weight: '600', size: 11 },
+          color: '#334155'
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#86efac',
+        bodyColor: '#fff',
+        padding: 10,
+        cornerRadius: 8,
+        callbacks: {
+          label: ctx => {
+            const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+            const pct = ((ctx.raw / total) * 100).toFixed(1);
+            return ` ${ctx.raw} clubs (${pct}%)`;
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

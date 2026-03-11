@@ -1,0 +1,29 @@
+{% extends "base/base.html" %}
+{% block title %}My Memberships{% endblock %}
+
+{% block page_title %}My Club Memberships{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% for membership in memberships %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5>{{ membership.club.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p>Status: <strong>{{ membership.status|capitalize }}</strong></p>
+                <p>Role: <strong>{{ membership.role|capitalize }}</strong></p>
+                <a href="{{ url_for('student.club_details', club_id=membership.club.id) }}" class="btn btn-info btn-sm">
+                    View Club
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">You are not a member of any club yet.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

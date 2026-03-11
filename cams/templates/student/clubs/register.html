@@ -1,0 +1,181 @@
+{% extends "base/student_base.html" %}
+
+{% block title %}Register New Club - CAMS{% endblock %}
+
+{% block page_title %}Register New Club{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('student.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('student.list_clubs') }}">Clubs</a></li>
+<li class="breadcrumb-item active">Register Club</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Club Registration Form</h3>
+                <div class="card-tools">
+                    <span class="badge badge-warning">Required documents: Constitution, Minutes, Patron Letter</span>
+                </div>
+            </div>
+            <form method="POST" action="{{ url_for('student.clubs_register') }}" enctype="multipart/form-data">
+                <div class="card-body">
+                    <!-- Club Basic Information -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="name">Club Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       placeholder="Enter club name" required>
+                                <small class="text-muted">Unique name for your club</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="category">Category *</label>
+                                <select class="form-control" id="category" name="category" required>
+                                    <option value="" disabled selected>Select category</option>
+                                    {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3" placeholder="Describe your club's purpose and activities" required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="patron_email">Patron Email *</label>
+                                <input type="email" class="form-control" id="patron_email" name="patron_email" 
+                                       placeholder="patron@egerton.ac.ke" required>
+                                <small class="text-muted">Must be a staff member at Egerton University</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Available Staff (Patrons)</label>
+                                <div class="small-box bg-light p-2">
+                                    <ul class="mb-0 pl-3">
+                                        {% for staff in staff_members %}
+                                        <li>{{ staff.name }} &lt;{{ staff.email }}&gt;</li>
+                                        {% else %}
+                                        <li class="text-muted">No staff members found</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Required Documents -->
+                    <h4 class="mb-3">Required Documents</h4>
+                    <p class="text-danger"><small>All documents are required for registration approval</small></p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="constitution">Club Constitution *</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="constitution" name="constitution" accept=".pdf,.doc,.docx" required>
+                                    <label class="custom-file-label" for="constitution">Choose constitution file</label>
+                                </div>
+                                <small class="text-muted">PDF or Word document containing club constitution</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="patron_letter">Patron Acceptance Letter *</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="patron_letter" name="patron_letter" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                                    <label class="custom-file-label" for="patron_letter">Choose patron letter</label>
+                                </div>
+                                <small class="text-muted">Letter from patron accepting responsibility</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="minutes">Approval Minutes *</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="minutes" name="minutes" accept=".pdf,.doc,.docx" required>
+                                    <label class="custom-file-label" for="minutes">Choose minutes file</label>
+                                </div>
+                                <small class="text-muted">Minutes showing approval to form the club</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="members_list">Members List (Minimum 20)</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="members_list" name="members_list" accept=".pdf,.xls,.xlsx,.csv">
+                                    <label class="custom-file-label" for="members_list">Choose members list</label>
+                                </div>
+                                <small class="text-muted">Excel, CSV, or PDF containing at least 20 members</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- University Regulations -->
+                    <div class="alert alert-info mt-4">
+                        <h5><i class="fas fa-info-circle"></i> University Regulations</h5>
+                        <p class="mb-1">By registering this club, you agree to comply with all Egerton University rules and regulations:</p>
+                        <ul class="mb-0">
+                            <li>Must have at least 20 active student members</li>
+                            <li>Must have an active staff patron (lecturer level or above)</li>
+                            <li>Must submit annual financial reports</li>
+                            <li>Must hold annual elections</li>
+                            <li>All meetings require prior approval</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="agree_terms" required>
+                            <label class="custom-control-label" for="agree_terms">
+                                I confirm that all information provided is accurate and I agree to comply with university regulations
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Registration
+                    </button>
+                    <a href="{{ url_for('student.list_clubs') }}" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Show file names in custom file input
+    document.querySelectorAll('.custom-file-input').forEach(function(input) {
+        input.addEventListener('change', function(e) {
+            var fileName = e.target.files[0].name;
+            var nextSibling = e.target.nextElementSibling;
+            nextSibling.innerText = fileName;
+        });
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const patronEmail = document.getElementById('patron_email').value;
+        if (!patronEmail.endsWith('@egerton.ac.ke')) {
+            alert('Patron email must be an Egerton University email address (@egerton.ac.ke)');
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

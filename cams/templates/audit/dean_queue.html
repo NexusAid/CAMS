@@ -1,0 +1,206 @@
+{% extends "base/admin_base.html" %}
+{% block title %}Audit Review Queue{% endblock %}
+{% block page_title %}Audit Review Queue{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Audit Review</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --g800:#064e24;--g700:#065f33;--g600:#16a34a;--g500:#22c55e;
+  --g400:#4ade80;--g100:#dcfce7;--g50:#f0fdf4;
+  --s800:#1e293b;--s700:#334155;--s500:#64748b;--s200:#e2e8f0;--s50:#f8fafc;
+}
+.hero {
+  background:linear-gradient(135deg,var(--g800),var(--g600));
+  border-radius:18px;padding:1.75rem 2rem;color:#fff;margin-bottom:1.75rem;
+  display:flex;align-items:center;gap:1.5rem;
+}
+.hero i{font-size:2.6rem;opacity:.8;}
+.hero h4{font-family:'Outfit',sans-serif;font-weight:800;margin:0;}
+.hero p{color:rgba(255,255,255,.75);margin:0;font-size:.875rem;}
+
+.queue-stat {
+  background:#fff;border-radius:14px;padding:1.25rem 1.5rem;
+  box-shadow:0 2px 12px rgba(0,0,0,.07);text-align:center;
+  border-top:4px solid var(--g500);
+}
+.queue-stat .num{font-family:'Outfit',sans-serif;font-weight:900;font-size:2rem;color:var(--g800);line-height:1;}
+.queue-stat .lbl{font-size:.75rem;font-weight:700;color:var(--s500);text-transform:uppercase;letter-spacing:.07em;}
+
+.section-head {
+  font-family:'Outfit',sans-serif;font-weight:800;font-size:.92rem;color:var(--g800);
+  display:flex;align-items:center;gap:.5rem;margin:1.75rem 0 .85rem;
+  padding-bottom:.5rem;border-bottom:2px solid var(--g100);
+}
+.section-head i{color:var(--g500);}
+
+.queue-row {
+  background:#fff;border-radius:12px;padding:.9rem 1.25rem;
+  box-shadow:0 1px 8px rgba(0,0,0,.06);
+  display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+  margin-bottom:.6rem;border-left:4px solid var(--g400);
+  transition:transform .2s,box-shadow .2s;
+}
+.queue-row:hover{transform:translateX(4px);box-shadow:0 4px 20px rgba(16,185,129,.1);}
+.queue-row.urgent{border-left-color:#ef4444;}
+.queue-row.reviewing{border-left-color:#f59e0b;}
+.queue-row.done-approved{border-left-color:var(--g500);}
+.queue-row.done-rejected{border-left-color:#94a3b8;}
+
+.queue-avatar {
+  width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--g700),var(--g400));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:800;font-size:1rem;font-family:'Outfit',sans-serif;
+}
+.queue-club{font-weight:700;font-size:.9rem;color:var(--s800);margin-bottom:.1rem;}
+.queue-meta{font-size:.75rem;color:var(--s500);}
+
+.status-pill{display:inline-flex;align-items:center;gap:.3rem;
+  padding:.2rem .65rem;border-radius:99px;font-size:.65rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;}
+.pill-submitted   {background:#dbeafe;color:#1d4ed8;}
+.pill-under_review{background:#fef3c7;color:#92400e;}
+.pill-approved    {background:var(--g100);color:var(--g700);}
+.pill-rejected    {background:#fee2e2;color:#991b1b;}
+
+.empty-q{padding:2rem;text-align:center;color:var(--s500);font-size:.875rem;}
+.empty-q i{font-size:1.75rem;color:var(--g300);display:block;margin-bottom:.5rem;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .35s ease both;}
+.d1{animation-delay:.05s}.d2{animation-delay:.10s}.d3{animation-delay:.15s}.d4{animation-delay:.20s}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid pb-5">
+
+  <div class="hero anim d1">
+    <i class="fas fa-gavel"></i>
+    <div class="flex-grow-1">
+      <h4>Audit Review Queue</h4>
+      <p>Review, approve or reject club audit reports. Approved audits generate a printable Word document automatically.</p>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="row g-3 mb-4 anim d2">
+    <div class="col-6 col-md-3">
+      <div class="queue-stat">
+        <div class="num" style="color:#1d4ed8;">{{ submitted|length }}</div>
+        <div class="lbl">Awaiting Review</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="queue-stat" style="border-top-color:#f59e0b;">
+        <div class="num" style="color:#b45309;">{{ under_review|length }}</div>
+        <div class="lbl">Under Review</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="queue-stat">
+        <div class="num">{{ approved|length }}</div>
+        <div class="lbl">Approved (Recent)</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="queue-stat" style="border-top-color:#ef4444;">
+        <div class="num" style="color:#991b1b;">{{ rejected|length }}</div>
+        <div class="lbl">Rejected (Recent)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Submitted ──────────────────────────────────── -->
+  <div class="section-head anim d3">
+    <i class="fas fa-inbox"></i>New Submissions
+    {% if submitted %}<span class="badge" style="background:#dbeafe;color:#1d4ed8;border-radius:99px;font-size:.7rem;padding:.2rem .6rem;">{{ submitted|length }}</span>{% endif %}
+  </div>
+
+  {% for r in submitted %}
+  <div class="queue-row anim d3">
+    <div class="queue-avatar">{{ r.club.name[0]|upper }}</div>
+    <div class="flex-grow-1">
+      <div class="queue-club">{{ r.club.name }}</div>
+      <div class="queue-meta">{{ r.period.value }} {{ r.year }} · Submitted {{ r.submitted_at.strftime('%d %b %Y') if r.submitted_at else '—' }} · by {{ r.submitter.full_name }}</div>
+    </div>
+    <span class="status-pill pill-submitted"><i class="fas fa-paper-plane"></i> Submitted</span>
+    <a href="{{ url_for('audit.dean_review', report_id=r.id) }}" class="btn btn-primary btn-sm">
+      <i class="fas fa-gavel mr-1"></i>Review
+    </a>
+  </div>
+  {% else %}
+  <div class="empty-q"><i class="fas fa-inbox"></i>No new submissions</div>
+  {% endfor %}
+
+  <!-- ── Under Review ───────────────────────────────── -->
+  <div class="section-head anim d3">
+    <i class="fas fa-search"></i>Under Review
+  </div>
+
+  {% for r in under_review %}
+  <div class="queue-row reviewing anim d3">
+    <div class="queue-avatar" style="background:linear-gradient(135deg,#b45309,#f59e0b);">{{ r.club.name[0]|upper }}</div>
+    <div class="flex-grow-1">
+      <div class="queue-club">{{ r.club.name }}</div>
+      <div class="queue-meta">{{ r.period.value }} {{ r.year }} · by {{ r.submitter.full_name }}</div>
+    </div>
+    <span class="status-pill pill-under_review"><i class="fas fa-eye"></i> Reviewing</span>
+    <a href="{{ url_for('audit.dean_review', report_id=r.id) }}" class="btn btn-warning btn-sm text-white">
+      Continue
+    </a>
+  </div>
+  {% else %}
+  <div class="empty-q"><i class="fas fa-search"></i>No audits currently under review</div>
+  {% endfor %}
+
+  <!-- ── Recently Approved ──────────────────────────── -->
+  <div class="section-head">
+    <i class="fas fa-check-circle text-success"></i>Recently Approved
+  </div>
+
+  {% for r in approved %}
+  <div class="queue-row done-approved">
+    <div class="queue-avatar">{{ r.club.name[0]|upper }}</div>
+    <div class="flex-grow-1">
+      <div class="queue-club">{{ r.club.name }}</div>
+      <div class="queue-meta">{{ r.period.value }} {{ r.year }} · Approved {{ r.reviewed_at.strftime('%d %b %Y') if r.reviewed_at else '—' }}</div>
+    </div>
+    <span class="status-pill pill-approved"><i class="fas fa-check-circle"></i> Approved</span>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('audit.audit_detail', report_id=r.id) }}" class="btn btn-outline-success btn-sm">View</a>
+      {% if r.report_file %}
+      <a href="{{ url_for('audit.download_report', report_id=r.id) }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-download mr-1"></i>Report
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-q"><i class="fas fa-check-circle"></i>No recent approvals</div>
+  {% endfor %}
+
+  <!-- ── Recently Rejected ──────────────────────────── -->
+  <div class="section-head">
+    <i class="fas fa-times-circle text-danger"></i>Recently Rejected
+  </div>
+
+  {% for r in rejected %}
+  <div class="queue-row done-rejected">
+    <div class="queue-avatar" style="background:linear-gradient(135deg,#991b1b,#ef4444);">{{ r.club.name[0]|upper }}</div>
+    <div class="flex-grow-1">
+      <div class="queue-club">{{ r.club.name }}</div>
+      <div class="queue-meta">{{ r.period.value }} {{ r.year }} · Rejected {{ r.reviewed_at.strftime('%d %b %Y') if r.reviewed_at else '—' }}</div>
+    </div>
+    <span class="status-pill pill-rejected"><i class="fas fa-times-circle"></i> Rejected</span>
+    <a href="{{ url_for('audit.audit_detail', report_id=r.id) }}" class="btn btn-outline-secondary btn-sm">View</a>
+  </div>
+  {% else %}
+  <div class="empty-q"><i class="fas fa-times-circle"></i>No recent rejections</div>
+  {% endfor %}
+
+</div>
+{% endblock %}

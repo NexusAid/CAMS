@@ -1,0 +1,141 @@
+{% extends "base/admin_base.html" %}
+{% block title %}{{ report.label }}{% endblock %}
+{% block page_title %}Audit Report{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('audit.audit_home') }}">Audits</a></li>
+<li class="breadcrumb-item active">{{ report.period.value }} {{ report.year }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{--g800:#064e24;--g700:#065f33;--g600:#16a34a;--g500:#22c55e;--g400:#4ade80;
+  --g100:#dcfce7;--g50:#f0fdf4;--s800:#1e293b;--s700:#334155;--s500:#64748b;--s200:#e2e8f0;}
+.detail-hero{background:linear-gradient(135deg,var(--g800),var(--g600));border-radius:18px;
+  padding:1.75rem 2rem;color:#fff;margin-bottom:1.75rem;display:flex;align-items:center;gap:1.5rem;}
+.d-avatar{width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.2);
+  border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:900;font-size:1.5rem;font-family:'Outfit',sans-serif;flex-shrink:0;}
+.d-title{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.15rem;margin:0;}
+.d-sub{color:rgba(255,255,255,.75);font-size:.85rem;margin:.2rem 0 0;}
+.status-pill{display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .7rem;
+  border-radius:99px;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.pill-draft{background:#f1f5f9;color:#64748b;}
+.pill-submitted{background:#dbeafe;color:#1d4ed8;}
+.pill-under_review{background:#fef3c7;color:#92400e;}
+.pill-approved{background:var(--g100);color:var(--g700);}
+.pill-rejected{background:#fee2e2;color:#991b1b;}
+.info-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);
+  overflow:hidden;margin-bottom:1.25rem;}
+.ic-hdr{background:var(--g50);padding:.85rem 1.25rem;border-bottom:2px solid var(--g100);
+  display:flex;align-items:center;gap:.6rem;}
+.ic-hdr i{color:var(--g500);}
+.ic-hdr h6{font-family:'Outfit',sans-serif;font-weight:700;color:var(--g800);margin:0;font-size:.9rem;}
+.ic-body{padding:1.1rem 1.25rem;}
+.dl-row{display:flex;justify-content:space-between;padding:.35rem 0;
+  border-bottom:1px solid var(--s200);font-size:.875rem;}
+.dl-row:last-child{border-bottom:none;}
+.dl-key{color:var(--s700);font-weight:600;}
+.dl-val{color:var(--s800);font-weight:700;}
+.check-ok{color:var(--g600);font-weight:700;}
+.check-no{color:#ef4444;font-weight:700;}
+.rejection-box{background:#fff1f2;border-radius:12px;padding:1rem 1.25rem;
+  border-left:4px solid #ef4444;font-size:.875rem;color:#7f1d1d;}
+.rejection-box strong{display:block;margin-bottom:.35rem;color:#991b1b;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid pb-5">
+
+  <div class="detail-hero">
+    <div class="d-avatar">{{ report.club.name[0]|upper }}</div>
+    <div class="flex-grow-1">
+      <h5 class="d-title">{{ report.club.name }}</h5>
+      <p class="d-sub">{{ report.period.value }} {{ report.year }} Audit · Revision {{ report.revision_number }}</p>
+    </div>
+    <div class="d-flex flex-column align-items-end gap-2">
+      <span class="status-pill pill-{{ report.status.value }}">{{ report.status.value|replace('_',' ')|title }}</span>
+      {% if report.status.value in ('draft','rejected') %}
+      <a href="{{ url_for('audit.edit_audit', report_id=report.id) }}" class="btn btn-light btn-sm">
+        <i class="fas fa-edit mr-1"></i>{% if report.status.value=='rejected' %}Resubmit{% else %}Edit{% endif %}
+      </a>
+      {% endif %}
+      {% if report.status.value == 'approved' and report.report_file %}
+      <a href="{{ url_for('audit.download_report', report_id=report.id) }}" class="btn btn-light btn-sm">
+        <i class="fas fa-download mr-1"></i>Download Report
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if report.status.value == 'rejected' and report.review_note %}
+  <div class="rejection-box mb-4">
+    <strong><i class="fas fa-exclamation-triangle mr-1"></i>Rejected — Action Required</strong>
+    {{ report.review_note }}
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="info-card">
+        <div class="ic-hdr"><i class="fas fa-users"></i><h6>Membership</h6></div>
+        <div class="ic-body">
+          <div class="dl-row"><span class="dl-key">Total Members</span><span class="dl-val">{{ report.total_members }}</span></div>
+          <div class="dl-row"><span class="dl-key">Active Members</span><span class="dl-val">{{ report.active_members }}</span></div>
+          <div class="dl-row"><span class="dl-key">New This Period</span><span class="dl-val">{{ report.new_members }}</span></div>
+          <div class="dl-row"><span class="dl-key">Members Left</span><span class="dl-val">{{ report.members_left }}</span></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="ic-hdr"><i class="fas fa-calendar-alt"></i><h6>Events</h6></div>
+        <div class="ic-body">
+          <div class="dl-row"><span class="dl-key">Events Held</span><span class="dl-val">{{ report.events_held }}</span></div>
+          <div class="dl-row"><span class="dl-key">Events Planned</span><span class="dl-val">{{ report.events_planned }}</span></div>
+          <div class="dl-row"><span class="dl-key">Avg Attendance</span><span class="dl-val">{{ "%.1f"|format(report.average_attendance) }}</span></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="ic-hdr"><i class="fas fa-clipboard-check"></i><h6>Compliance — {{ report.compliance_score }}%</h6></div>
+        <div class="ic-body">
+          {% for item, ok in report.compliance_checklist.items() %}
+          <div class="dl-row">
+            <span class="dl-key">{{ item }}</span>
+            <span {% if ok %}class="check-ok"{% else %}class="check-no"{% endif %}>
+              {% if ok %}✓ Yes{% else %}✗ No{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="info-card">
+        <div class="ic-hdr"><i class="fas fa-coins"></i><h6>Finances</h6></div>
+        <div class="ic-body">
+          <div class="dl-row"><span class="dl-key">Opening Balance</span><span class="dl-val">KES {{ "{:,.2f}".format(report.opening_balance) }}</span></div>
+          <div class="dl-row"><span class="dl-key">Total Income</span><span class="dl-val" style="color:var(--g600);">KES {{ "{:,.2f}".format(report.total_income) }}</span></div>
+          <div class="dl-row"><span class="dl-key">Total Expenditure</span><span class="dl-val" style="color:#ef4444;">KES {{ "{:,.2f}".format(report.total_expenditure) }}</span></div>
+          <div class="dl-row"><span class="dl-key">Closing Balance</span><span class="dl-val">KES {{ "{:,.2f}".format(report.closing_balance) }}</span></div>
+          <div class="dl-row"><span class="dl-key">Fees Collected</span><span class="dl-val">KES {{ "{:,.2f}".format(report.fees_collected) }}</span></div>
+          <div class="dl-row"><span class="dl-key">Outstanding Fees</span><span class="dl-val">KES {{ "{:,.2f}".format(report.outstanding_fees) }}</span></div>
+        </div>
+      </div>
+      {% for heading, content in [('Achievements',report.achievements),('Challenges',report.challenges),
+         ('Recommendations',report.recommendations),('Additional Notes',report.additional_notes)] %}
+      {% if content %}
+      <div class="info-card">
+        <div class="ic-hdr"><i class="fas fa-align-left"></i><h6>{{ heading }}</h6></div>
+        <div class="ic-body" style="font-size:.875rem;color:var(--s700);line-height:1.7;">{{ content }}</div>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% if report.review_note and report.status.value == 'approved' %}
+      <div class="info-card">
+        <div class="ic-hdr"><i class="fas fa-comment-alt"></i><h6>Dean's Note</h6></div>
+        <div class="ic-body" style="font-size:.875rem;color:var(--s700);">{{ report.review_note }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,660 @@
+{% extends "base/base.html" %}
+{% block title %}Apply for Leadership — CAMS{% endblock %}
+{% block page_title %}Apply for Leadership{% endblock %}
+{% block breadcrumb %}
+<span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
+<span>Apply for Leadership</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── TOKENS (mirror base) ─────────────────────────────── */
+:root {
+  --g900:#052e16;--g800:#064e24;--g700:#065f33;
+  --g600:#16a34a;--g500:#22c55e;--g400:#4ade80;
+  --g300:#86efac;--g200:#bbf7d0;--g100:#dcfce7;--g50:#f0fdf4;
+  --s800:#1e293b;--s700:#334155;--s600:#475569;
+  --s500:#64748b;--s300:#cbd5e1;--s200:#e2e8f0;--s100:#f1f5f9;--s50:#f8fafc;
+  --amber:#f59e0b;--amber-l:#fef3c7;
+  --red:#ef4444;--red-l:#fee2e2;
+  --violet:#7c3aed;--violet-l:#ede9fe;
+}
+
+/* ── PAGE WRAP ────────────────────────────────────────── */
+.lp-wrap { max-width: 860px; margin: 0 auto; }
+
+/* ── HERO STRIP ───────────────────────────────────────── */
+.lp-hero {
+  background: linear-gradient(135deg, var(--g900) 0%, var(--g700) 60%, var(--g500) 100%);
+  border-radius: 18px;
+  padding: 2rem 2.25rem;
+  margin-bottom: 1.75rem;
+  display: flex; align-items: center; gap: 1.5rem;
+  position: relative; overflow: hidden;
+}
+.lp-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 55% 90% at 85% 10%, rgba(74,222,128,.15) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 60% at 5% 85%,  rgba(6,95,51,.5)    0%, transparent 70%);
+}
+.lp-hero-icon {
+  width: 62px; height: 62px; border-radius: 18px; flex-shrink: 0;
+  background: rgba(255,255,255,.15);
+  border: 2px solid rgba(255,255,255,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; color: #fff;
+  position: relative; z-index: 1;
+}
+.lp-hero-text { position: relative; z-index: 1; }
+.lp-hero-text h4 {
+  font-family: 'Outfit', sans-serif; font-weight: 800;
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  color: #fff; margin: 0 0 .25rem;
+}
+.lp-hero-text p { color: rgba(255,255,255,.7); font-size: .84rem; margin: 0; }
+
+/* ── ELIGIBILITY NOTICE ───────────────────────────────── */
+.elig-notice {
+  display: flex; align-items: flex-start; gap: 1rem;
+  background: var(--amber-l);
+  border: 1.5px solid #fcd34d;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: .84rem; color: #78350f;
+}
+.elig-notice i { color: var(--amber); font-size: 1.1rem; margin-top: .1rem; flex-shrink: 0; }
+.elig-notice strong { display: block; margin-bottom: .2rem; font-weight: 700; color: #92400e; }
+
+/* ── ELIGIBLE CLUBS GRID ──────────────────────────────── */
+.clubs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.club-card {
+  background: #fff;
+  border: 1.5px solid var(--s200);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+  cursor: pointer;
+}
+.club-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.10);
+  border-color: var(--g300);
+}
+.club-card.selected {
+  border-color: var(--g500);
+  box-shadow: 0 0 0 3px rgba(34,197,94,.18);
+}
+
+.club-card-top {
+  height: 6px;
+  background: linear-gradient(90deg, var(--g700), var(--g400));
+}
+.club-card-body { padding: 1.1rem 1.25rem; }
+
+.club-avatar {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--g800), var(--g500));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Outfit', sans-serif; font-weight: 900;
+  font-size: 1.1rem; color: #fff;
+  margin-bottom: .75rem;
+}
+.club-name {
+  font-family: 'Outfit', sans-serif; font-weight: 800;
+  font-size: .95rem; color: var(--s800);
+  margin-bottom: .3rem;
+}
+.club-meta {
+  font-size: .75rem; color: var(--s500); font-weight: 500;
+  display: flex; flex-wrap: wrap; gap: .5rem;
+}
+.club-meta-item { display: flex; align-items: center; gap: .3rem; }
+.club-meta-item i { color: var(--g500); font-size: .7rem; }
+
+.club-card-check {
+  position: absolute; top: .75rem; right: .75rem;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--g500);
+  display: none; align-items: center; justify-content: center;
+  color: #fff; font-size: .7rem;
+}
+.club-card { position: relative; }
+.club-card.selected .club-card-check { display: flex; }
+
+/* ── APPLICATION FORM CARD ────────────────────────────── */
+.form-card {
+  background: #fff;
+  border: 1.5px solid var(--s200);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 16px rgba(0,0,0,.06);
+}
+.form-card-header {
+  background: var(--g50);
+  padding: .9rem 1.5rem;
+  border-bottom: 2px solid var(--g100);
+  display: flex; align-items: center; gap: .65rem;
+}
+.fch-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--g100); color: var(--g700);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .82rem; flex-shrink: 0;
+}
+.form-card-header h6 {
+  font-family: 'Outfit', sans-serif; font-weight: 700;
+  color: var(--g800); margin: 0; font-size: .9rem;
+}
+.form-card-body { padding: 1.5rem; }
+
+/* ── ROLE SELECTOR ────────────────────────────────────── */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: .65rem;
+  margin-bottom: 1.25rem;
+}
+.role-option { position: relative; }
+.role-option input[type="radio"] { display: none; }
+.role-label {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .45rem; padding: .9rem .75rem;
+  border: 2px solid var(--s200); border-radius: 12px;
+  cursor: pointer; text-align: center;
+  transition: border-color .18s, background .18s, transform .18s;
+  background: #fff;
+}
+.role-label i { font-size: 1.3rem; color: var(--s400); transition: color .18s; }
+.role-label .role-name {
+  font-family: 'Outfit', sans-serif; font-weight: 700;
+  font-size: .8rem; color: var(--s700);
+}
+.role-label .role-desc {
+  font-size: .68rem; color: var(--s500); line-height: 1.4;
+}
+.role-option input:checked + .role-label {
+  border-color: var(--g500);
+  background: var(--g50);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(34,197,94,.15);
+}
+.role-option input:checked + .role-label i { color: var(--g600); }
+.role-option input:checked + .role-label .role-name { color: var(--g700); }
+
+/* ── FORM CONTROLS ────────────────────────────────────── */
+.form-control, .form-select {
+  border: 1.5px solid var(--s200);
+  border-radius: 10px;
+  font-size: .875rem;
+  padding: .65rem .9rem;
+  transition: border-color .18s, box-shadow .18s;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--g500);
+  box-shadow: 0 0 0 3px rgba(34,197,94,.15);
+  outline: none;
+}
+.form-label {
+  font-weight: 700; font-size: .8rem;
+  color: var(--s700); margin-bottom: .35rem;
+  font-family: 'Outfit', sans-serif;
+}
+.form-hint {
+  font-size: .73rem; color: var(--s500); margin-top: .3rem;
+}
+
+/* character counter */
+.char-counter {
+  font-size: .7rem; color: var(--s400); text-align: right;
+  margin-top: .25rem; font-family: 'Outfit', sans-serif; font-weight: 700;
+}
+.char-counter.warn  { color: var(--amber); }
+.char-counter.limit { color: var(--red); }
+
+/* ── REQUIREMENTS CHECKLIST ───────────────────────────── */
+.req-list { list-style: none; padding: 0; margin: 0; }
+.req-item {
+  display: flex; align-items: flex-start; gap: .7rem;
+  padding: .55rem 0; border-bottom: 1px solid var(--s100); font-size: .84rem;
+}
+.req-item:last-child { border-bottom: none; }
+.req-icon {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: .65rem;
+  margin-top: .05rem;
+}
+.req-met   { background: var(--g100); color: var(--g700); }
+.req-unmet { background: var(--red-l); color: var(--red); }
+.req-text  { color: var(--s700); font-weight: 500; }
+.req-text strong { color: var(--s800); display: block; margin-bottom: .05rem; }
+
+/* ── SUBMIT BAR ───────────────────────────────────────── */
+.submit-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+  background: #fff; border: 1.5px solid var(--s200);
+  border-radius: 16px; padding: 1.1rem 1.5rem;
+}
+.submit-bar .submit-hint { font-size: .8rem; color: var(--s500); }
+.submit-bar .submit-hint strong { color: var(--s800); display: block; margin-bottom: .15rem; }
+
+.btn-apply {
+  display: inline-flex; align-items: center; gap: .55rem;
+  padding: .7rem 2rem; border-radius: 10px;
+  background: linear-gradient(135deg, var(--g700), var(--g500));
+  color: #fff; font-family: 'Outfit', sans-serif;
+  font-weight: 800; font-size: .9rem;
+  border: none; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(34,197,94,.3);
+  transition: all .2s; text-decoration: none;
+}
+.btn-apply:hover {
+  background: linear-gradient(135deg, var(--g800), var(--g600));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(34,197,94,.4);
+  color: #fff;
+}
+.btn-apply:disabled {
+  opacity: .45; cursor: not-allowed;
+  transform: none; box-shadow: none;
+}
+
+/* ── NO ELIGIBLE STATE ────────────────────────────────── */
+.no-eligible {
+  text-align: center; padding: 3.5rem 2rem;
+  background: #fff; border-radius: 18px;
+  border: 1.5px solid var(--s200);
+}
+.no-eligible i {
+  font-size: 3rem; color: var(--g300);
+  display: block; margin-bottom: 1rem;
+}
+.no-eligible h5 {
+  font-family: 'Outfit', sans-serif; font-weight: 800;
+  color: var(--s800); margin-bottom: .5rem;
+}
+.no-eligible p { color: var(--s500); font-size: .875rem; max-width: 400px; margin: 0 auto 1.5rem; }
+
+/* ── PAST APPLICATIONS ────────────────────────────────── */
+.app-row {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .75rem 1.25rem; border-bottom: 1px solid var(--s100);
+  transition: background .15s;
+}
+.app-row:last-child { border-bottom: none; }
+.app-row:hover { background: var(--s50); }
+.app-club-dot {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--g800), var(--g500));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Outfit', sans-serif; font-weight: 900;
+  font-size: .9rem; color: #fff;
+}
+.app-info { flex: 1; }
+.app-club-name { font-weight: 700; font-size: .88rem; color: var(--s800); }
+.app-role      { font-size: .75rem; color: var(--s500); margin-top: .1rem; }
+.app-status-pill {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .65rem; border-radius: 99px;
+  font-size: .65rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+}
+.pill-pending  { background: var(--amber-l); color: #92400e; }
+.pill-approved { background: var(--g100);    color: var(--g700); }
+.pill-rejected { background: var(--red-l);   color: #991b1b; }
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.anim { animation: fadeUp .4s ease both; }
+.d1{animation-delay:.05s} .d2{animation-delay:.10s}
+.d3{animation-delay:.15s} .d4{animation-delay:.20s}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lp-wrap">
+
+  <!-- ── HERO ──────────────────────────────────────────── -->
+  <div class="lp-hero anim d1">
+    <div class="lp-hero-icon"><i class="fas fa-crown"></i></div>
+    <div class="lp-hero-text">
+      <h4>Apply for a Leadership Position</h4>
+      <p>
+        Take on a leadership role in your club — President, Vice President, Secretary or Treasurer.
+        You must have been an active member for at least 1 year to apply.
+      </p>
+    </div>
+  </div>
+
+  {% if leader_eligible_clubs %}
+
+    <!-- ── ELIGIBILITY NOTICE ──────────────────────────── -->
+    <div class="elig-notice anim d2">
+      <i class="fas fa-circle-info"></i>
+      <div>
+        <strong>You are eligible to apply in {{ leader_eligible_clubs|length }} club{{ 's' if leader_eligible_clubs|length != 1 }}</strong>
+        Applications are reviewed by the Dean and club administrators. You will be notified of the outcome.
+      </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('student.submit_leadership_application') }}" id="leaderForm">
+
+      <!-- ── STEP 1 — SELECT CLUB ─────────────────────── -->
+      <div class="form-card anim d2">
+        <div class="form-card-header">
+          <div class="fch-icon"><i class="fas fa-shield-halved"></i></div>
+          <h6>Step 1 — Select a Club</h6>
+        </div>
+        <div class="form-card-body">
+          <input type="hidden" name="club_id" id="clubIdInput" required>
+          <div class="clubs-grid">
+            {% for club in leader_eligible_clubs %}
+            <div class="club-card" onclick="selectClub({{ club.id }}, this)">
+              <div class="club-card-check"><i class="fas fa-check"></i></div>
+              <div class="club-card-top"></div>
+              <div class="club-card-body">
+                <div class="club-avatar">{{ club.name[0]|upper }}</div>
+                <div class="club-name">{{ club.name }}</div>
+                <div class="club-meta">
+                  <span class="club-meta-item">
+                    <i class="fas fa-users"></i>
+                    {% if club.member_count is defined %}{{ club.member_count }} members{% else %}Active Club{% endif %}
+                  </span>
+                  {% if club.category %}
+                  <span class="club-meta-item">
+                    <i class="fas fa-tag"></i> {{ club.category }}
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <p id="clubError" style="display:none;color:var(--red);font-size:.8rem;font-weight:600;">
+            <i class="fas fa-exclamation-circle me-1"></i>Please select a club to continue.
+          </p>
+        </div>
+      </div>
+
+      <!-- ── STEP 2 — CHOOSE ROLE ─────────────────────── -->
+      <div class="form-card anim d3">
+        <div class="form-card-header">
+          <div class="fch-icon"><i class="fas fa-crown"></i></div>
+          <h6>Step 2 — Choose a Position</h6>
+        </div>
+        <div class="form-card-body">
+          <div class="role-grid">
+            <div class="role-option">
+              <input type="radio" name="position" id="pos-president" value="president" required>
+              <label class="role-label" for="pos-president">
+                <i class="fas fa-crown"></i>
+                <span class="role-name">President</span>
+                <span class="role-desc">Lead the club, chair meetings &amp; represent members</span>
+              </label>
+            </div>
+            <div class="role-option">
+              <input type="radio" name="position" id="pos-vp" value="vice_president">
+              <label class="role-label" for="pos-vp">
+                <i class="fas fa-star-half-stroke"></i>
+                <span class="role-name">Vice President</span>
+                <span class="role-desc">Support the president &amp; stand in when needed</span>
+              </label>
+            </div>
+            <div class="role-option">
+              <input type="radio" name="position" id="pos-sec" value="secretary">
+              <label class="role-label" for="pos-sec">
+                <i class="fas fa-file-pen"></i>
+                <span class="role-name">Secretary</span>
+                <span class="role-desc">Record minutes, handle communications &amp; admin</span>
+              </label>
+            </div>
+            <div class="role-option">
+              <input type="radio" name="position" id="pos-treas" value="treasurer">
+              <label class="role-label" for="pos-treas">
+                <i class="fas fa-coins"></i>
+                <span class="role-name">Treasurer</span>
+                <span class="role-desc">Manage finances, fees &amp; financial reporting</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STEP 3 — MOTIVATION + DETAILS ─────────────── -->
+      <div class="form-card anim d3">
+        <div class="form-card-header">
+          <div class="fch-icon"><i class="fas fa-align-left"></i></div>
+          <h6>Step 3 — Your Application</h6>
+        </div>
+        <div class="form-card-body">
+          <div class="row g-3">
+
+            <div class="col-12">
+              <label class="form-label" for="motivation">
+                Motivation Statement <span class="text-danger">*</span>
+              </label>
+              <textarea
+                id="motivation"
+                name="motivation"
+                class="form-control"
+                rows="5"
+                maxlength="800"
+                placeholder="Why do you want to take on this role? What will you bring to the club? What are your goals for the term?"
+                required
+                oninput="countChars('motivation','motivCount',800)"
+              ></textarea>
+              <div class="char-counter" id="motivCount">0 / 800</div>
+              <div class="form-hint">Minimum 80 characters. Be specific about your plans.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="experience">
+                Relevant Experience <span class="text-danger">*</span>
+              </label>
+              <textarea
+                id="experience"
+                name="experience"
+                class="form-control"
+                rows="3"
+                maxlength="400"
+                placeholder="Previous leadership, skills or achievements relevant to this role…"
+                required
+                oninput="countChars('experience','expCount',400)"
+              ></textarea>
+              <div class="char-counter" id="expCount">0 / 400</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="goals">
+                Goals for the Term <span class="text-danger">*</span>
+              </label>
+              <textarea
+                id="goals"
+                name="goals"
+                class="form-control"
+                rows="3"
+                maxlength="400"
+                placeholder="What specific goals or improvements would you like to achieve this term?"
+                required
+                oninput="countChars('goals','goalsCount',400)"
+              ></textarea>
+              <div class="char-counter" id="goalsCount">0 / 400</div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label" for="availability">
+                Availability Commitment <span class="text-danger">*</span>
+              </label>
+              <select id="availability" name="availability" class="form-select" required>
+                <option value="" disabled selected>Select your availability…</option>
+                <option value="full">Full commitment — available for all meetings &amp; events</option>
+                <option value="most">Available for most meetings with occasional exceptions</option>
+                <option value="limited">Limited — will communicate schedule in advance</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ELIGIBILITY CHECKLIST ─────────────────────── -->
+      <div class="form-card anim d4">
+        <div class="form-card-header">
+          <div class="fch-icon"><i class="fas fa-clipboard-check"></i></div>
+          <h6>Eligibility Confirmation</h6>
+        </div>
+        <div class="form-card-body">
+          <ul class="req-list">
+            <li class="req-item">
+              <span class="req-icon req-met"><i class="fas fa-check"></i></span>
+              <div class="req-text">
+                <strong>Active Membership (1+ year)</strong>
+                You have been an active member of the selected club for the required period.
+              </div>
+            </li>
+            <li class="req-item">
+              <span class="req-icon req-met"><i class="fas fa-check"></i></span>
+              <div class="req-text">
+                <strong>Good Standing</strong>
+                Your membership is in good standing with no outstanding dues.
+              </div>
+            </li>
+            <li class="req-item">
+              <span class="req-icon req-met"><i class="fas fa-check"></i></span>
+              <div class="req-text">
+                <strong>Enrolled Student</strong>
+                You are currently enrolled at the institution.
+              </div>
+            </li>
+          </ul>
+          <!-- Declaration -->
+          <div style="background:var(--g50);border:1.5px solid var(--g200);border-radius:10px;padding:.9rem 1rem;margin-top:1rem;">
+            <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;font-size:.84rem;color:var(--s700);">
+              <input type="checkbox" id="declaration" name="declaration" required
+                     style="margin-top:.15rem;accent-color:var(--g600);width:15px;height:15px;flex-shrink:0;">
+              <span>
+                I confirm that all information provided in this application is accurate and truthful.
+                I understand that false information may result in disqualification.
+                I agree to fulfil the responsibilities of the position if appointed.
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SUBMIT ──────────────────────────────────────── -->
+      <div class="submit-bar anim d4">
+        <div class="submit-hint">
+          <strong>Ready to submit?</strong>
+          Your application will be reviewed by the Dean and club administrators.
+          You will be notified by email and in-app notification.
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-secondary" style="border-radius:10px;">
+            Cancel
+          </a>
+          <button type="submit" class="btn-apply" id="submitBtn">
+            <i class="fas fa-paper-plane"></i>
+            Submit Application
+          </button>
+        </div>
+      </div>
+
+    </form>
+
+  {% else %}
+  <!-- ── NO ELIGIBLE CLUBS ──────────────────────────────── -->
+  <div class="no-eligible anim d2">
+    <i class="fas fa-hourglass-half"></i>
+    <h5>Not Yet Eligible</h5>
+    <p>
+      To apply for a leadership position, you must be an active member of a club for
+      <strong>at least 1 year</strong>. Keep participating and check back later!
+    </p>
+    <a href="{{ url_for('student.list_clubs') }}" class="btn-apply" style="display:inline-flex;">
+      <i class="fas fa-shield-halved"></i> Browse Clubs
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- ── PAST APPLICATIONS ──────────────────────────────── -->
+  {% if past_applications is defined and past_applications %}
+  <div class="form-card anim d4" style="margin-top:1.5rem;">
+    <div class="form-card-header">
+      <div class="fch-icon"><i class="fas fa-clock-rotate-left"></i></div>
+      <h6>Your Past Applications</h6>
+    </div>
+    {% for app in past_applications %}
+    <div class="app-row">
+      <div class="app-club-dot">{{ app.club.name[0]|upper }}</div>
+      <div class="app-info">
+        <div class="app-club-name">{{ app.club.name }}</div>
+        <div class="app-role">{{ app.position|replace('_',' ')|title }} · Applied {{ app.created_at.strftime('%d %b %Y') }}</div>
+      </div>
+      <span class="app-status-pill pill-{{ app.status }}">
+        {% if app.status == 'pending' %}<i class="fas fa-hourglass-half"></i>
+        {% elif app.status == 'approved' %}<i class="fas fa-check"></i>
+        {% else %}<i class="fas fa-times"></i>{% endif %}
+        {{ app.status|capitalize }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div><!-- end lp-wrap -->
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+/* Club selection */
+function selectClub(id, card) {
+  document.querySelectorAll('.club-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  document.getElementById('clubIdInput').value = id;
+  document.getElementById('clubError').style.display = 'none';
+}
+
+/* Character counter */
+function countChars(textareaId, counterId, max) {
+  const len = document.getElementById(textareaId).value.length;
+  const el  = document.getElementById(counterId);
+  el.textContent = len + ' / ' + max;
+  el.className = 'char-counter' + (len > max * 0.9 ? (len >= max ? ' limit' : ' warn') : '');
+}
+
+/* Form validation before submit */
+document.getElementById('leaderForm')?.addEventListener('submit', function(e) {
+  const clubId = document.getElementById('clubIdInput').value;
+  if (!clubId) {
+    e.preventDefault();
+    document.getElementById('clubError').style.display = 'block';
+    document.getElementById('clubError').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const motivation = document.getElementById('motivation').value.trim();
+  if (motivation.length < 80) {
+    e.preventDefault();
+    document.getElementById('motivation').focus();
+    alert('Your motivation statement must be at least 80 characters.');
+    return;
+  }
+
+  /* Show loading state */
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…';
+});
+</script>
+{% endblock %}

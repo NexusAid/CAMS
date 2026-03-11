@@ -1,0 +1,149 @@
+{% extends "base/club_leader.html" %}
+{% block title %}Dashboard | CAMS{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+<div class="content-header rounded mb-4">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-crown me-2"></i> Club Leader Dashboard
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Dashboard</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- Small Boxes -->
+    <div class="row">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-success text-white" style="border-radius:15px; overflow:hidden;">
+                <div class="inner p-4">
+                    <h3>Members</h3>
+                    <p class="mb-0">Manage club members</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-users" style="color:rgba(255,255,255,0.3); font-size:4rem; position:absolute; right:20px; top:20px;"></i>
+                </div>
+                <a href="{{ url_for('club_leader.members') }}" class="small-box-footer d-block text-center py-2" style="background:rgba(0,0,0,0.1); color:white; text-decoration:none;">
+                    View Members <i class="fas fa-arrow-circle-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-info text-white" style="border-radius:15px; overflow:hidden;">
+                <div class="inner p-4">
+                    <h3>Events</h3>
+                    <p class="mb-0">Create & manage events</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-calendar-alt" style="color:rgba(255,255,255,0.3); font-size:4rem; position:absolute; right:20px; top:20px;"></i>
+                </div>
+                <a href="{{ url_for('club_leader.events') }}" class="small-box-footer d-block text-center py-2" style="background:rgba(0,0,0,0.1); color:white; text-decoration:none;">
+                    View Events <i class="fas fa-arrow-circle-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-12">
+            <div class="small-box bg-warning text-white" style="border-radius:15px; overflow:hidden;">
+                <div class="inner p-4">
+                    <h3 class="text-white">Reports</h3>
+                    <p class="mb-0 text-white">Attendance & activities</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-chart-bar" style="color:rgba(255,255,255,0.3); font-size:4rem; position:absolute; right:20px; top:20px;"></i>
+                </div>
+                <a href="{{ url_for('club_leader.reports') }}" class="small-box-footer d-block text-center py-2" style="background:rgba(0,0,0,0.1); color:white; text-decoration:none;">
+                    View Reports <i class="fas fa-arrow-circle-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card card-primary card-outline">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-user-clock mr-2" style="color:var(--g600);"></i> Pending Join Requests</h5>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% if pending_requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background-color: var(--g50);">
+                                <tr>
+                                    <th class="border-0 px-4 py-3">Applicant Name</th>
+                                    <th class="border-0 py-3">Email Address</th>
+                                    <th class="border-0 py-3">Registration ID</th>
+                                    <th class="border-0 py-3">Requested On</th>
+                                    <th class="border-0 py-3">Status</th>
+                                    <th class="border-0 py-3 text-right pr-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in pending_requests %}
+                                <tr>
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mr-3" style="width:40px; height:40px;">
+                                                <i class="fas fa-user text-secondary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 font-weight-bold">{{ request.user.full_name }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 text-muted">{{ request.user.email }}</td>
+                                    <td class="py-3">
+                                        <span style="font-family:monospace; background:var(--slate100); padding:4px 8px; border-radius:4px;">
+                                            {{ request.user.registration_number }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 text-muted">
+                                        <i class="far fa-calendar-alt mr-1"></i> {{ request.join_date.strftime('%d %b %Y') }}
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="badge" style="background-color:#fef3c7; color:#ea580c; border:1px solid #fde68a; font-weight:600; padding:6px 12px; border-radius:20px;">
+                                            <i class="fas fa-circle mr-1" style="font-size:8px; vertical-align:middle;"></i> Pending
+                                        </span>
+                                    </td>
+                                    <td class="py-3 text-right pr-4">
+                                        <a href="{{ url_for('club_leader.approve_member', id=request.id) }}" class="btn btn-sm btn-quick-approve text-white mr-2" title="Approve Member">
+                                            <i class="fas fa-check"></i> Approve
+                                        </a>
+                                        <a href="{{ url_for('club_leader.reject_member', id=request.id) }}" class="btn btn-sm btn-quick-logout text-white" title="Reject Member">
+                                            <i class="fas fa-times"></i> Reject
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center p-5">
+                        <div class="mb-3">
+                            <i class="fas fa-user-check text-success" style="font-size: 3rem; opacity:0.8;"></i>
+                        </div>
+                        <h5 class="text-secondary font-weight-bold">No Pending Requests</h5>
+                        <p class="text-muted">You're all caught up! No new members are currently waiting for approval.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

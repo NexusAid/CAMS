@@ -1,0 +1,324 @@
+{% extends "base/admin_base.html" %}
+
+{% block title %}Clubs Management - CAMS Admin{% endblock %}
+
+{% block page_title %}Clubs Management{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard_home') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Clubs</li>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <div class="btn-group">
+
+            <a href="{{ url_for('dashboard.pending_clubs') }}" class="btn btn-warning">
+                <i class="fas fa-clock"></i> Pending Approvals
+                {% set pending_count = clubs|selectattr('status', 'equalto', 'pending')|list|length %}
+                {% if pending_count > 0 %}
+                <span class="badge badge-light">{{ pending_count }}</span>
+                {% endif %}
+            </a>
+            <a href="#" class="btn btn-info">
+                <i class="fas fa-chart-bar"></i> Reports
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search clubs..." id="searchInput">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Summary Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ clubs|selectattr('status', 'equalto', 'active')|list|length }}</h3>
+                <p>Active Clubs</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ clubs|selectattr('status', 'equalto', 'warning')|list|length }}</h3>
+                <p>Warning</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ clubs|selectattr('status', 'equalto', 'pending_deregistration')|list|length }}</h3>
+                <p>Pending Deregistration</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-trash"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-secondary">
+            <div class="inner">
+                <h3>{{ clubs|selectattr('status', 'equalto', 'deregistered')|list|length }}</h3>
+                <p>Deregistered</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-ban"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">All Registered Clubs</h3>
+                <div class="card-tools">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-tool dropdown-toggle" data-toggle="dropdown">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="#" data-filter="all">All Clubs</a>
+                            <a class="dropdown-item" href="#" data-filter="active">Active Only</a>
+                            <a class="dropdown-item" href="#" data-filter="warning">With Warnings</a>
+                            <a class="dropdown-item" href="#" data-filter="pending">Pending</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="clubsTable" class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Club Name</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Members</th>
+                            <th>Patron</th>
+                            <th>Last Check</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for club in clubs %}
+                        <tr data-status="{{ club.status }}">
+                            <td>{{ club.id }}</td>
+                            <td>
+                                <strong>{{ club.name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ club.description|truncate(50) if club.description else 'No description' }}</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-info">{{ club.category }}</span>
+                            </td>
+                            <td>
+                                {% if club.status == 'active' %}
+                                    <span class="badge badge-success">Active</span>
+                                {% elif club.status == 'pending' %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% elif club.status == 'warning' %}
+                                    <span class="badge badge-warning">Warning</span>
+                                    <small class="d-block text-danger">Compliance Issues</small>
+                                {% elif club.status == 'pending_deregistration' %}
+                                    <span class="badge badge-danger">Pending Deregistration</span>
+                                {% elif club.status == 'deregistered' %}
+                                    <span class="badge badge-secondary">Deregistered</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ club.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-light">{{ club.member_count }} members</span>
+                                {% if club.member_count < club.min_members_required %}
+                                <br><small class="text-danger">Below minimum ({{ club.min_members_required }})</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if club.patron_name %}
+                                <small>{{ club.patron_name }}</small>
+                                <br><small class="text-muted">{{ club.patron_department }}</small>
+                                {% else %}
+                                <span class="text-danger">No patron</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if club.last_compliance_check %}
+                                {{ club.last_compliance_check.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                <span class="text-muted">Never</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('dashboard.club_details', club_id=club.id) }}" 
+                                       class="btn btn-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('dashboard.edit_club', club_id=club.id) }}" 
+                                       class="btn btn-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-secondary dropdown-toggle" 
+                                                data-toggle="dropdown" title="More Actions">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#">
+                                                <i class="fas fa-users"></i> View Members
+                                            </a>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="fas fa-file-alt"></i> Documents
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            {% if club.status == 'pending' %}
+                                            <a class="dropdown-item text-success" href="#">
+                                                <i class="fas fa-check"></i> Approve
+                                            </a>
+                                            {% elif club.status == 'pending_deregistration' %}
+                                            <a class="dropdown-item text-danger" href="#">
+                                                <i class="fas fa-trash"></i> Deregister
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-2"></i><br>
+                                No clubs found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer clearfix">
+                <div class="float-right">
+                    <span class="text-muted">Showing {{ clubs|length }} clubs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Club Categories</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Registration Timeline</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="timelineChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $(document).ready(function() {
+        // Search functionality
+        $('#searchButton').click(function() {
+            searchClubs();
+        });
+        
+        $('#searchInput').on('keyup', function(e) {
+            if (e.key === 'Enter') {
+                searchClubs();
+            }
+        });
+        
+        function searchClubs() {
+            var searchText = $('#searchInput').val().toLowerCase();
+            $('#clubsTable tbody tr').each(function() {
+                var rowText = $(this).text().toLowerCase();
+                $(this).toggle(rowText.indexOf(searchText) > -1);
+            });
+        }
+        
+        // Filter functionality
+        $('[data-filter]').click(function(e) {
+            e.preventDefault();
+            var filter = $(this).data('filter');
+            
+            $('#clubsTable tbody tr').each(function() {
+                if (filter === 'all') {
+                    $(this).show();
+                } else {
+                    var status = $(this).data('status');
+                    $(this).toggle(status === filter);
+                }
+            });
+            
+            // Update active filter
+            $('[data-filter]').removeClass('active');
+            $(this).addClass('active');
+        });
+        
+        // Category Chart
+        var categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        var categories = {};
+        {% for club in clubs %}
+            var cat = '{{ club.category }}' || 'Other';
+            categories[cat] = (categories[cat] || 0) + 1;
+        {% endfor %}
+        
+        var categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(categories),
+                datasets: [{
+                    data: Object.values(categories),
+                    backgroundColor: [
+                        '#007bff', '#28a745', '#ffc107', '#dc3545',
+                        '#6c757d', '#17a2b8', '#6610f2', '#e83e8c'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

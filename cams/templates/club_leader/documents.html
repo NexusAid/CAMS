@@ -1,0 +1,165 @@
+{% extends "base/club_leader.html" %}
+{% block title %}Club Documents | CAMS{% endblock %}
+
+{% block content %}
+<div class="content-header rounded mb-4">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-folder-open me-2"></i> Club Documents
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{{ url_for('club_leader.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Documents</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card card-outline card-primary shadow-sm" style="border-radius:15px; border:none;">
+                <div class="card-body p-4 bg-light" style="border-radius:15px;">
+                    <form method="GET" action="{{ url_for('club_leader.documents') }}" class="form-inline d-flex align-items-center">
+                        <label for="club_id" class="font-weight-bold text-secondary mr-3 mb-0">Select Club to Manage:</label>
+                        <select class="form-control custom-select mr-3" name="club_id" onchange="this.form.submit()" style="border-radius:8px; min-width:250px;">
+                            {% for lead in leaderships %}
+                                <option value="{{ lead.club_id }}" {% if selected_club.id == lead.club_id %}selected{% endif %}>
+                                    {{ lead.club.name }} ({{ lead.role|capitalize }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <noscript><button type="submit" class="btn btn-primary">Go</button></noscript>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Constitution -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm" style="border-radius:15px; overflow:hidden;">
+                <div class="card-header bg-white border-bottom-0 pt-4 text-center">
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width:70px; height:70px;">
+                        <i class="fas fa-book text-success fa-2x"></i>
+                    </div>
+                    <h5 class="font-weight-bold mb-1">Club Constitution</h5>
+                    {% if selected_club.has_constitution %}
+                        <span class="badge bg-success text-white">Uploaded</span>
+                    {% else %}
+                        <span class="badge bg-danger text-white">Missing</span>
+                    {% endif %}
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted small">Upload the official signed constitution for {{ selected_club.name }}. Formats: PDF, DOCX.</p>
+                </div>
+                <div class="card-footer bg-white border-top-0 pb-4">
+                    <form action="{{ url_for('club_leader.documents', club_id=selected_club.id) }}" method="POST" enctype="multipart/form-data">
+                        <div class="custom-file mb-3">
+                            <input type="file" class="custom-file-input" id="constitution" name="constitution" accept=".pdf,.docx,.doc" required>
+                            <label class="custom-file-label" for="constitution">Choose file</label>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block rounded-pill">
+                            <i class="fas fa-upload mr-1"></i> Upload
+                        </button>
+                    </form>
+                    {% if selected_club.has_constitution %}
+                    <a href="{{ url_for('static', filename=selected_club.constitution_file) }}" target="_blank" class="btn btn-outline-success btn-block rounded-pill mt-2">
+                        <i class="fas fa-download mr-1"></i> View Current
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Meeting Minutes -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm" style="border-radius:15px; overflow:hidden;">
+                <div class="card-header bg-white border-bottom-0 pt-4 text-center">
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width:70px; height:70px;">
+                        <i class="fas fa-file-alt text-info fa-2x"></i>
+                    </div>
+                    <h5 class="font-weight-bold mb-1">Meeting Minutes</h5>
+                    {% if selected_club.has_minutes %}
+                        <span class="badge bg-success text-white">Uploaded</span>
+                    {% else %}
+                        <span class="badge bg-danger text-white">Missing</span>
+                    {% endif %}
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted small">Upload the latest approved meeting minutes for compliance tracking.</p>
+                </div>
+                <div class="card-footer bg-white border-top-0 pb-4">
+                    <form action="{{ url_for('club_leader.documents', club_id=selected_club.id) }}" method="POST" enctype="multipart/form-data">
+                        <div class="custom-file mb-3">
+                            <input type="file" class="custom-file-input" id="minutes" name="minutes" accept=".pdf,.docx,.doc" required>
+                            <label class="custom-file-label" for="minutes">Choose file</label>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-block rounded-pill text-white">
+                            <i class="fas fa-upload mr-1"></i> Upload
+                        </button>
+                    </form>
+                    {% if selected_club.has_minutes %}
+                    <a href="{{ url_for('static', filename=selected_club.minutes_file) }}" target="_blank" class="btn btn-outline-info btn-block rounded-pill mt-2">
+                        <i class="fas fa-download mr-1"></i> View Current
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Patron Letter -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm" style="border-radius:15px; overflow:hidden;">
+                <div class="card-header bg-white border-bottom-0 pt-4 text-center">
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width:70px; height:70px;">
+                        <i class="fas fa-envelope-open-text text-warning fa-2x"></i>
+                    </div>
+                    <h5 class="font-weight-bold mb-1">Patron Letter</h5>
+                    {% if selected_club.has_patron_letter %}
+                        <span class="badge bg-success text-white">Uploaded</span>
+                    {% else %}
+                        <span class="badge bg-danger text-white">Missing</span>
+                    {% endif %}
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted small">Upload the official patron acceptance/recommendation letter.</p>
+                </div>
+                <div class="card-footer bg-white border-top-0 pb-4">
+                    <form action="{{ url_for('club_leader.documents', club_id=selected_club.id) }}" method="POST" enctype="multipart/form-data">
+                        <div class="custom-file mb-3">
+                            <input type="file" class="custom-file-input" id="patron_letter" name="patron_letter" accept=".pdf,.docx,.doc" required>
+                            <label class="custom-file-label" for="patron_letter">Choose file</label>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-block rounded-pill text-white">
+                            <i class="fas fa-upload mr-1"></i> Upload
+                        </button>
+                    </form>
+                    {% if selected_club.has_patron_letter %}
+                    <a href="{{ url_for('static', filename=selected_club.patron_letter_file) }}" target="_blank" class="btn btn-outline-warning btn-block rounded-pill mt-2">
+                        <i class="fas fa-download mr-1"></i> View Current
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update custom file input label on selection
+    $(".custom-file-input").on("change", function() {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    });
+</script>
+{% endblock %}

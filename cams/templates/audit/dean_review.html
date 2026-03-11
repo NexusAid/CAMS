@@ -1,0 +1,534 @@
+{% extends "base/admin_base.html" %}
+{% block title %}Review: {{ report.club.name }} {{ report.period.value }} {{ report.year }}{% endblock %}
+{% block page_title %}Audit Review{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('audit.dean_queue') }}">Review Queue</a></li>
+<li class="breadcrumb-item active">{{ report.club.name }} — {{ report.period.value }} {{ report.year }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --g800:#064e24;--g700:#065f33;--g600:#16a34a;--g500:#22c55e;
+  --g400:#4ade80;--g100:#dcfce7;--g50:#f0fdf4;
+  --s800:#1e293b;--s700:#334155;--s500:#64748b;--s300:#cbd5e1;--s200:#e2e8f0;--s50:#f8fafc;
+}
+
+/* ── Layout ───────────────────────────── */
+.review-wrap { max-width: 1000px; margin: 0 auto; }
+
+/* ── Hero header ──────────────────────── */
+.review-hero {
+  background: linear-gradient(135deg, var(--g800), var(--g600));
+  border-radius: 18px; padding: 1.75rem 2rem; margin-bottom: 1.75rem;
+  display: flex; align-items: center; gap: 1.25rem; color: #fff;
+}
+.hero-avatar {
+  width: 60px; height: 60px; border-radius: 16px; flex-shrink: 0;
+  background: rgba(255,255,255,.2); border: 3px solid rgba(255,255,255,.35);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 1.6rem; color: #fff;
+}
+.hero-title { font-family:'Outfit',sans-serif; font-weight:800; font-size:1.15rem; margin:0; }
+.hero-meta  { color:rgba(255,255,255,.72); font-size:.84rem; margin:.2rem 0 0; }
+
+.status-pill {
+  display:inline-flex; align-items:center; gap:.3rem;
+  padding:.22rem .75rem; border-radius:99px;
+  font-size:.68rem; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+}
+.pill-submitted    { background:rgba(255,255,255,.2); color:#fff; }
+.pill-under_review { background:rgba(245,158,11,.35); color:#fef3c7; }
+.pill-approved     { background:rgba(74,222,128,.3);  color:#d1fae5; }
+.pill-rejected     { background:rgba(239,68,68,.3);   color:#fee2e2; }
+
+/* ── Action bar (top of right col) ──── */
+.action-bar {
+  display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.25rem;
+}
+.action-bar .btn { border-radius: 10px; font-weight: 700; font-size: .83rem; }
+
+/* ── Data cards ───────────────────────── */
+.dc {
+  background:#fff; border-radius:14px;
+  box-shadow:0 2px 12px rgba(0,0,0,.07);
+  overflow:hidden; margin-bottom:1.1rem;
+}
+.dc-hdr {
+  background:var(--g50); padding:.8rem 1.3rem;
+  border-bottom:2px solid var(--g100);
+  display:flex; align-items:center; gap:.6rem;
+}
+.dc-hdr i   { color:var(--g500); }
+.dc-hdr h6  { font-family:'Outfit',sans-serif; font-weight:700;
+               color:var(--g800); margin:0; font-size:.88rem; }
+.dc-body    { padding:1.1rem 1.3rem; }
+
+/* Stat grid */
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:.65rem; }
+.stat-box  { background:var(--g50); border-radius:10px; padding:.65rem .9rem; border:1.5px solid var(--g100); }
+.stat-box .val { font-family:'Outfit',sans-serif; font-weight:900; font-size:1.5rem; color:var(--g800); line-height:1; }
+.stat-box .key { font-size:.68rem; font-weight:700; color:var(--s500); text-transform:uppercase; letter-spacing:.06em; margin-top:.2rem; }
+
+/* Finance table */
+.fin-tbl { width:100%; font-size:.85rem; }
+.fin-tbl td { padding:.42rem .5rem; border-bottom:1px solid var(--s200); }
+.fin-tbl tr:last-child td { border-bottom:none; }
+.fin-tbl .fk { color:var(--s700); font-weight:600; }
+.fin-tbl .fv { text-align:right; font-weight:700; color:var(--s800); }
+.fin-tbl .ft td { background:var(--g50); font-weight:800; border-top:2px solid var(--g300); }
+
+/* Compliance */
+.chk-row { display:flex; justify-content:space-between; align-items:center;
+           padding:.38rem 0; border-bottom:1px solid var(--s200); font-size:.85rem; }
+.chk-row:last-child { border-bottom:none; }
+.chk-yes { background:var(--g100); color:var(--g700); }
+.chk-no  { background:#fee2e2;     color:#991b1b; }
+.chk-pill { display:inline-flex; align-items:center; gap:.25rem;
+            padding:.15rem .55rem; border-radius:99px; font-size:.68rem; font-weight:700; }
+
+.score-bar-wrap { background:var(--s200); border-radius:99px; height:8px; overflow:hidden; margin-top:.5rem; }
+.score-bar      { height:100%; border-radius:99px;
+                  background:linear-gradient(90deg,var(--g700),var(--g500));
+                  transition:width 1.1s cubic-bezier(.34,1.56,.64,1); }
+
+/* ── Decision panel ───────────────────── */
+.decision-panel {
+  background:#fff; border-radius:18px;
+  box-shadow:0 4px 28px rgba(0,0,0,.1);
+  overflow:hidden; margin-bottom:1.25rem;
+}
+.dp-hdr {
+  background:linear-gradient(135deg,var(--s800),var(--s700));
+  padding:1.1rem 1.5rem;
+}
+.dp-hdr h5 { font-family:'Outfit',sans-serif; font-weight:800; color:#fff; margin:0; font-size:.98rem; }
+.dp-hdr p  { color:#94a3b8; font-size:.8rem; margin:.2rem 0 0; }
+.dp-body   { padding:1.5rem; }
+
+.choice-row { display:flex; gap:.7rem; margin-bottom:1.25rem; }
+.choice-btn {
+  flex:1; padding:1rem; border-radius:14px; border:2px solid var(--s300);
+  cursor:pointer; text-align:center; transition:all .2s;
+  background:#fff; font-family:'DM Sans',sans-serif;
+}
+.choice-btn i    { display:block; font-size:1.5rem; margin-bottom:.35rem; }
+.choice-btn .cb-label { font-weight:700; font-size:.88rem; display:block; }
+.choice-btn .cb-sub   { font-size:.7rem; opacity:.65; display:block; margin-top:.1rem; }
+
+.approve-btn { border-color:var(--g300); color:var(--g700); }
+.approve-btn:hover, .approve-btn.sel { background:var(--g600); border-color:var(--g600); color:#fff; }
+.reject-btn  { border-color:#fca5a5; color:#b91c1c; }
+.reject-btn:hover,  .reject-btn.sel  { background:#ef4444;   border-color:#ef4444;   color:#fff; }
+
+.form-control:focus {
+  border-color:var(--g500)!important;
+  box-shadow:0 0 0 3px rgba(34,197,94,.15)!important;
+}
+.form-label { font-weight:600; font-size:.83rem; color:var(--s700); margin-bottom:.3rem; }
+
+/* ── Approved card ────────────────────── */
+.approved-card {
+  background:var(--g50); border:2px solid var(--g300);
+  border-radius:16px; padding:1.5rem; margin-bottom:1.25rem;
+}
+.approved-card .big-check { font-size:2.5rem; color:var(--g500); margin-bottom:.5rem; display:block; }
+.approved-card h6 { font-family:'Outfit',sans-serif; font-weight:800; color:var(--g800); }
+.approved-card .meta { font-size:.82rem; color:var(--s500); margin-bottom:1.1rem; }
+
+/* ── Rejected card ────────────────────── */
+.rejected-card {
+  background:#fff1f2; border:2px solid #fca5a5;
+  border-radius:16px; padding:1.5rem; margin-bottom:1.25rem;
+}
+.rejected-card .big-x { font-size:2.5rem; color:#ef4444; margin-bottom:.5rem; display:block; }
+.rejected-card h6 { font-family:'Outfit',sans-serif; font-weight:800; color:#991b1b; }
+.rejected-card .reason-box {
+  background:#fee2e2; border-radius:8px; padding:.75rem 1rem;
+  font-size:.83rem; color:#7f1d1d; text-align:left; margin-top:.5rem;
+}
+
+/* ── Print styles ─────────────────────── */
+@media print {
+  .no-print { display:none !important; }
+  .review-hero, .action-bar, .decision-panel,
+  .approved-card .btn, .rejected-card, nav, aside { display:none !important; }
+  .dc { box-shadow:none; border:1px solid #ddd; page-break-inside:avoid; }
+  body { background:#fff !important; }
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.anim { animation:fadeUp .38s ease both; }
+.d1{animation-delay:.05s}.d2{animation-delay:.10s}.d3{animation-delay:.18s}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-wrap">
+
+  <!-- ── Hero ──────────────────────────────────────── -->
+  <div class="review-hero anim d1">
+    <div class="hero-avatar">{{ report.club.name[0]|upper }}</div>
+    <div class="flex-grow-1">
+      <h5 class="hero-title">{{ report.club.name }}</h5>
+      <p class="hero-meta">
+        {{ report.period.value }} {{ report.year }} Audit ·
+        Submitted by {{ report.submitter.full_name }} ·
+        {% if report.submitted_at %}{{ report.submitted_at.strftime('%d %b %Y') }}{% else %}Draft{% endif %} ·
+        Revision {{ report.revision_number }}
+      </p>
+    </div>
+    <span class="status-pill pill-{{ report.status.value }}">
+      {{ report.status.value|replace('_',' ')|title }}
+    </span>
+  </div>
+
+  <!-- ── Top action bar (Dean) ─────────────────────── -->
+  <div class="action-bar no-print anim d1">
+    <a href="{{ url_for('audit.dean_queue') }}" class="btn btn-default">
+      <i class="fas fa-arrow-left mr-1"></i> Back to Queue
+    </a>
+
+    {% if report.status.value == 'approved' %}
+      {% if report.report_file %}
+      <a href="{{ url_for('audit.download_report', report_id=report.id) }}"
+         class="btn btn-primary">
+        <i class="fas fa-download mr-2"></i>Download Report (.docx)
+      </a>
+      {% endif %}
+      <button onclick="window.print()" class="btn btn-outline-success">
+        <i class="fas fa-print mr-1"></i>Print Report
+      </button>
+      <form method="POST" action="{{ url_for('audit.regenerate_report', report_id=report.id) }}"
+            style="display:inline;">
+        <button type="submit" class="btn btn-outline-secondary">
+          <i class="fas fa-redo mr-1"></i>Regenerate
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="row">
+
+    <!-- ════════════════════════════════════════════════
+         LEFT — Full audit data
+    ════════════════════════════════════════════════ -->
+    <div class="col-lg-7">
+
+      <!-- Membership -->
+      <div class="dc anim d2">
+        <div class="dc-hdr"><i class="fas fa-users"></i><h6>Membership</h6></div>
+        <div class="dc-body">
+          <div class="stat-grid">
+            <div class="stat-box"><div class="val">{{ report.total_members }}</div><div class="key">Total</div></div>
+            <div class="stat-box"><div class="val">{{ report.active_members }}</div><div class="key">Active</div></div>
+            <div class="stat-box"><div class="val">{{ report.new_members }}</div><div class="key">New</div></div>
+            <div class="stat-box"><div class="val">{{ report.members_left }}</div><div class="key">Left</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events -->
+      <div class="dc anim d2">
+        <div class="dc-hdr"><i class="fas fa-calendar-alt"></i><h6>Events & Activities</h6></div>
+        <div class="dc-body">
+          <div class="stat-grid">
+            <div class="stat-box"><div class="val">{{ report.events_held }}</div><div class="key">Held</div></div>
+            <div class="stat-box"><div class="val">{{ report.events_planned }}</div><div class="key">Planned</div></div>
+            <div class="stat-box"><div class="val">{{ "%.1f"|format(report.average_attendance) }}</div><div class="key">Avg Attendance</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finances -->
+      <div class="dc anim d2">
+        <div class="dc-hdr"><i class="fas fa-coins"></i><h6>Financial Summary (KES)</h6></div>
+        <div class="dc-body">
+          <table class="fin-tbl">
+            <tr><td class="fk">Opening Balance</td>
+                <td class="fv">{{ "{:,.2f}".format(report.opening_balance) }}</td></tr>
+            <tr><td class="fk">Total Income</td>
+                <td class="fv" style="color:var(--g600);">{{ "{:,.2f}".format(report.total_income) }}</td></tr>
+            <tr><td class="fk">Total Expenditure</td>
+                <td class="fv" style="color:#ef4444;">{{ "{:,.2f}".format(report.total_expenditure) }}</td></tr>
+            <tr><td class="fk">Fees Collected</td>
+                <td class="fv">{{ "{:,.2f}".format(report.fees_collected) }}</td></tr>
+            <tr><td class="fk">Outstanding Fees</td>
+                <td class="fv">{{ "{:,.2f}".format(report.outstanding_fees) }}</td></tr>
+            <tr class="ft">
+              <td class="fk">Closing Balance</td>
+              <td class="fv" style="color:{% if report.closing_balance >= 0 %}var(--g700){% else %}#ef4444{% endif %};">
+                {{ "{:,.2f}".format(report.closing_balance) }}
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Narrative sections -->
+      {% for heading, icon, content in [
+        ('Achievements',     'fas fa-trophy',       report.achievements),
+        ('Challenges',       'fas fa-exclamation',  report.challenges),
+        ('Recommendations',  'fas fa-lightbulb',    report.recommendations),
+        ('Additional Notes', 'fas fa-sticky-note',  report.additional_notes),
+      ] %}
+      {% if content %}
+      <div class="dc anim d2">
+        <div class="dc-hdr"><i class="{{ icon }}"></i><h6>{{ heading }}</h6></div>
+        <div class="dc-body" style="font-size:.875rem;color:var(--s700);line-height:1.75;">{{ content }}</div>
+      </div>
+      {% endif %}
+      {% endfor %}
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+         RIGHT — Compliance + Decision / Status
+    ════════════════════════════════════════════════ -->
+    <div class="col-lg-5">
+
+      <!-- Compliance checklist -->
+      <div class="dc anim d3">
+        <div class="dc-hdr">
+          <i class="fas fa-clipboard-check"></i>
+          <h6>Compliance — {{ report.compliance_score }}%</h6>
+        </div>
+        <div class="dc-body">
+          {% for item, passed in report.compliance_checklist.items() %}
+          <div class="chk-row">
+            <span style="font-size:.84rem;font-weight:500;color:var(--s700);">{{ item }}</span>
+            <span class="chk-pill {% if passed %}chk-yes{% else %}chk-no{% endif %}">
+              {% if passed %}<i class="fas fa-check"></i> Yes
+              {% else %}<i class="fas fa-times"></i> No{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+          <div class="mt-3">
+            <div class="d-flex justify-content-between" style="font-size:.75rem;font-weight:700;">
+              <span style="color:var(--s500);">Compliance Score</span>
+              <span style="color:{% if report.compliance_score >= 80 %}var(--g700){% elif report.compliance_score >= 50 %}#b45309{% else %}#991b1b{% endif %};">
+                {{ report.compliance_score }}%
+              </span>
+            </div>
+            <div class="score-bar-wrap">
+              <div class="score-bar" data-w="{{ report.compliance_score }}" style="width:0%;
+                {% if report.compliance_score >= 80 %}background:linear-gradient(90deg,var(--g700),var(--g500));
+                {% elif report.compliance_score >= 50 %}background:linear-gradient(90deg,#b45309,#f59e0b);
+                {% else %}background:linear-gradient(90deg,#991b1b,#ef4444);{% endif %}">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           DECISION PANEL — only when pending review
+      ═══════════════════════════════════════════ -->
+      {% if report.status.value in ('submitted', 'under_review') %}
+
+      <div class="decision-panel anim d3 no-print">
+        <div class="dp-hdr">
+          <h5><i class="fas fa-gavel mr-2"></i>Make a Decision</h5>
+          <p>Approve to generate the official .docx report — or reject with feedback to the club.</p>
+        </div>
+        <div class="dp-body">
+          <form method="POST"
+                action="{{ url_for('audit.dean_review', report_id=report.id) }}"
+                id="decisionForm">
+
+            <div class="choice-row">
+              <div class="choice-btn approve-btn" onclick="pickDecision('approve')">
+                <i class="fas fa-check-circle"></i>
+                <span class="cb-label">Approve</span>
+                <span class="cb-sub">Generate official report</span>
+              </div>
+              <div class="choice-btn reject-btn" onclick="pickDecision('reject')">
+                <i class="fas fa-times-circle"></i>
+                <span class="cb-label">Reject</span>
+                <span class="cb-sub">Notify club &amp; request revision</span>
+              </div>
+            </div>
+
+            <input type="hidden" name="action" id="actionInput" value="">
+
+            <!-- Approval note (optional) -->
+            <div id="approveNote" style="display:none;" class="mb-3">
+              <label class="form-label">
+                Approval Note <span style="color:#94a3b8;font-weight:400;">(optional)</span>
+              </label>
+              <textarea name="review_note" class="form-control" rows="2"
+                        placeholder="Any commendations or notes for the club…"></textarea>
+            </div>
+
+            <!-- Rejection reason (required) -->
+            <div id="rejectNote" style="display:none;" class="mb-3">
+              <label class="form-label">
+                Rejection Reason <span class="text-danger">*</span>
+              </label>
+              <textarea name="review_note" id="rejectText" class="form-control" rows="3"
+                        placeholder="Be specific — what needs to be corrected or resubmitted?"></textarea>
+              <small class="text-muted" style="font-size:.74rem;">
+                <i class="fas fa-bell mr-1"></i>
+                This message will be sent as a notification to all active club leaders.
+              </small>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{{ url_for('audit.dean_queue') }}" class="btn btn-default">
+                <i class="fas fa-arrow-left mr-1"></i>Cancel
+              </a>
+              <button type="submit" id="submitDecisionBtn"
+                      class="btn btn-primary px-5" disabled>
+                <i class="fas fa-paper-plane mr-2"></i>Submit Decision
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           ALREADY APPROVED
+      ═══════════════════════════════════════════ -->
+      {% elif report.status.value == 'approved' %}
+
+      <div class="approved-card anim d3">
+        <i class="fas fa-check-circle big-check"></i>
+        <h6>Audit Approved</h6>
+        <p class="meta">
+          Reviewed by <strong>{{ report.reviewer.full_name if report.reviewer else '—' }}</strong>
+          on {{ report.reviewed_at.strftime('%d %B %Y') if report.reviewed_at else '—' }}
+        </p>
+
+        {% if report.review_note %}
+        <p style="font-size:.83rem;color:var(--g700);background:white;border-radius:8px;
+           padding:.7rem .9rem;border:1.5px solid var(--g300);margin-bottom:1rem;">
+          <i class="fas fa-comment-alt mr-1" style="color:var(--g500);"></i>
+          {{ report.review_note }}
+        </p>
+        {% endif %}
+
+        <!-- Download .docx -->
+        {% if report.report_file %}
+        <a href="{{ url_for('audit.download_report', report_id=report.id) }}"
+           class="btn btn-primary btn-block mb-2">
+          <i class="fas fa-download mr-2"></i>Download Report (.docx)
+        </a>
+        {% else %}
+        <p class="text-muted" style="font-size:.8rem;margin-bottom:.75rem;">
+          Report file not found.
+        </p>
+        {% endif %}
+
+        <!-- Print this page -->
+        <button onclick="window.print()" class="btn btn-outline-success btn-block mb-2">
+          <i class="fas fa-print mr-2"></i>Print This Page
+        </button>
+
+        <!-- Regenerate -->
+        <form method="POST"
+              action="{{ url_for('audit.regenerate_report', report_id=report.id) }}">
+          <button type="submit" class="btn btn-outline-secondary btn-block btn-sm">
+            <i class="fas fa-redo mr-1"></i>Regenerate Report
+          </button>
+        </form>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           ALREADY REJECTED
+      ═══════════════════════════════════════════ -->
+      {% elif report.status.value == 'rejected' %}
+
+      <div class="rejected-card anim d3">
+        <i class="fas fa-times-circle big-x"></i>
+        <h6>Audit Rejected</h6>
+        <p style="font-size:.82rem;color:#991b1b;margin-bottom:.5rem;">
+          Rejected by <strong>{{ report.reviewer.full_name if report.reviewer else '—' }}</strong>
+          on {{ report.reviewed_at.strftime('%d %B %Y') if report.reviewed_at else '—' }}
+        </p>
+        {% if report.review_note %}
+        <div class="reason-box">
+          <strong style="display:block;margin-bottom:.25rem;">Rejection Reason:</strong>
+          {{ report.review_note }}
+        </div>
+        {% endif %}
+        <p class="mt-3 mb-0" style="font-size:.78rem;color:#7f1d1d;">
+          <i class="fas fa-bell mr-1"></i>
+          Club leaders have been notified and asked to resubmit.
+        </p>
+      </div>
+
+      {% endif %}
+
+      <!-- Report metadata (always visible) -->
+      {% if report.report_generated_at %}
+      <div class="dc anim d3">
+        <div class="dc-hdr"><i class="fas fa-file-word"></i><h6>Report File</h6></div>
+        <div class="dc-body" style="font-size:.83rem;">
+          <div class="d-flex justify-content-between py-1 border-bottom" style="border-color:var(--s200)!important;">
+            <span style="color:var(--s700);font-weight:600;">Generated</span>
+            <span style="color:var(--s800);font-weight:700;">
+              {{ report.report_generated_at.strftime('%d %b %Y, %H:%M') }}
+            </span>
+          </div>
+          <div class="d-flex justify-content-between py-1">
+            <span style="color:var(--s700);font-weight:600;">Reference</span>
+            <span style="font-family:'Outfit',sans-serif;font-weight:800;color:var(--g700);">
+              CAMS-AUDIT-{{ "%05d"|format(report.id) }}
+            </span>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div><!-- end right col -->
+  </div><!-- end row -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Animate score bar on load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.score-bar').forEach(b => {
+      b.style.width = (b.dataset.w || 0) + '%';
+    });
+  }, 200);
+});
+
+// Decision chooser
+let chosen = null;
+
+function pickDecision(action) {
+  chosen = action;
+  document.getElementById('actionInput').value = action;
+  document.getElementById('submitDecisionBtn').disabled = false;
+
+  // Toggle button styles
+  document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelector('.' + action + '-btn').classList.add('sel');
+
+  // Show/hide note areas
+  const approveNote = document.getElementById('approveNote');
+  const rejectNote  = document.getElementById('rejectNote');
+  const rejectText  = document.getElementById('rejectText');
+
+  if (action === 'reject') {
+    rejectNote.style.display  = 'block';
+    approveNote.style.display = 'none';
+    rejectText.required = true;
+  } else {
+    rejectNote.style.display  = 'none';
+    approveNote.style.display = 'block';
+    rejectText.required = false;
+  }
+}
+
+document.getElementById('decisionForm')?.addEventListener('submit', function(e) {
+  if (!chosen) {
+    e.preventDefault();
+    alert('Please select Approve or Reject before submitting.');
+  }
+});
+</script>
+{% endblock %}

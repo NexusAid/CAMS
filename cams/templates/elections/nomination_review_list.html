@@ -1,0 +1,148 @@
+{% extends "base/admin_base.html" %}
+{% block title %}Review Nominations — CAMS{% endblock %}
+{% block page_title %}Nomination Review{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('elections.election_list') }}">Elections</a></li>
+<li class="breadcrumb-item active">Nomination Review</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.review-card {
+    background: white; border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    overflow: hidden; margin-bottom: 1rem;
+    border-left: 4px solid var(--g400);
+    transition: box-shadow .2s, transform .2s;
+}
+.review-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.1); }
+
+.review-card-header {
+    background: var(--g50); padding: .85rem 1.25rem;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+    border-bottom: 1px solid var(--g100);
+}
+.election-tag {
+    font-size: .72rem; font-weight: 700; color: var(--g700);
+    background: white; border: 1.5px solid var(--g200);
+    border-radius: 99px; padding: .2rem .7rem;
+    text-transform: uppercase; letter-spacing: .05em;
+}
+.review-card-body { padding: 1.25rem; }
+
+.candidate-info {
+    display: flex; align-items: flex-start; gap: 1rem;
+}
+.candidate-avatar-lg {
+    width: 50px; height: 50px; border-radius: 12px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--g700), var(--g400));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 1.25rem;
+    font-family: 'Outfit', sans-serif;
+}
+.candidate-name  { font-family:'Outfit',sans-serif; font-weight:700; font-size:1rem; color:var(--slate800); }
+.candidate-sub   { font-size:.8rem; color:#94a3b8; margin-bottom: .4rem; }
+.manifesto-text  {
+    background: #f8fafc; border-radius: 8px; padding: .75rem 1rem;
+    font-size: .85rem; color: var(--slate700); border-left: 3px solid var(--g300);
+    margin-top: .75rem; font-style: italic;
+}
+
+.stats-row { display:flex; gap:1.5rem; flex-wrap:wrap; margin-top:.75rem; }
+.stat-item { font-size:.78rem; }
+.stat-item strong { display:block; font-weight:700; color:var(--slate800); }
+.stat-item span   { color: #94a3b8; }
+
+.empty-state {
+    padding: 4rem 2rem; text-align: center;
+    background: white; border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.empty-state i { font-size: 3rem; color: var(--g300); margin-bottom: 1rem; display:block; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h5 style="font-family:'Outfit',sans-serif;font-weight:800;color:var(--g800);margin:0;">
+            Pending Nominations
+        </h5>
+        <p class="text-muted mb-0" style="font-size:.88rem;">
+            {{ nominations|length }} nomination(s) awaiting your decision
+        </p>
+    </div>
+    <a href="{{ url_for('elections.election_list') }}" class="btn btn-default btn-sm">
+        <i class="fas fa-arrow-left mr-1"></i> All Elections
+    </a>
+</div>
+
+{% if nominations %}
+    {% set ns = namespace(current_election=None) %}
+    {% for nom in nominations %}
+
+        {# Group header when election changes #}
+        {% if nom.election.title != ns.current_election %}
+        {% set ns.current_election = nom.election.title %}
+        <div class="mb-2 mt-3 d-flex align-items-center gap-2">
+            <i class="fas fa-vote-yea text-success mr-2"></i>
+            <span style="font-family:'Outfit',sans-serif;font-weight:700;color:var(--g800);">
+                {{ nom.election.title }}
+            </span>
+            <span style="font-size:.75rem;color:#94a3b8;"> · {{ nom.election.club.name }}</span>
+        </div>
+        {% endif %}
+
+        <div class="review-card">
+            <div class="review-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="election-tag">{{ nom.position.title }}</span>
+                    <span style="font-size:.78rem;color:#94a3b8;">
+                        Submitted {{ nom.submitted_at.strftime('%d %b %Y, %H:%M') }}
+                    </span>
+                </div>
+                <a href="{{ url_for('elections.nomination_review', nom_id=nom.id) }}"
+                   class="btn btn-primary btn-sm">
+                    <i class="fas fa-gavel mr-1"></i> Review
+                </a>
+            </div>
+
+            <div class="review-card-body">
+                <div class="candidate-info">
+                    <div class="candidate-avatar-lg">{{ nom.member.name[0]|upper }}</div>
+                    <div class="flex-grow-1">
+                        <div class="candidate-name">{{ nom.member.name }}</div>
+                        <div class="candidate-sub">{{ nom.member.email }}</div>
+
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <strong>Position Applied</strong>
+                                <span>{{ nom.position.title }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <strong>Club</strong>
+                                <span>{{ nom.election.club.name }}</span>
+                            </div>
+                        </div>
+
+                        {% if nom.manifesto %}
+                        <div class="manifesto-text">
+                            "{{ nom.manifesto[:200] }}{% if nom.manifesto|length > 200 %}…{% endif %}"
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-clipboard-check"></i>
+    <h5 style="font-family:'Outfit',sans-serif;font-weight:700;color:var(--g800);">All Caught Up</h5>
+    <p class="text-muted">There are no pending nominations to review right now.</p>
+</div>
+{% endif %}
+
+{% endblock %}

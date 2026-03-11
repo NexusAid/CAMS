@@ -1,0 +1,17 @@
+{% extends "base/base.html" %}
+{% block content %}
+
+<h2>Edit Club</h2>
+
+<form method="POST">
+    <label>Name</label>
+    <input type="text" name="name" value="{{ club.name }}" class="form-control" required>
+
+    <label>Description</label>
+    <textarea name="description" class="form-control">{{ club.description }}</textarea>
+
+    <button class="btn btn-primary mt-3">Update Club</button>
+</form>
+
+{% endblock %}
+
