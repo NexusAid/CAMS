@@ -31,34 +31,42 @@ def verify_reset_token(token, expiration=3600):
 
 
 # -------------------------
-# LOGIN
+# STAFF/ADMIN LOGIN
 # -------------------------
 @auth.route("/login", methods=["GET", "POST"])
 def login():
-
+    # If the user submitted the login form
     if request.method == "POST":
 
         email = request.form.get("email")
         password = request.form.get("password")
 
+        # Attempt to find the user in the database by their email address
         user = User.query.filter_by(email=email).first()
 
+        # If no user is found with that email, reject the login attempt
         if not user:
             flash("Invalid email", "danger")
             return redirect(url_for("auth.login"))
 
+        # If the user exists but the password doesn't match the hash, reject the login
         if not check_password_hash(user.password_hash, password):
             flash("Wrong password", "danger")
             return redirect(url_for("auth.login"))
 
+        # Log the user in officially via Flask-Login
         login_user(user, remember=False)
 
+        # Make the session permanent so it doesn't expire immediately when the browser closes
         session.permanent = True
 
+        # Check if the user was trying to access a specific page before being redirected here
         next_page = request.args.get("next")
 
+        # Redirect them back to where they were going, or to the dashboard by default
         return redirect(next_page or url_for("dashboard.dashboard_home"))
 
+    # If it's a GET request, just render the login page
     return render_template("auth/login.html")
 
 
@@ -90,13 +98,19 @@ def forgot_password():
 
         user = User.query.filter_by(email=email).first()
 
+        # Always show a generic message to avoid exposing whether the email exists
         if not user:
-            flash("Email not found", "danger")
-            return redirect(url_for("auth.forgot_password"))
+            flash("If the email is registered, a password reset link has been sent.", "info")
+            return redirect(url_for("auth.login"))
 
-        if user.role == "admin":
-            flash("Assistant Admins cannot reset passwords here. Please contact the Dean for a new password.", "danger")
-            return redirect(url_for("auth.forgot_password"))
+        # Assistant admins must go through the Dean-managed reset flow
+        if user.role == "assistant_admin":
+            flash(
+                "Assistant Admins cannot reset passwords from this page. "
+                "Please contact the Dean to receive a new password.",
+                "danger",
+            )
+            return redirect(url_for("auth.login"))
 
         token = generate_reset_token(email)
 
@@ -120,9 +134,13 @@ If you did not request this, please ignore this email.
 CAMS System
 """
 
-        send_email(email, subject, body)
+        try:
+            send_email(email, subject, body)
+        except Exception:
+            # Even on failure, avoid revealing details to the requester
+            pass
 
-        flash("Password reset link sent to your email", "success")
+        flash("If the email is registered, a password reset link has been sent.", "success")
 
         return redirect(url_for("auth.login"))
 
@@ -135,24 +153,35 @@ CAMS System
 @auth.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
 
+    # Verify that the token in the URL is valid and hasn't expired
     email = verify_reset_token(token)
 
+    # If verification fails, deny the reset attempt
     if not email:
         flash("Invalid or expired reset link", "danger")
         return redirect(url_for("auth.login"))
 
+    # If they submitted the new password form
     if request.method == "POST":
 
         password = request.form.get("password")
 
+        # Fetch the user using the email recovered from the token
         user = User.query.filter_by(email=email).first()
 
-        user.password_hash = generate_password_hash(password)
+        if user.check_password_reuse(password):
+            flash("You cannot reuse a previous password.", "danger")
+            return redirect(url_for("auth.reset_password", token=token))
+
+        # Hash their new password and save it
+        user.set_password(password)
 
         db.session.commit()
 
         flash("Password updated successfully. Please login.", "success")
 
+        # Send them back to the login page to try their new password
         return redirect(url_for("auth.login"))
 
+    # Show the password reset form
     return render_template("auth/reset_password.html")

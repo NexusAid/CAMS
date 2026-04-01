@@ -1,4 +1,4 @@
-{% extends "base/admin_base.html" %}
+{% extends base_template|default("base/admin_base.html") %}
 {% block title %}Cast Your Vote — CAMS{% endblock %}
 {% block page_title %}Voting Booth{% endblock %}
 {% block breadcrumb %}
@@ -141,6 +141,9 @@
     </div>
 
     <form method="POST" action="{{ url_for('elections.vote', election_id=election.id) }}" id="voteForm">
+        {% if form and form.csrf_token %}
+            {{ form.csrf_token }}
+        {% endif %}
 
         {% for pos, candidates in positions_with_candidates %}
         <div class="position-section">
@@ -162,15 +165,21 @@
                     <input type="radio" name="position_{{ pos.id }}"
                            value="{{ candidate.id }}" required>
                     <div class="ballot-radio"></div>
-                    <div class="ballot-avatar">{{ candidate.member.name[0]|upper }}</div>
+                    {% if candidate.photo_url %}
+                        <img src="{{ candidate.photo_url }}" class="ballot-avatar" style="object-fit: cover; border: 2px solid var(--slate200);">
+                    {% elif candidate.student.profile_image %}
+                        <img src="{{ candidate.student.profile_image }}" class="ballot-avatar" style="object-fit: cover; border: 2px solid var(--slate200);">
+                    {% else %}
+                        <div class="ballot-avatar">{{ candidate.student.name[0]|upper }}</div>
+                    {% endif %}
                     <div class="flex-grow-1">
-                        <div class="ballot-name">{{ candidate.member.name }}</div>
-                        {% if candidate.manifesto %}
+                        <div class="ballot-name">{{ candidate.student.name }}</div>
+                        {% if candidate.motivation %}
                         <div class="ballot-manifesto">
-                            "{{ candidate.manifesto[:90] }}{% if candidate.manifesto|length > 90 %}…{% endif %}"
+                            "{{ candidate.motivation[:90] }}{% if candidate.motivation|length > 90 %}…{% endif %}"
                         </div>
                         {% else %}
-                        <div class="ballot-manifesto">No manifesto provided.</div>
+                        <div class="ballot-manifesto">No motivation provided.</div>
                         {% endif %}
                     </div>
                 </label>

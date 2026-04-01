@@ -88,21 +88,42 @@ def dashboard():
         ClubMembership.status == "pending"
     ).all()
 
+    # Active Announcements
+    from cams.models import Announcement
+    active_announcements = Announcement.query.filter(
+        (Announcement.target_audience.in_(['all', 'club_leader'])),
+        (Announcement.expires_at == None) | (Announcement.expires_at > datetime.utcnow())
+    ).order_by(Announcement.created_at.desc()).all()
+
     return render_template(
         "club_leader/dashboard.html",
         leaderships=leaderships,
-        pending_requests=pending_requests
+        pending_requests=pending_requests,
+        announcements=active_announcements
     )
 
 
 # -------------------------------------------------
 # APPROVE MEMBER
+# Allows a club leader to approve a pending membership request
 # -------------------------------------------------
 @club_leader.route("/approve-member/<int:id>")
 @login_required
 def approve_member(id):
 
     membership = ClubMembership.query.get_or_404(id)
+
+    # Make sure the current user is actually a leader of the club this membership belongs to
+    is_leader = ClubMembership.query.filter(
+        ClubMembership.club_id == membership.club_id,
+        ClubMembership.user_id == current_user.id,
+        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).first()
+
+    if not is_leader:
+        flash("Unauthorized: You are not a leader of this club.", "danger")
+        return redirect(url_for("club_leader.dashboard"))
 
     membership.status = "active"
     membership.last_updated = datetime.utcnow()
@@ -125,6 +146,7 @@ def approve_member(id):
 
 # -------------------------------------------------
 # REJECT MEMBER
+# Allows a club leader to reject a pending membership request
 # -------------------------------------------------
 @club_leader.route("/reject-member/<int:id>")
 @login_required
@@ -132,7 +154,20 @@ def reject_member(id):
 
     membership = ClubMembership.query.get_or_404(id)
 
-    membership.status = "inactive"
+    # Security Check: Ensure current user is a leader of this specific club
+    is_leader = ClubMembership.query.filter(
+        ClubMembership.club_id == membership.club_id,
+        ClubMembership.user_id == current_user.id,
+        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).first()
+
+    if not is_leader:
+        flash("Unauthorized: You are not a leader of this club.", "danger")
+        return redirect(url_for("club_leader.dashboard"))
+
+    membership.status = "rejected"
+    membership.rejection_count += 1
     membership.last_updated = datetime.utcnow()
 
     db.session.commit()
@@ -153,6 +188,7 @@ def reject_member(id):
 
 # -------------------------------------------------
 # REMOVE MEMBER
+# Allows a club leader to revoke an active membership
 # -------------------------------------------------
 @club_leader.route("/remove-member/<int:id>", methods=["POST"])
 @login_required
@@ -163,6 +199,18 @@ def remove_member(id):
         return denied
 
     membership = ClubMembership.query.get_or_404(id)
+    
+    # Security Check: Ensure current user is a leader of this specific club
+    is_leader = ClubMembership.query.filter(
+        ClubMembership.club_id == membership.club_id,
+        ClubMembership.user_id == current_user.id,
+        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).first()
+
+    if not is_leader:
+        flash("Unauthorized: You cannot remove members from this club.", "danger")
+        return redirect(url_for("club_leader.dashboard"))
     reason = request.form.get("reason", "No reason provided.")
 
     membership.status = "inactive"
@@ -234,9 +282,91 @@ def events():
     club_ids = [lead.club_id for lead in leaderships]
 
     from cams.models import Event
-    club_events = Event.query.filter(Event.club_id.in_(club_ids)).order_by(Event.date.desc()).all()
+    from sqlalchemy import or_
 
-    return render_template("club_leader/events.html", events=club_events)
+    now = datetime.utcnow()
+
+    # Upcoming events: end_date >= now OR date >= now (if end_date is missing)
+    upcoming_events = Event.query.filter(
+        Event.club_id.in_(club_ids),
+        or_(Event.end_date >= now, Event.date >= now)
+    ).order_by(Event.date).all()
+
+    # Past events: end_date < now OR date < now (if end_date is missing)
+    past_events = Event.query.filter(
+        Event.club_id.in_(club_ids),
+        or_(Event.end_date < now, Event.date < now)
+    ).order_by(Event.date.desc()).all()
+
+    return render_template("club_leader/events.html", upcoming_events=upcoming_events, past_events=past_events, current_time=now)
+
+
+# -------------------------------------------------
+# MANAGE EVENT ATTENDANCE
+# -------------------------------------------------
+@club_leader.route("/events/<int:event_id>/attendance", methods=["GET", "POST"])
+@login_required
+def event_attendance(event_id):
+    denied = club_leader_required()
+    if denied: return denied
+
+    from cams.models import Event, Attendance
+    event = Event.query.get_or_404(event_id)
+
+    # Ensure current user leads the club that owns this event
+    is_leader = ClubMembership.query.filter(
+        ClubMembership.club_id == event.club_id,
+        ClubMembership.user_id == current_user.id,
+        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).first()
+    if not is_leader:
+        flash("Unauthorized access to this event's attendance.", "danger")
+        return redirect(url_for("club_leader.events"))
+
+    # Only allow attendance if event is in the past
+    now = datetime.utcnow()
+    event_conclusion = event.end_date if event.end_date else event.date
+    if event_conclusion > now:
+        flash("You cannot take attendance for an event that hasn't concluded yet.", "warning")
+        return redirect(url_for("club_leader.events"))
+
+    # Get active members of the club
+    members = ClubMembership.query.filter_by(
+        club_id=event.club_id,
+        status="active"
+    ).all()
+
+    if request.method == "POST":
+        # Delete old attendance records for this event
+        Attendance.query.filter_by(event_id=event.id).delete()
+        
+        # Save new records
+        for member in members:
+            # Expected from form: attendance_user_{user_id} = "attended" | "absent" | "apology"
+            status = request.form.get(f"attendance_user_{member.user_id}")
+            if status in ["attended", "absent", "apology"]:
+                att = Attendance(
+                    event_id=event.id,
+                    user_id=member.user_id,
+                    status=status
+                )
+                db.session.add(att)
+        
+        db.session.commit()
+        flash("Attendance updated successfully.", "success")
+        return redirect(url_for("club_leader.events"))
+
+    # Fetch existing attendance to prefill the UI
+    existing_records = Attendance.query.filter_by(event_id=event.id).all()
+    attendance_map = {att.user_id: att.status for att in existing_records}
+
+    return render_template(
+        "club_leader/event_attendance.html", 
+        event=event, 
+        members=members, 
+        attendance_map=attendance_map
+    )
 
 
 # -------------------------------------------------
@@ -256,12 +386,19 @@ def create_event():
         ClubMembership.status == "active"
     ).all()
 
+    from flask import current_app
+    import os
+    from werkzeug.utils import secure_filename
+
     if request.method == "POST":
 
         title = request.form.get("title")
         date_str = request.form.get("date")
+        end_date_str = request.form.get("end_date")
         description = request.form.get("description")
+        location = request.form.get("location")
         club_id = request.form.get("club_id")
+        image_file = request.files.get("image")
 
         if not club_id:
             flash("Please select a club.", "danger")
@@ -269,17 +406,39 @@ def create_event():
 
         try:
             event_date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M")
-        except ValueError:
-            flash("Invalid date format.", "danger")
+        except (ValueError, TypeError):
+            flash("Invalid start date format.", "danger")
             return redirect(url_for("club_leader.create_event"))
+
+        event_end_date = None
+        if end_date_str:
+            try:
+                event_end_date = datetime.strptime(end_date_str, "%Y-%m-%dT%H:%M")
+                if event_end_date <= event_date:
+                    flash("End date must be after the start date.", "danger")
+                    return redirect(url_for("club_leader.create_event"))
+            except ValueError:
+                flash("Invalid end date format.", "danger")
+                return redirect(url_for("club_leader.create_event"))
 
         from cams.models import Event
         new_event = Event(
             club_id=club_id,
             title=title,
             description=description,
-            date=event_date
+            location=location,
+            date=event_date,
+            end_date=event_end_date
         )
+
+        # Handle optional image upload
+        if image_file and image_file.filename:
+            upload_dir = os.path.join(current_app.root_path, "static", "uploads", "events")
+            os.makedirs(upload_dir, exist_ok=True)
+            filename = secure_filename(f"club_{club_id}_event_{int(datetime.utcnow().timestamp())}_{image_file.filename}")
+            filepath = os.path.join(upload_dir, filename)
+            image_file.save(filepath)
+            new_event.image_path = f"uploads/events/{filename}"
 
         db.session.add(new_event)
         db.session.commit()
@@ -342,7 +501,7 @@ def documents():
         upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'documents')
         os.makedirs(upload_dir, exist_ok=True)
         
-        for doc_type in ['constitution', 'minutes', 'patron_letter']:
+        for doc_type in ['constitution', 'minutes', 'patron_letter', 'rules']:
             if doc_type in request.files:
                 file = request.files[doc_type]
                 if file and file.filename != '':
@@ -358,6 +517,9 @@ def documents():
                     elif doc_type == 'patron_letter':
                         club.patron_letter_file = f"uploads/documents/{filename}"
                         club.has_patron_letter = True
+                    elif doc_type == 'rules':
+                        club.rules_file = f"uploads/documents/{filename}"
+                        club.has_rules = True
                         
         db.session.commit()
         flash("Documents uploaded successfully.", "success")
@@ -378,3 +540,118 @@ def logout():
     flash("Logged out successfully", "success")
 
     return redirect(url_for("club_leader.login"))
+
+# -------------------------------------------------
+# NOTIFICATIONS
+# -------------------------------------------------
+@club_leader.route("/notifications")
+@login_required
+def notifications():
+    from cams.models import Notification
+    notifications_list = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_date.desc()).all()
+    return render_template("club_leader/notifications.html", notifications=notifications_list)
+
+@club_leader.route("/notifications/<int:id>/read", methods=["POST"])
+@login_required
+def mark_read(id):
+    from cams.models import Notification
+    notif = Notification.query.get_or_404(id)
+    if notif.user_id == current_user.id:
+        notif.is_read = True
+        db.session.commit()
+    return redirect(url_for('club_leader.notifications'))
+
+@club_leader.route("/notifications/read-all", methods=["POST"])
+@login_required
+def mark_all_read():
+    from cams.models import Notification
+    Notification.query.filter_by(user_id=current_user.id, is_read=False).update(dict(is_read=True))
+    db.session.commit()
+    flash("All notifications marked as read.", "success")
+    return redirect(url_for('club_leader.notifications'))
+
+# =====================================================
+# LEADER - SURVEYS
+# =====================================================
+@club_leader.route("/surveys", methods=["GET", "POST"])
+@login_required
+def surveys():
+    denied = club_leader_required()
+    if denied: return denied
+    
+    from cams.models import Survey
+    
+    leaderships = ClubMembership.query.filter(
+        ClubMembership.user_id == current_user.id,
+        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).all()
+    club_ids = [lead.club_id for lead in leaderships]
+    
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description")
+        club_id = request.form.get("club_id")
+        
+        if int(club_id) not in club_ids:
+            flash("Unauthorized club selection.", "danger")
+            return redirect(url_for("club_leader.surveys"))
+            
+        survey = Survey(
+            title=title,
+            description=description,
+            club_id=club_id,
+            creator_id=current_user.id
+        )
+        db.session.add(survey)
+        db.session.commit()
+        flash("Survey created successfully.", "success")
+        return redirect(url_for("club_leader.surveys"))
+        
+    surveys_list = Survey.query.filter(Survey.club_id.in_(club_ids)).order_by(Survey.created_at.desc()).all()
+    return render_template("club_leader/surveys.html", surveys=surveys_list, leaderships=leaderships)
+
+@club_leader.route("/surveys/<int:id>")
+@login_required
+def view_survey(id):
+    denied = club_leader_required()
+    if denied: return denied
+    
+    from cams.models import Survey, SurveyResponse
+    survey = Survey.query.get_or_404(id)
+    
+    is_leader = ClubMembership.query.filter(
+        ClubMembership.club_id == survey.club_id,
+        ClubMembership.user_id == current_user.id,
+        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).first()
+    
+    if not is_leader:
+        flash("Unauthorized.", "danger")
+        return redirect(url_for("club_leader.surveys"))
+        
+    responses = SurveyResponse.query.filter_by(survey_id=id).all()
+    return render_template("club_leader/view_survey.html", survey=survey, responses=responses)
+
+@club_leader.route("/surveys/<int:id>/toggle", methods=["POST"])
+@login_required
+def toggle_survey(id):
+    denied = club_leader_required()
+    if denied: return denied
+    from cams.models import Survey
+    survey = Survey.query.get_or_404(id)
+    
+    is_leader = ClubMembership.query.filter(
+        ClubMembership.club_id == survey.club_id,
+        ClubMembership.user_id == current_user.id,
+        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).first()
+    
+    if is_leader:
+        survey.is_active = not survey.is_active
+        db.session.commit()
+        flash(f"Survey {'activated' if survey.is_active else 'closed'}.", "success")
+        
+    return redirect(url_for("club_leader.surveys"))

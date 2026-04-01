@@ -2,302 +2,1069 @@
 {% block title %}Student Dashboard{% endblock %}
 
 {% block extra_css %}
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link
+  href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap"
+  rel="stylesheet">
 <style>
-/* ── TOKENS ────────────────────────────────────────────── */
-:root {
-  --g900:#052e16;--g800:#064e24;--g700:#065f33;
-  --g600:#16a34a;--g500:#22c55e;--g400:#4ade80;
-  --g300:#86efac;--g200:#bbf7d0;--g100:#dcfce7;--g50:#f0fdf4;
-  --s900:#0f172a;--s800:#1e293b;--s700:#334155;
-  --s500:#64748b;--s300:#cbd5e1;--s200:#e2e8f0;--s100:#f1f5f9;--s50:#f8fafc;
-  --amber:#f59e0b;--amber-l:#fef3c7;
-  --red:#ef4444;--red-l:#fee2e2;
-  --blue:#3b82f6;--blue-l:#dbeafe;
-  --violet:#7c3aed;--violet-l:#ede9fe;
-}
+  /* ── TOKENS ────────────────────────────────────────────── */
+  :root {
+    --g900: #052e16;
+    --g800: #064e24;
+    --g700: #065f33;
+    --g600: #16a34a;
+    --g500: #22c55e;
+    --g400: #4ade80;
+    --g300: #86efac;
+    --g200: #bbf7d0;
+    --g100: #dcfce7;
+    --g50: #f0fdf4;
+    --s900: #0f172a;
+    --s800: #1e293b;
+    --s700: #334155;
+    --s500: #64748b;
+    --s300: #cbd5e1;
+    --s200: #e2e8f0;
+    --s100: #f1f5f9;
+    --s50: #f8fafc;
+    --amber: #f59e0b;
+    --amber-l: #fef3c7;
+    --red: #ef4444;
+    --red-l: #fee2e2;
+    --blue: #3b82f6;
+    --blue-l: #dbeafe;
+    --violet: #7c3aed;
+    --violet-l: #ede9fe;
+  }
 
-*,*::before,*::after{box-sizing:border-box;}
-body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);margin:0;}
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-/* ── HERO ─────────────────────────────────────────────── */
-.dash-hero{
-  position:relative;
-  background:linear-gradient(135deg,var(--g900) 0%,var(--g700) 55%,var(--g500) 100%);
-  padding:2.5rem 2rem 5rem;overflow:hidden;
-}
-.dash-hero::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 60% 80% at 80% 20%,rgba(74,222,128,.18) 0%,transparent 65%),
-    radial-gradient(ellipse 40% 60% at 10% 80%,rgba(6,95,51,.6) 0%,transparent 70%);
-}
-.dash-hero::after{
-  content:'';position:absolute;
-  bottom:-2px;left:0;right:0;height:64px;
-  background:var(--s50);
-  clip-path:ellipse(55% 100% at 50% 100%);
-}
-.hero-inner{
-  position:relative;z-index:1;
-  display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;
-}
-.hero-avatar{
-  width:64px;height:64px;border-radius:18px;flex-shrink:0;
-  background:rgba(255,255,255,.15);border:2.5px solid rgba(255,255,255,.3);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Sora',sans-serif;font-weight:800;font-size:1.6rem;color:#fff;
-  backdrop-filter:blur(6px);
-}
-.hero-name{font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(1.15rem,3vw,1.5rem);color:#fff;margin:0;}
-.hero-sub{color:rgba(255,255,255,.65);font-size:.82rem;margin:.2rem 0 0;}
-.hero-actions{margin-left:auto;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;}
-.hero-btn{
-  display:inline-flex;align-items:center;gap:.4rem;
-  padding:.48rem 1rem;border-radius:10px;font-size:.8rem;
-  font-weight:700;font-family:'Nunito',sans-serif;
-  text-decoration:none;cursor:pointer;border:none;transition:all .2s;
-}
-.hero-btn-primary{background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.35);}
-.hero-btn-primary:hover{background:rgba(255,255,255,.3);color:#fff;}
-.hero-btn-danger{background:rgba(239,68,68,.25);color:#fca5a5;border:1.5px solid rgba(239,68,68,.3);}
-.hero-btn-danger:hover{background:rgba(239,68,68,.4);color:#fff;}
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--s50);
+    color: var(--s800);
+    margin: 0;
+  }
 
-/* ── CONTENT ──────────────────────────────────────────── */
-.dash-content{
-  padding:0 1.5rem 3rem;
-  max-width:1100px;margin:-2.5rem auto 0;
-  position:relative;z-index:2;
-}
+  /* ── HERO ─────────────────────────────────────────────── */
+  .dash-hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--g900) 0%, var(--g700) 55%, var(--g500) 100%);
+    padding: 2.5rem 2rem 5rem;
+    overflow: hidden;
+  }
 
-/* ── STAT CARDS ───────────────────────────────────────── */
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;margin-bottom:1.75rem;}
-@media(max-width:900px){.stats-row{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:560px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+  .dash-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 80% 20%, rgba(74, 222, 128, .18) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(6, 95, 51, .6) 0%, transparent 70%);
+  }
 
-.stat-card{
-  background:#fff;border-radius:16px;
-  box-shadow:0 2px 16px rgba(0,0,0,.07);
-  padding:1.1rem 1.2rem;
-  display:flex;align-items:center;gap:.85rem;
-  border-left:4px solid transparent;
-  transition:transform .22s,box-shadow .22s;cursor:default;
-}
-.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.1);}
-.stat-card.green {border-left-color:var(--g500);}
-.stat-card.amber {border-left-color:var(--amber);}
-.stat-card.blue  {border-left-color:var(--blue);}
-.stat-card.slate {border-left-color:var(--s500);}
-.stat-card.violet{border-left-color:var(--violet);}
+  .dash-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--s50);
+    clip-path: ellipse(55% 100% at 50% 100%);
+  }
 
-.stat-icon{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;}
-.stat-card.green  .stat-icon{background:var(--g100);color:var(--g700);}
-.stat-card.amber  .stat-icon{background:var(--amber-l);color:#b45309;}
-.stat-card.blue   .stat-icon{background:var(--blue-l);color:#1d4ed8;}
-.stat-card.slate  .stat-icon{background:var(--s100);color:var(--s700);}
-.stat-card.violet .stat-icon{background:var(--violet-l);color:var(--violet);}
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
 
-.stat-val{font-family:'Sora',sans-serif;font-weight:800;font-size:1.6rem;color:var(--s800);line-height:1;}
-.stat-lbl{font-size:.68rem;font-weight:700;color:var(--s500);text-transform:uppercase;letter-spacing:.06em;margin-top:.2rem;}
+  .hero-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, .15);
+    border: 2.5px solid rgba(255, 255, 255, .3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: #fff;
+    backdrop-filter: blur(6px);
+  }
 
-/* ── SECTION LABEL ────────────────────────────────────── */
-.section-label{
-  font-family:'Sora',sans-serif;font-size:.68rem;font-weight:800;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--s500);
-  margin:1.6rem 0 .75rem;display:flex;align-items:center;gap:.5rem;
-}
-.section-label::after{content:'';flex:1;height:1.5px;background:var(--s200);border-radius:99px;}
+  .hero-name {
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.15rem, 3vw, 1.5rem);
+    color: #fff;
+    margin: 0;
+  }
 
-/* ── GRID LAYOUTS ─────────────────────────────────────── */
-.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.1rem;}
-.wide-grid{display:grid;grid-template-columns:3fr 2fr;gap:1.1rem;margin-bottom:1.1rem;}
-@media(max-width:768px){.main-grid,.wide-grid{grid-template-columns:1fr;}}
+  .hero-sub {
+    color: rgba(255, 255, 255, .65);
+    font-size: .82rem;
+    margin: .2rem 0 0;
+  }
 
-/* ── PANEL ────────────────────────────────────────────── */
-.panel{background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,.07);overflow:hidden;}
-.panel-header{
-  padding:.85rem 1.25rem;display:flex;align-items:center;gap:.6rem;
-  border-bottom:2px solid var(--g100);
-}
-.ph-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;}
-.ph-green {background:var(--g100);color:var(--g700);}
-.ph-amber {background:var(--amber-l);color:#b45309;}
-.ph-blue  {background:var(--blue-l);color:#1d4ed8;}
-.ph-slate {background:var(--s100);color:var(--s700);}
-.ph-violet{background:var(--violet-l);color:var(--violet);}
-.panel-header h6{font-family:'Sora',sans-serif;font-weight:700;color:var(--g800);margin:0;font-size:.88rem;}
-.panel-body{padding:1.1rem 1.25rem;}
+  .hero-actions {
+    margin-left: auto;
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
-/* ── MEMBERSHIP LIST ──────────────────────────────────── */
-.mem-item{display:flex;align-items:center;gap:.75rem;padding:.6rem 1.25rem;border-bottom:1px solid var(--s100);transition:background .15s;}
-.mem-item:last-child{border-bottom:none;}
-.mem-item:hover{background:var(--g50);}
-.mem-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.mem-dot.active{background:var(--g500);} .mem-dot.pending{background:var(--amber);} .mem-dot.inactive{background:var(--s300);}
-.mem-name{font-weight:600;font-size:.875rem;color:var(--s800);flex:1;}
-.mem-badge{font-size:.62rem;font-weight:800;padding:.15rem .55rem;border-radius:99px;letter-spacing:.05em;text-transform:uppercase;}
-.badge-active {background:var(--g100);color:var(--g700);}
-.badge-pending{background:var(--amber-l);color:#78350f;}
-.badge-inactive{background:var(--s100);color:var(--s500);}
+  .hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .48rem 1rem;
+    border-radius: 10px;
+    font-size: .8rem;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+  }
 
-/* ── EVENTS LIST ──────────────────────────────────────── */
-.event-item{display:flex;gap:.85rem;align-items:flex-start;padding:.7rem 1.25rem;border-bottom:1px solid var(--s100);transition:background .15s;}
-.event-item:last-child{border-bottom:none;}
-.event-item:hover{background:var(--g50);}
-.event-date-box{flex-shrink:0;width:42px;text-align:center;background:var(--g50);border-radius:10px;padding:.3rem .2rem;border:1.5px solid var(--g200);}
-.event-day{font-family:'Sora',sans-serif;font-weight:800;font-size:1.15rem;color:var(--g700);line-height:1;}
-.event-mon{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--g500);}
-.event-title{font-weight:700;font-size:.875rem;color:var(--s800);}
-.event-club{font-size:.73rem;color:var(--s500);margin-top:.1rem;}
+  .hero-btn-primary {
+    background: rgba(255, 255, 255, .2);
+    color: #fff;
+    border: 1.5px solid rgba(255, 255, 255, .35);
+  }
 
-/* ── NOTIFICATIONS ────────────────────────────────────── */
-.notif-item{display:flex;gap:.7rem;align-items:flex-start;padding:.7rem 1.25rem;border-bottom:1px solid var(--s100);transition:background .15s;}
-.notif-item:last-child{border-bottom:none;}
-.notif-item:hover{background:var(--s50);}
-.notif-dot-wrap{width:28px;height:28px;border-radius:50%;flex-shrink:0;margin-top:.1rem;display:flex;align-items:center;justify-content:center;font-size:.73rem;}
-.notif-audit  {background:var(--amber-l);color:#b45309;}
-.notif-general{background:var(--blue-l);color:#1d4ed8;}
-.notif-alert  {background:var(--red-l);color:#991b1b;}
-.notif-election{background:var(--violet-l);color:var(--violet);}
-.notif-text{font-size:.82rem;color:var(--s700);line-height:1.55;}
-.notif-time{font-size:.68rem;color:var(--s500);margin-top:.12rem;}
-.notif-unread .notif-text{color:var(--s800);font-weight:700;}
+  .hero-btn-primary:hover {
+    background: rgba(255, 255, 255, .3);
+    color: #fff;
+  }
 
-/* ── ELIGIBILITY ──────────────────────────────────────── */
-.elig-item{display:flex;align-items:center;gap:.75rem;padding:.65rem 1.25rem;border-bottom:1px solid var(--s100);}
-.elig-item:last-child{border-bottom:none;}
-.elig-name{flex:1;font-weight:600;font-size:.875rem;color:var(--s800);}
-.elig-btn{font-size:.7rem;font-weight:800;padding:.28rem .8rem;border-radius:99px;border:1.5px solid var(--g400);color:var(--g700);background:var(--g50);text-decoration:none;transition:all .2s;letter-spacing:.03em;}
-.elig-btn:hover{background:var(--g600);color:#fff;border-color:var(--g600);}
+  .hero-btn-danger {
+    background: rgba(239, 68, 68, .25);
+    color: #fca5a5;
+    border: 1.5px solid rgba(239, 68, 68, .3);
+  }
 
-/* ── EMPTY STATE ──────────────────────────────────────── */
-.empty-row{padding:1.75rem;text-align:center;color:var(--s500);font-size:.85rem;}
-.empty-row i{display:block;font-size:1.75rem;color:var(--g300);margin-bottom:.4rem;}
+  .hero-btn-danger:hover {
+    background: rgba(239, 68, 68, .4);
+    color: #fff;
+  }
 
-/* ── CHART ────────────────────────────────────────────── */
-.chart-wrap{height:210px;position:relative;}
+  /* ── CONTENT ──────────────────────────────────────────── */
+  .dash-content {
+    padding: 0 1.5rem 3rem;
+    max-width: 1100px;
+    margin: -2.5rem auto 0;
+    position: relative;
+    z-index: 2;
+  }
 
-/* ── QUICK ACTIONS ────────────────────────────────────── */
-.qa-strip{display:flex;gap:.7rem;flex-wrap:wrap;padding:1rem 1.25rem;}
-.qa-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.52rem 1.05rem;border-radius:10px;font-size:.82rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;}
-.qa-primary{background:var(--g600);color:#fff;}
-.qa-primary:hover{background:var(--g700);color:#fff;}
-.qa-outline{background:#fff;color:var(--g700);border:2px solid var(--g300);}
-.qa-outline:hover{background:var(--g50);color:var(--g700);}
-.qa-danger{background:#fff;color:var(--red);border:2px solid #fca5a5;}
-.qa-danger:hover{background:var(--red-l);}
+  /* ── STAT CARDS ───────────────────────────────────────── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: .85rem;
+    margin-bottom: 1.75rem;
+  }
 
-/* ══════════════════════════════════════════════════════
+  @media(max-width:900px) {
+    .stats-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media(max-width:560px) {
+    .stats-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .stat-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
+    padding: 1.1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    border-left: 4px solid transparent;
+    transition: transform .22s, box-shadow .22s;
+    cursor: default;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .1);
+  }
+
+  .stat-card.green {
+    border-left-color: var(--g500);
+  }
+
+  .stat-card.amber {
+    border-left-color: var(--amber);
+  }
+
+  .stat-card.blue {
+    border-left-color: var(--blue);
+  }
+
+  .stat-card.slate {
+    border-left-color: var(--s500);
+  }
+
+  .stat-card.violet {
+    border-left-color: var(--violet);
+  }
+
+  .stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+
+  .stat-card.green .stat-icon {
+    background: var(--g100);
+    color: var(--g700);
+  }
+
+  .stat-card.amber .stat-icon {
+    background: var(--amber-l);
+    color: #b45309;
+  }
+
+  .stat-card.blue .stat-icon {
+    background: var(--blue-l);
+    color: #1d4ed8;
+  }
+
+  .stat-card.slate .stat-icon {
+    background: var(--s100);
+    color: var(--s700);
+  }
+
+  .stat-card.violet .stat-icon {
+    background: var(--violet-l);
+    color: var(--violet);
+  }
+
+  .stat-val {
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--s800);
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--s500);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-top: .2rem;
+  }
+
+  /* ── SECTION LABEL ────────────────────────────────────── */
+  .section-label {
+    font-family: 'Sora', sans-serif;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--s500);
+    margin: 1.6rem 0 .75rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: var(--s200);
+    border-radius: 99px;
+  }
+
+  /* ── GRID LAYOUTS ─────────────────────────────────────── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .wide-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
+  }
+
+  @media(max-width:768px) {
+
+    .main-grid,
+    .wide-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── PANEL ────────────────────────────────────────────── */
+  .panel {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: .85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    border-bottom: 2px solid var(--g100);
+  }
+
+  .ph-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .82rem;
+    flex-shrink: 0;
+  }
+
+  .ph-green {
+    background: var(--g100);
+    color: var(--g700);
+  }
+
+  .ph-amber {
+    background: var(--amber-l);
+    color: #b45309;
+  }
+
+  .ph-blue {
+    background: var(--blue-l);
+    color: #1d4ed8;
+  }
+
+  .ph-slate {
+    background: var(--s100);
+    color: var(--s700);
+  }
+
+  .ph-violet {
+    background: var(--violet-l);
+    color: var(--violet);
+  }
+
+  .panel-header h6 {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    color: var(--g800);
+    margin: 0;
+    font-size: .88rem;
+  }
+
+  .panel-body {
+    padding: 1.1rem 1.25rem;
+  }
+
+  /* ── MEMBERSHIP LIST ──────────────────────────────────── */
+  .mem-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem 1.25rem;
+    border-bottom: 1px solid var(--s100);
+    transition: background .15s;
+  }
+
+  .mem-item:last-child {
+    border-bottom: none;
+  }
+
+  .mem-item:hover {
+    background: var(--g50);
+  }
+
+  .mem-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .mem-dot.active {
+    background: var(--g500);
+  }
+
+  .mem-dot.pending {
+    background: var(--amber);
+  }
+
+  .mem-dot.inactive {
+    background: var(--s300);
+  }
+
+  .mem-name {
+    font-weight: 600;
+    font-size: .875rem;
+    color: var(--s800);
+    flex: 1;
+  }
+
+  .mem-badge {
+    font-size: .62rem;
+    font-weight: 800;
+    padding: .15rem .55rem;
+    border-radius: 99px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  .badge-active {
+    background: var(--g100);
+    color: var(--g700);
+  }
+
+  .badge-pending {
+    background: var(--amber-l);
+    color: #78350f;
+  }
+
+  .badge-inactive {
+    background: var(--s100);
+    color: var(--s500);
+  }
+
+  /* ── EVENTS LIST ──────────────────────────────────────── */
+  .event-item {
+    display: flex;
+    gap: .85rem;
+    align-items: flex-start;
+    padding: .7rem 1.25rem;
+    border-bottom: 1px solid var(--s100);
+    transition: background .15s;
+  }
+
+  .event-item:last-child {
+    border-bottom: none;
+  }
+
+  .event-item:hover {
+    background: var(--g50);
+  }
+
+  .event-date-box {
+    flex-shrink: 0;
+    width: 42px;
+    text-align: center;
+    background: var(--g50);
+    border-radius: 10px;
+    padding: .3rem .2rem;
+    border: 1.5px solid var(--g200);
+  }
+
+  .event-day {
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--g700);
+    line-height: 1;
+  }
+
+  .event-mon {
+    font-size: .56rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--g500);
+  }
+
+  .event-title {
+    font-weight: 700;
+    font-size: .875rem;
+    color: var(--s800);
+  }
+
+  .event-club {
+    font-size: .73rem;
+    color: var(--s500);
+    margin-top: .1rem;
+  }
+
+  /* ── NOTIFICATIONS ────────────────────────────────────── */
+  .notif-item {
+    display: flex;
+    gap: .7rem;
+    align-items: flex-start;
+    padding: .7rem 1.25rem;
+    border-bottom: 1px solid var(--s100);
+    transition: background .15s;
+  }
+
+  .notif-item:last-child {
+    border-bottom: none;
+  }
+
+  .notif-item:hover {
+    background: var(--s50);
+  }
+
+  .notif-dot-wrap {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: .1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .73rem;
+  }
+
+  .notif-audit {
+    background: var(--amber-l);
+    color: #b45309;
+  }
+
+  .notif-general {
+    background: var(--blue-l);
+    color: #1d4ed8;
+  }
+
+  .notif-alert {
+    background: var(--red-l);
+    color: #991b1b;
+  }
+
+  .notif-election {
+    background: var(--violet-l);
+    color: var(--violet);
+  }
+
+  .notif-text {
+    font-size: .82rem;
+    color: var(--s700);
+    line-height: 1.55;
+  }
+
+  .notif-time {
+    font-size: .68rem;
+    color: var(--s500);
+    margin-top: .12rem;
+  }
+
+  .notif-unread .notif-text {
+    color: var(--s800);
+    font-weight: 700;
+  }
+
+  /* ── ELIGIBILITY ──────────────────────────────────────── */
+  .elig-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .65rem 1.25rem;
+    border-bottom: 1px solid var(--s100);
+  }
+
+  .elig-item:last-child {
+    border-bottom: none;
+  }
+
+  .elig-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: .875rem;
+    color: var(--s800);
+  }
+
+  .elig-btn {
+    font-size: .7rem;
+    font-weight: 800;
+    padding: .28rem .8rem;
+    border-radius: 99px;
+    border: 1.5px solid var(--g400);
+    color: var(--g700);
+    background: var(--g50);
+    text-decoration: none;
+    transition: all .2s;
+    letter-spacing: .03em;
+  }
+
+  .elig-btn:hover {
+    background: var(--g600);
+    color: #fff;
+    border-color: var(--g600);
+  }
+
+  /* ── EMPTY STATE ──────────────────────────────────────── */
+  .empty-row {
+    padding: 1.75rem;
+    text-align: center;
+    color: var(--s500);
+    font-size: .85rem;
+  }
+
+  .empty-row i {
+    display: block;
+    font-size: 1.75rem;
+    color: var(--g300);
+    margin-bottom: .4rem;
+  }
+
+  /* ── CHART ────────────────────────────────────────────── */
+  .chart-wrap {
+    height: 210px;
+    position: relative;
+  }
+
+  /* ── QUICK ACTIONS ────────────────────────────────────── */
+  .qa-strip {
+    display: flex;
+    gap: .7rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.25rem;
+  }
+
+  .qa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .52rem 1.05rem;
+    border-radius: 10px;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: all .2s;
+  }
+
+  .qa-primary {
+    background: var(--g600);
+    color: #fff;
+  }
+
+  .qa-primary:hover {
+    background: var(--g700);
+    color: #fff;
+  }
+
+  .qa-outline {
+    background: #fff;
+    color: var(--g700);
+    border: 2px solid var(--g300);
+  }
+
+  .qa-outline:hover {
+    background: var(--g50);
+    color: var(--g700);
+  }
+
+  .qa-danger {
+    background: #fff;
+    color: var(--red);
+    border: 2px solid #fca5a5;
+  }
+
+  .qa-danger:hover {
+    background: var(--red-l);
+  }
+
+  /* ══════════════════════════════════════════════════════
    ELECTION SECTION — NEW
 ══════════════════════════════════════════════════════ */
 
-/* Election card grid */
-.election-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;padding:1rem 1.25rem;}
+  /* Election card grid */
+  .election-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
 
-.election-card{
-  border-radius:14px;border:2px solid var(--s200);
-  overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s;
-  background:#fff;
-}
-.election-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.1);border-color:var(--g300);}
+  .election-card {
+    border-radius: 14px;
+    border: 2px solid var(--s200);
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+    background: #fff;
+  }
 
-/* status stripe at top */
-.ec-stripe{height:5px;}
-.stripe-nomination{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
-.stripe-voting    {background:linear-gradient(90deg,var(--g600),var(--g400));}
-.stripe-published {background:linear-gradient(90deg,var(--violet),#a78bfa);}
-.stripe-review    {background:linear-gradient(90deg,var(--amber),#fcd34d);}
-.stripe-closed    {background:linear-gradient(90deg,var(--s500),var(--s300));}
-.stripe-draft     {background:var(--s200);}
+  .election-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .1);
+    border-color: var(--g300);
+  }
 
-.ec-body{padding:1rem 1.1rem;}
-.ec-club{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--s500);margin-bottom:.2rem;}
-.ec-title{font-family:'Sora',sans-serif;font-weight:800;font-size:.95rem;color:var(--s800);margin-bottom:.65rem;line-height:1.3;}
+  /* status stripe at top */
+  .ec-stripe {
+    height: 5px;
+  }
 
-.ec-status-pill{
-  display:inline-flex;align-items:center;gap:.3rem;
-  padding:.18rem .6rem;border-radius:99px;
-  font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
-  margin-bottom:.75rem;
-}
-.pill-nomination{background:var(--blue-l);color:#1d4ed8;}
-.pill-voting    {background:var(--g100);color:var(--g700);}
-.pill-published {background:var(--violet-l);color:var(--violet);}
-.pill-review    {background:var(--amber-l);color:#92400e;}
-.pill-closed    {background:var(--s100);color:var(--s500);}
-.pill-draft     {background:var(--s100);color:var(--s500);}
+  .stripe-nomination {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  }
 
-.ec-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.85rem;}
-.ec-meta-item{display:flex;align-items:center;gap:.3rem;font-size:.73rem;color:var(--s500);font-weight:600;}
-.ec-meta-item i{color:var(--g500);font-size:.7rem;}
+  .stripe-voting {
+    background: linear-gradient(90deg, var(--g600), var(--g400));
+  }
 
-/* countdown inside card */
-.ec-countdown{
-  display:flex;gap:.3rem;align-items:center;
-  font-size:.68rem;color:var(--s500);margin-bottom:.85rem;font-weight:600;
-}
-.ec-countdown .cd-unit{
-  background:var(--s100);border-radius:6px;padding:.15rem .4rem;
-  font-family:'Sora',sans-serif;font-weight:800;font-size:.78rem;color:var(--s800);
-}
-.ec-countdown.urgent .cd-unit{background:var(--red-l);color:var(--red);}
+  .stripe-published {
+    background: linear-gradient(90deg, var(--violet), #a78bfa);
+  }
 
-.ec-actions{display:flex;gap:.5rem;flex-wrap:wrap;}
-.ec-btn{
-  display:inline-flex;align-items:center;gap:.35rem;
-  padding:.38rem .85rem;border-radius:8px;font-size:.75rem;
-  font-weight:800;text-decoration:none;border:none;cursor:pointer;
-  font-family:'Nunito',sans-serif;transition:all .2s;letter-spacing:.02em;
-}
-.ec-btn-vote   {background:var(--g600);color:#fff;}
-.ec-btn-vote:hover{background:var(--g700);color:#fff;}
-.ec-btn-nominate{background:var(--blue);color:#fff;}
-.ec-btn-nominate:hover{background:#1d4ed8;color:#fff;}
-.ec-btn-results{background:var(--violet-l);color:var(--violet);border:1.5px solid #c4b5fd;}
-.ec-btn-results:hover{background:var(--violet);color:#fff;}
-.ec-btn-view   {background:var(--s100);color:var(--s700);border:1.5px solid var(--s200);}
-.ec-btn-view:hover{background:var(--s200);color:var(--s800);}
+  .stripe-review {
+    background: linear-gradient(90deg, var(--amber), #fcd34d);
+  }
 
-/* already voted / nominated badges */
-.ec-done-badge{
-  display:inline-flex;align-items:center;gap:.3rem;
-  padding:.25rem .7rem;border-radius:99px;font-size:.68rem;font-weight:800;
-}
-.badge-voted    {background:var(--g100);color:var(--g700);}
-.badge-nominated{background:var(--blue-l);color:#1d4ed8;}
+  .stripe-closed {
+    background: linear-gradient(90deg, var(--s500), var(--s300));
+  }
 
-/* Position mini list */
-.ec-positions{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.75rem;}
-.ec-pos-chip{
-  font-size:.65rem;font-weight:700;padding:.18rem .55rem;
-  border-radius:99px;background:var(--g50);
-  border:1px solid var(--g200);color:var(--g700);
-}
+  .stripe-draft {
+    background: var(--s200);
+  }
 
-/* Live vote timer strip (voting phase) */
-.vote-timer-strip{
-  display:flex;align-items:center;gap:.5rem;
-  background:linear-gradient(135deg,var(--g50),var(--g100));
-  border:1.5px solid var(--g200);border-radius:10px;
-  padding:.5rem .85rem;margin-bottom:.85rem;font-size:.75rem;color:var(--g800);font-weight:700;
-}
-.vote-timer-strip i{color:var(--g600);}
+  .ec-body {
+    padding: 1rem 1.1rem;
+  }
 
-/* No elections state */
-.no-elections{
-  padding:2.5rem;text-align:center;
-  display:flex;flex-direction:column;align-items:center;gap:.5rem;
-}
-.no-elections i{font-size:2.5rem;color:var(--g300);}
-.no-elections h6{font-family:'Sora',sans-serif;font-weight:700;color:var(--s800);margin:0;}
-.no-elections p{font-size:.83rem;color:var(--s500);margin:0;}
+  .ec-club {
+    font-size: .68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--s500);
+    margin-bottom: .2rem;
+  }
 
-/* ── ANIMATIONS ───────────────────────────────────────── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-.anim{animation:fadeUp .45s ease both;}
-.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}
-.d4{animation-delay:.19s}.d5{animation-delay:.24s}.d6{animation-delay:.29s}
-.d7{animation-delay:.34s}.d8{animation-delay:.39s}.d9{animation-delay:.44s}
+  .ec-title {
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--s800);
+    margin-bottom: .65rem;
+    line-height: 1.3;
+  }
+
+  .ec-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .18rem .6rem;
+    border-radius: 99px;
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+
+  .pill-nomination {
+    background: var(--blue-l);
+    color: #1d4ed8;
+  }
+
+  .pill-voting {
+    background: var(--g100);
+    color: var(--g700);
+  }
+
+  .pill-published {
+    background: var(--violet-l);
+    color: var(--violet);
+  }
+
+  .pill-review {
+    background: var(--amber-l);
+    color: #92400e;
+  }
+
+  .pill-closed {
+    background: var(--s100);
+    color: var(--s500);
+  }
+
+  .pill-draft {
+    background: var(--s100);
+    color: var(--s500);
+  }
+
+  .ec-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: .85rem;
+  }
+
+  .ec-meta-item {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .73rem;
+    color: var(--s500);
+    font-weight: 600;
+  }
+
+  .ec-meta-item i {
+    color: var(--g500);
+    font-size: .7rem;
+  }
+
+  /* countdown inside card */
+  .ec-countdown {
+    display: flex;
+    gap: .3rem;
+    align-items: center;
+    font-size: .68rem;
+    color: var(--s500);
+    margin-bottom: .85rem;
+    font-weight: 600;
+  }
+
+  .ec-countdown .cd-unit {
+    background: var(--s100);
+    border-radius: 6px;
+    padding: .15rem .4rem;
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: .78rem;
+    color: var(--s800);
+  }
+
+  .ec-countdown.urgent .cd-unit {
+    background: var(--red-l);
+    color: var(--red);
+  }
+
+  .ec-actions {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+
+  .ec-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .38rem .85rem;
+    border-radius: 8px;
+    font-size: .75rem;
+    font-weight: 800;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: all .2s;
+    letter-spacing: .02em;
+  }
+
+  .ec-btn-vote {
+    background: var(--g600);
+    color: #fff;
+  }
+
+  .ec-btn-vote:hover {
+    background: var(--g700);
+    color: #fff;
+  }
+
+  .ec-btn-nominate {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  .ec-btn-nominate:hover {
+    background: #1d4ed8;
+    color: #fff;
+  }
+
+  .ec-btn-results {
+    background: var(--violet-l);
+    color: var(--violet);
+    border: 1.5px solid #c4b5fd;
+  }
+
+  .ec-btn-results:hover {
+    background: var(--violet);
+    color: #fff;
+  }
+
+  .ec-btn-view {
+    background: var(--s100);
+    color: var(--s700);
+    border: 1.5px solid var(--s200);
+  }
+
+  .ec-btn-view:hover {
+    background: var(--s200);
+    color: var(--s800);
+  }
+
+  /* already voted / nominated badges */
+  .ec-done-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .25rem .7rem;
+    border-radius: 99px;
+    font-size: .68rem;
+    font-weight: 800;
+  }
+
+  .badge-voted {
+    background: var(--g100);
+    color: var(--g700);
+  }
+
+  .badge-nominated {
+    background: var(--blue-l);
+    color: #1d4ed8;
+  }
+
+  /* Position mini list */
+  .ec-positions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+    margin-bottom: .75rem;
+  }
+
+  .ec-pos-chip {
+    font-size: .65rem;
+    font-weight: 700;
+    padding: .18rem .55rem;
+    border-radius: 99px;
+    background: var(--g50);
+    border: 1px solid var(--g200);
+    color: var(--g700);
+  }
+
+  /* Live vote timer strip (voting phase) */
+  .vote-timer-strip {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: linear-gradient(135deg, var(--g50), var(--g100));
+    border: 1.5px solid var(--g200);
+    border-radius: 10px;
+    padding: .5rem .85rem;
+    margin-bottom: .85rem;
+    font-size: .75rem;
+    color: var(--g800);
+    font-weight: 700;
+  }
+
+  .vote-timer-strip i {
+    color: var(--g600);
+  }
+
+  /* No elections state */
+  .no-elections {
+    padding: 2.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .no-elections i {
+    font-size: 2.5rem;
+    color: var(--g300);
+  }
+
+  .no-elections h6 {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    color: var(--s800);
+    margin: 0;
+  }
+
+  .no-elections p {
+    font-size: .83rem;
+    color: var(--s500);
+    margin: 0;
+  }
+
+  /* ── ANIMATIONS ───────────────────────────────────────── */
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px)
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0)
+    }
+  }
+
+  .anim {
+    animation: fadeUp .45s ease both;
+  }
+
+  .d1 {
+    animation-delay: .04s
+  }
+
+  .d2 {
+    animation-delay: .09s
+  }
+
+  .d3 {
+    animation-delay: .14s
+  }
+
+  .d4 {
+    animation-delay: .19s
+  }
+
+  .d5 {
+    animation-delay: .24s
+  }
+
+  .d6 {
+    animation-delay: .29s
+  }
+
+  .d7 {
+    animation-delay: .34s
+  }
+
+  .d8 {
+    animation-delay: .39s
+  }
+
+  .d9 {
+    animation-delay: .44s
+  }
 </style>
 {% endblock %}
 
@@ -331,6 +1098,24 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
 
 <!-- ── MAIN CONTENT ───────────────────────────────────── -->
 <div class="dash-content">
+
+  {% if announcements %}
+  <!-- ANNOUNCEMENTS -->
+  <div class="mb-4">
+    <div class="section-label mt-0 mb-3"><i class="fas fa-bullhorn"></i> Important Announcements</div>
+    <div class="d-flex flex-column gap-2">
+      {% for ann_item in announcements %}
+      <div class="panel anim d1 p-3 border-start border-4 {% if ann_item.type == 'alert' %}border-danger bg-danger bg-opacity-10{% elif ann_item.type == 'success' %}border-success bg-success bg-opacity-10{% elif ann_item.type == 'warning' %}border-warning bg-warning bg-opacity-10{% else %}border-primary bg-primary bg-opacity-10{% endif %}">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <h6 class="m-0 fw-bold text-dark"><i class="fas fa-info-circle me-1 opacity-75"></i> {{ ann_item.title }}</h6>
+          <small class="text-muted fw-bold" style="font-size: 0.7rem;">{{ ann_item.created_at.strftime('%d %b %Y') }}</small>
+        </div>
+        <div class="text-secondary small">{{ ann_item.message }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
   <!-- STAT CARDS (5 — added Elections) -->
   <div class="stats-row">
@@ -394,14 +1179,15 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
       {% for election in student_elections %}
 
       {# ── Determine what the student can do ── #}
-      {% set can_nominate = election.is_nomination_open %}
-      {% set can_vote     = election.is_voting_open %}
+      {% set can_nominate = election.is_nomination_open and not is_final_year %}
+      {% set can_vote = election.is_voting_open %}
       {% set is_published = election.status.value == 'published' %}
-      {% set is_review    = election.status.value == 'review' %}
-      {% set is_closed    = election.status.value == 'closed' %}
+      {% set is_review = election.status.value == 'review' %}
+      {% set is_closed = election.status.value == 'closed' %}
 
       {# Check if student already nominated (passed from route) #}
-      {% set already_nominated = election.id in nominated_election_ids if nominated_election_ids is defined else false %}
+      {% set already_nominated = election.id in nominated_election_ids if nominated_election_ids is defined else false
+      %}
       {# Check if student already voted (passed from route) #}
       {% set already_voted = election.id in voted_election_ids if voted_election_ids is defined else false %}
 
@@ -417,17 +1203,17 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
           <div>
             <span class="ec-status-pill pill-{{ election.status.value }}">
               {% if election.status.value == 'nomination' %}
-                <i class="fas fa-pencil-alt"></i> Nominations Open
+              <i class="fas fa-pencil-alt"></i> Nominations Open
               {% elif election.status.value == 'voting' %}
-                <i class="fas fa-check-circle"></i> Voting Live
+              <i class="fas fa-check-circle"></i> Voting Live
               {% elif election.status.value == 'review' %}
-                <i class="fas fa-search"></i> Under Review
+              <i class="fas fa-search"></i> Under Review
               {% elif election.status.value == 'published' %}
-                <i class="fas fa-trophy"></i> Results Out
+              <i class="fas fa-trophy"></i> Results Out
               {% elif election.status.value == 'closed' %}
-                <i class="fas fa-lock"></i> Closed
+              <i class="fas fa-lock"></i> Closed
               {% else %}
-                <i class="fas fa-clock"></i> {{ election.status.value|title }}
+              <i class="fas fa-clock"></i> {{ election.status.value|title }}
               {% endif %}
             </span>
           </div>
@@ -461,14 +1247,23 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
             {% endif %}
             <div class="ec-meta-item">
               <i class="fas fa-users"></i>
-              {{ election.nominations|selectattr('status.value','eq','approved')|list|length }} candidates
+              Multiple candidates
             </div>
           </div>
 
           <!-- Voting countdown timer (only during voting) -->
-          {% if can_vote and election.voting_end %}
-          <div class="vote-timer-strip" id="timer-{{ election.id }}"
-               data-end="{{ election.voting_end.isoformat() }}">
+          {% if election.status.value == 'voting' %}
+          {% if not can_vote and election.voting_start %}
+          <div class="vote-timer-strip" id="timer-start-{{ election.id }}"
+            data-start="{{ election.voting_start.isoformat() }}Z">
+            <i class="fas fa-clock"></i>
+            <span>Voting opens in:</span>
+            <span class="cd-unit" id="h-start-{{ election.id }}">--</span>h
+            <span class="cd-unit" id="m-start-{{ election.id }}">--</span>m
+            <span class="cd-unit" id="s-start-{{ election.id }}">--</span>s
+          </div>
+          {% elif can_vote and election.voting_end %}
+          <div class="vote-timer-strip" id="timer-{{ election.id }}" data-end="{{ election.voting_end.isoformat() }}Z">
             <i class="fas fa-clock"></i>
             <span>Voting closes in:</span>
             <span class="cd-unit" id="h-{{ election.id }}">--</span>h
@@ -476,54 +1271,51 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
             <span class="cd-unit" id="s-{{ election.id }}">--</span>s
           </div>
           {% endif %}
+          {% endif %}
 
           <!-- ACTION BUTTONS ─────────────────────────── -->
           <div class="ec-actions">
 
             {% if can_nominate %}
-              {% if already_nominated %}
-                <span class="ec-done-badge badge-nominated">
-                  <i class="fas fa-check"></i> Nomination Submitted
-                </span>
-              {% else %}
-                <a href="{{ url_for('elections.nominate', election_id=election.id) }}"
-                   class="ec-btn ec-btn-nominate">
-                  <i class="fas fa-pencil-alt"></i> Apply for Nomination
-                </a>
-              {% endif %}
+            {% if already_nominated %}
+            <span class="ec-done-badge badge-nominated">
+              <i class="fas fa-check"></i> Nomination Submitted
+            </span>
+            {% else %}
+            <a href="{{ url_for('student.apply_leadership', election_id=election.id) }}" class="ec-btn ec-btn-nominate">
+              <i class="fas fa-pencil-alt"></i> Apply for Nomination
+            </a>
+            {% endif %}
 
             {% elif can_vote %}
-              {% if already_voted %}
-                <span class="ec-done-badge badge-voted">
-                  <i class="fas fa-check-circle"></i> Vote Cast
-                </span>
-              {% else %}
-                <a href="{{ url_for('elections.vote', election_id=election.id) }}"
-                   class="ec-btn ec-btn-vote">
-                  <i class="fas fa-vote-yea"></i> Cast Your Vote
-                </a>
-              {% endif %}
+            {% if already_voted %}
+            <span class="ec-done-badge badge-voted">
+              <i class="fas fa-check-circle"></i> Vote Cast
+            </span>
+            {% else %}
+            <a href="{{ url_for('elections.vote', election_id=election.id) }}" class="ec-btn ec-btn-vote">
+              <i class="fas fa-vote-yea"></i> Cast Your Vote
+            </a>
+            {% endif %}
 
             {% elif is_published %}
-              <a href="{{ url_for('elections.results', election_id=election.id) }}"
-                 class="ec-btn ec-btn-results">
-                <i class="fas fa-trophy"></i> View Results
-              </a>
+            <a href="{{ url_for('elections.results', election_id=election.id) }}" class="ec-btn ec-btn-results">
+              <i class="fas fa-trophy"></i> View Results
+            </a>
 
             {% elif is_review %}
-              <span style="font-size:.75rem;color:var(--amber);font-weight:700;">
-                <i class="fas fa-search mr-1"></i>Nominations under review
-              </span>
+            <span style="font-size:.75rem;color:var(--amber);font-weight:700;">
+              <i class="fas fa-search mr-1"></i>Nominations under review
+            </span>
 
             {% elif is_closed %}
-              <span style="font-size:.75rem;color:var(--s500);font-weight:700;">
-                <i class="fas fa-lock mr-1"></i>Election closed
-              </span>
+            <span style="font-size:.75rem;color:var(--s500);font-weight:700;">
+              <i class="fas fa-lock mr-1"></i>Election closed
+            </span>
             {% endif %}
 
             <!-- Always show View detail link -->
-            <a href="{{ url_for('elections.election_detail', election_id=election.id) }}"
-               class="ec-btn ec-btn-view">
+            <a href="{{ url_for('elections.election_detail', election_id=election.id) }}" class="ec-btn ec-btn-view">
               <i class="fas fa-eye"></i> Details
             </a>
 
@@ -582,15 +1374,15 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
         </span>
       </div>
       {% if memberships %}
-        {% for m in memberships %}
-        <div class="mem-item">
-          <span class="mem-dot {{ m.status }}"></span>
-          <span class="mem-name">{{ m.club.name }}</span>
-          <span class="mem-badge badge-{{ m.status }}">{{ m.status|capitalize }}</span>
-        </div>
-        {% endfor %}
+      {% for m in memberships %}
+      <div class="mem-item">
+        <span class="mem-dot {{ m.status }}"></span>
+        <span class="mem-name">{{ m.club.name }}</span>
+        <span class="mem-badge badge-{{ m.status }}">{{ m.status|capitalize }}</span>
+      </div>
+      {% endfor %}
       {% else %}
-        <div class="empty-row"><i class="fas fa-door-open"></i>No memberships yet</div>
+      <div class="empty-row"><i class="fas fa-door-open"></i>No memberships yet</div>
       {% endif %}
     </div>
     <div class="panel">
@@ -599,15 +1391,15 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
         <h6>Leadership Eligibility</h6>
       </div>
       {% if leader_eligible_clubs %}
-        {% for club in leader_eligible_clubs %}
-        <div class="elig-item">
-          <i class="fas fa-shield-alt" style="color:var(--g500);font-size:.82rem;"></i>
-          <span class="elig-name">{{ club.name }}</span>
-          <a href="{{ url_for('student.apply_leader', club_id=club.id) }}" class="elig-btn">Apply</a>
-        </div>
-        {% endfor %}
+      {% for club in leader_eligible_clubs %}
+      <div class="elig-item">
+        <i class="fas fa-shield-alt" style="color:var(--g500);font-size:.82rem;"></i>
+        <span class="elig-name">{{ club.name }}</span>
+        <a href="{{ url_for('student.apply_leadership') }}" class="elig-btn">Apply</a>
+      </div>
+      {% endfor %}
       {% else %}
-        <div class="empty-row"><i class="fas fa-clock"></i>Requires 1+ year of active membership</div>
+      <div class="empty-row"><i class="fas fa-clock"></i>Requires 1+ year of active membership</div>
       {% endif %}
     </div>
   </div>
@@ -623,22 +1415,23 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
         <h6>Upcoming Events</h6>
       </div>
       {% if upcoming_events %}
-        {% for event in upcoming_events %}
-        <div class="event-item">
-          <div class="event-date-box">
-            <div class="event-day">{{ event.date.strftime('%d') }}</div>
-            <div class="event-mon">{{ event.date.strftime('%b') }}</div>
-          </div>
-          <div>
-            <div class="event-title">{{ event.title }}</div>
-            {% if event.club %}
-            <div class="event-club"><i class="fas fa-shield-alt me-1" style="color:var(--g400);"></i>{{ event.club.name }}</div>
-            {% endif %}
-          </div>
+      {% for event in upcoming_events %}
+      <div class="event-item">
+        <div class="event-date-box">
+          <div class="event-day">{{ event.date.strftime('%d') }}</div>
+          <div class="event-mon">{{ event.date.strftime('%b') }}</div>
         </div>
-        {% endfor %}
+        <div>
+          <div class="event-title">{{ event.title }}</div>
+          {% if event.club %}
+          <div class="event-club"><i class="fas fa-shield-alt me-1" style="color:var(--g400);"></i>{{ event.club.name }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
       {% else %}
-        <div class="empty-row"><i class="fas fa-calendar-times"></i>No upcoming events</div>
+      <div class="empty-row"><i class="fas fa-calendar-times"></i>No upcoming events</div>
       {% endif %}
     </div>
 
@@ -647,44 +1440,46 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
         <div class="ph-icon ph-slate"><i class="fas fa-bell"></i></div>
         <h6>Notifications</h6>
         {% if notifications %}
-        <span style="margin-left:auto;background:var(--g100);color:var(--g700);font-size:.65rem;font-weight:800;padding:.15rem .55rem;border-radius:99px;">
+        <span
+          style="margin-left:auto;background:var(--g100);color:var(--g700);font-size:.65rem;font-weight:800;padding:.15rem .55rem;border-radius:99px;">
           {{ notifications|length }} new
         </span>
         {% endif %}
       </div>
       {% if notifications %}
-        {% for note in notifications %}
-        <div class="notif-item {% if not note.is_read %}notif-unread{% endif %}">
-          <div class="notif-dot-wrap
+      {% for note in notifications %}
+      <div class="notif-item {% if not note.is_read %}notif-unread{% endif %}">
+        <div class="notif-dot-wrap
             {% if note.notification_type == 'audit_rejected' %}notif-audit
             {% elif note.notification_type and 'election' in note.notification_type %}notif-election
             {% elif note.priority == 'high' %}notif-alert
             {% else %}notif-general{% endif %}">
-            {% if note.notification_type and 'election' in note.notification_type %}
-              <i class="fas fa-vote-yea"></i>
-            {% elif note.notification_type == 'audit_rejected' %}
-              <i class="fas fa-clipboard-list"></i>
-            {% elif note.priority == 'high' %}
-              <i class="fas fa-exclamation"></i>
-            {% else %}
-              <i class="fas fa-info"></i>
-            {% endif %}
-          </div>
-          <div>
-            {% if note.title %}
-            <div style="font-size:.76rem;font-weight:800;color:var(--s800);margin-bottom:.1rem;">{{ note.title }}</div>
-            {% endif %}
-            <div class="notif-text">{{ note.message }}</div>
-            {% if note.created_date %}
-            <div class="notif-time"><i class="fas fa-clock me-1"></i>{{ note.created_date.strftime('%d %b, %H:%M') }}</div>
-            {% endif %}
-          </div>
+          {% if note.notification_type and 'election' in note.notification_type %}
+          <i class="fas fa-vote-yea"></i>
+          {% elif note.notification_type == 'audit_rejected' %}
+          <i class="fas fa-clipboard-list"></i>
+          {% elif note.priority == 'high' %}
+          <i class="fas fa-exclamation"></i>
+          {% else %}
+          <i class="fas fa-info"></i>
+          {% endif %}
         </div>
-        {% endfor %}
+        <div>
+          {% if note.title %}
+          <div style="font-size:.76rem;font-weight:800;color:var(--s800);margin-bottom:.1rem;">{{ note.title }}</div>
+          {% endif %}
+          <div class="notif-text">{{ note.message }}</div>
+          {% if note.created_date %}
+          <div class="notif-time"><i class="fas fa-clock me-1"></i>{{ note.created_date.strftime('%d %b, %H:%M') }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
       {% else %}
-        <div class="empty-row">
-          <i class="fas fa-check-circle" style="color:var(--g300);"></i>All caught up!
-        </div>
+      <div class="empty-row">
+        <i class="fas fa-check-circle" style="color:var(--g300);"></i>All caught up!
+      </div>
       {% endif %}
     </div>
   </div>
@@ -715,87 +1510,101 @@ body{font-family:'Nunito',sans-serif;background:var(--s50);color:var(--s800);mar
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-/* ── Chart instances ─────────────────────────────────── */
-let membershipChart, engagementChart;
-const GREEN='#16a34a', AMBER='#f59e0b', BLUE='#3b82f6', SLATE='#94a3b8', GRID='rgba(0,0,0,.05)';
-Chart.defaults.font.family="'Nunito',sans-serif";
-Chart.defaults.font.weight='600';
-Chart.defaults.color='#64748b';
+  /* ── Chart instances ─────────────────────────────────── */
+  let membershipChart, engagementChart;
+  const GREEN = '#16a34a', AMBER = '#f59e0b', BLUE = '#3b82f6', SLATE = '#94a3b8', GRID = 'rgba(0,0,0,.05)';
+  Chart.defaults.font.family = "'Nunito',sans-serif";
+  Chart.defaults.font.weight = '600';
+  Chart.defaults.color = '#64748b';
 
-/* ── AJAX Refresh ────────────────────────────────────── */
-async function fetchDashboardData() {
-  try {
-    const res  = await fetch("{{ url_for('student.dashboard') }}");
-    const data = await res.json();
-    animateCount('stat-active',        data.active);
-    animateCount('stat-pending',       data.pending);
-    animateCount('stat-events',        data.events);
-    animateCount('stat-notifications', data.notifications);
-    if (!membershipChart) { initCharts(data); } else { updateCharts(data); }
-  } catch(e) {}
-}
+  /* ── AJAX Refresh ────────────────────────────────────── */
+  async function fetchDashboardData() {
+    try {
+      const res = await fetch("{{ url_for('student.dashboard') }}");
+      const data = await res.json();
+      animateCount('stat-active', data.active);
+      animateCount('stat-pending', data.pending);
+      animateCount('stat-events', data.events);
+      animateCount('stat-notifications', data.notifications);
+      if (!membershipChart) { initCharts(data); } else { updateCharts(data); }
+    } catch (e) { }
+  }
 
-function animateCount(id, target) {
-  const el = document.getElementById(id);
-  if (!el || parseInt(el.innerText) === target) return;
-  const step = (target - (parseInt(el.innerText)||0)) / 12;
-  let val = parseInt(el.innerText)||0;
-  const tick = setInterval(()=>{
-    val += step; el.innerText = Math.round(val);
-    if (Math.abs(val-target)<1){el.innerText=target;clearInterval(tick);}
-  },40);
-}
+  function animateCount(id, target) {
+    const el = document.getElementById(id);
+    if (!el || parseInt(el.innerText) === target) return;
+    const step = (target - (parseInt(el.innerText) || 0)) / 12;
+    let val = parseInt(el.innerText) || 0;
+    const tick = setInterval(() => {
+      val += step; el.innerText = Math.round(val);
+      if (Math.abs(val - target) < 1) { el.innerText = target; clearInterval(tick); }
+    }, 40);
+  }
 
-function initCharts(data) {
-  membershipChart = new Chart(document.getElementById('membershipChart'),{
-    type:'doughnut',
-    data:{labels:['Active','Pending'],datasets:[{data:[data.active,data.pending],backgroundColor:[GREEN,AMBER],borderWidth:3,borderColor:'#fff',hoverBorderColor:'#fff',hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{position:'bottom',labels:{padding:16,usePointStyle:true,pointStyleWidth:10}},
-        tooltip:{backgroundColor:'#1e293b',titleColor:'#86efac',bodyColor:'#fff',padding:10,cornerRadius:8}}}
-  });
+  function initCharts(data) {
+    membershipChart = new Chart(document.getElementById('membershipChart'), {
+      type: 'doughnut',
+      data: { labels: ['Active', 'Pending'], datasets: [{ data: [data.active, data.pending], backgroundColor: [GREEN, AMBER], borderWidth: 3, borderColor: '#fff', hoverBorderColor: '#fff', hoverOffset: 6 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '65%',
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } },
+          tooltip: { backgroundColor: '#1e293b', titleColor: '#86efac', bodyColor: '#fff', padding: 10, cornerRadius: 8 }
+        }
+      }
+    });
 
-  engagementChart = new Chart(document.getElementById('engagementChart'),{
-    type:'bar',
-    data:{labels:['Eligible','Events','Notifications'],datasets:[{data:[data.leader_eligible,data.events,data.notifications],backgroundColor:[GREEN,BLUE,SLATE],borderRadius:8,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#86efac',bodyColor:'#fff',padding:10,cornerRadius:8}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:GRID,drawBorder:false},ticks:{font:{size:11},stepSize:1},beginAtZero:true}}}
-  });
-}
+    engagementChart = new Chart(document.getElementById('engagementChart'), {
+      type: 'bar',
+      data: { labels: ['Eligible', 'Events', 'Notifications'], datasets: [{ data: [data.leader_eligible, data.events, data.notifications], backgroundColor: [GREEN, BLUE, SLATE], borderRadius: 8, borderSkipped: false }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', titleColor: '#86efac', bodyColor: '#fff', padding: 10, cornerRadius: 8 } },
+        scales: { x: { grid: { display: false }, ticks: { font: { size: 11 } } }, y: { grid: { color: GRID, drawBorder: false }, ticks: { font: { size: 11 }, stepSize: 1 }, beginAtZero: true } }
+      }
+    });
+  }
 
-function updateCharts(data) {
-  membershipChart.data.datasets[0].data=[data.active,data.pending];membershipChart.update('active');
-  engagementChart.data.datasets[0].data=[data.leader_eligible,data.events,data.notifications];engagementChart.update('active');
-}
+  function updateCharts(data) {
+    membershipChart.data.datasets[0].data = [data.active, data.pending]; membershipChart.update('active');
+    engagementChart.data.datasets[0].data = [data.leader_eligible, data.events, data.notifications]; engagementChart.update('active');
+  }
 
-fetchDashboardData();
-setInterval(fetchDashboardData, 15000);
+  fetchDashboardData();
+  setInterval(fetchDashboardData, 15000);
 
-/* ── Live countdown timers for voting elections ──────── */
-function updateTimers() {
-  document.querySelectorAll('[data-end]').forEach(el => {
-    const end  = new Date(el.dataset.end).getTime();
-    const now  = Date.now();
-    const diff = Math.max(0, end - now);
-    const id   = el.id.replace('timer-','');
+  /* ── Live countdown timers for voting elections ──────── */
+  function updateTimers() {
+    document.querySelectorAll('[data-end], [data-start]').forEach(el => {
+      const isStartTimer = el.hasAttribute('data-start');
+      const targetTime = new Date(isStartTimer ? el.dataset.start : el.dataset.end).getTime();
+      const now = Date.now();
+      const diff = Math.max(0, targetTime - now);
 
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
+      // Auto vote button: reload page explicitly when start countdown hits 0
+      if (isStartTimer && diff === 0) {
+        window.location.reload();
+        return;
+      }
 
-    const hEl = document.getElementById('h-'+id);
-    const mEl = document.getElementById('m-'+id);
-    const sEl = document.getElementById('s-'+id);
-    if (hEl) hEl.textContent = String(h).padStart(2,'0');
-    if (mEl) mEl.textContent = String(m).padStart(2,'0');
-    if (sEl) sEl.textContent = String(s).padStart(2,'0');
+      const id = el.id.replace('timer-start-', '').replace('timer-', '');
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
 
-    // Turn red when < 1 hour left
-    if (h < 1) el.classList.add('urgent');
-  });
-}
-updateTimers();
-setInterval(updateTimers, 1000);
+      const prefix = isStartTimer ? 'start-' : '';
+      const hEl = document.getElementById('h-' + prefix + id);
+      const mEl = document.getElementById('m-' + prefix + id);
+      const sEl = document.getElementById('s-' + prefix + id);
+      if (hEl) hEl.textContent = String(h).padStart(2, '0');
+      if (mEl) mEl.textContent = String(m).padStart(2, '0');
+      if (sEl) sEl.textContent = String(s).padStart(2, '0');
+
+      // Turn red when < 1 hour left
+      if (h < 1) el.classList.add('urgent');
+    });
+  }
+  updateTimers();
+  setInterval(updateTimers, 1000);
 </script>
 {% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base/club_leader.html" %}
+{% block title %}Update Attendance | CAMS{% endblock %}
+
+{% block content %}
+<div class="content-header rounded mb-4">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-8">
+                <h1 class="m-0" style="font-family:'Outfit', sans-serif; font-weight:700;">
+                    <i class="fas fa-clipboard-check me-2 text-primary"></i> Attendance: {{ event.title }}
+                </h1>
+                <p class="text-muted mt-2 mb-0">
+                    <i class="far fa-clock me-1"></i> {{ event.date.strftime('%B %d, %Y - %I:%M %p') }}
+                </p>
+            </div>
+            <div class="col-sm-4 text-right">
+                <a href="{{ url_for('club_leader.events') }}" class="btn btn-outline-secondary rounded-pill shadow-sm px-4">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Events
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card shadow-sm border-0" style="border-radius:15px; overflow:hidden;">
+        <form method="POST">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0 px-4 py-3" style="border-top-left-radius: 15px;">Member Name</th>
+                                <th class="border-0 py-3">Registration No.</th>
+                                <th class="border-0 py-3">Club Role</th>
+                                <th class="border-0 px-4 py-3 text-center" style="border-top-right-radius: 15px;">Attendance Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in members %}
+                            {% set status = attendance_map.get(member.user.id, 'absent') %}
+                            <tr>
+                                <td class="px-4 py-3 font-weight-bold text-dark">
+                                    {{ member.user.name }}
+                                </td>
+                                <td class="py-3 text-muted">
+                                    {{ member.user.registration_number or '<i class="text-black-50">Unknown</i>'|safe }}
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge bg-secondary rounded-pill px-3">{{ member.role.title() }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <select name="attendance_user_{{ member.user.id }}" class="form-control form-select form-control-sm rounded-pill shadow-sm bg-white" style="width: 140px; margin: 0 auto; display: inline-block; cursor: pointer;">
+                                        <option value="attended" {% if status == 'attended' %}selected{% endif %}>🟢 Attended</option>
+                                        <option value="absent" {% if status == 'absent' %}selected{% endif %}>🔴 Absent</option>
+                                        <option value="apology" {% if status == 'apology' %}selected{% endif %}>🟠 Apology</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="fas fa-users-slash fa-2x mb-3" style="opacity:0.5;"></i>
+                                    <p class="mb-0">No active members found for this club.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if members %}
+            <div class="card-footer bg-light border-top-0 py-4 px-4 text-right" style="border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm font-weight-bold" style="letter-spacing:0.5px;">
+                    <i class="fas fa-save me-2"></i> Save Attendance
+                </button>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

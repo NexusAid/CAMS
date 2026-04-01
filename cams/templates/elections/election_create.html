@@ -107,7 +107,7 @@
                 <label class="form-label">Club <span class="text-danger">*</span></label>
                 <select name="club_id" class="form-control" required>
                     <option value="" disabled selected>Select club…</option>
-                    {% for club in Club %}
+                    {% for club in clubs %}
                     <option value="{{ club.id }}">{{ club.name }}</option>
                     {% endfor %}
                 </select>

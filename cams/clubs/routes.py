@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 
 # -------------------------
 # LIST CLUBS
+# Displays all clubs in the system for general browsing
 # -------------------------
 @clubs.route("/")
 @login_required
@@ -143,4 +144,5 @@ def pay_fees(membership_id):
     db.session.commit()
     
     flash("Fees paid successfully", "success")
-    return redirect(url_for("club.view", club_id=membership.club_id))
+    # Fixed URL route reference from the non-existent 'club.view' to 'dashboard.club_details'
+    return redirect(url_for("dashboard.club_details", club_id=membership.club_id))

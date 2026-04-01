@@ -7,12 +7,21 @@ from datetime import datetime, timezone, date
 from enum import Enum as PyEnum
 
 
+class PasswordHistory(db.Model):
+    __tablename__ = "password_history"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    changed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 # -----------------------------
 # USER MODEL
+# Represents all human actors in the system (students, admins, deans, etc.)
 # -----------------------------
 class User(UserMixin, db.Model):
     __tablename__ = "user"
 
+    # Primary key for uniquely identifying a user
     id = db.Column(db.Integer, primary_key=True)
 
     first_name = db.Column(db.String(100), nullable=True)
@@ -20,6 +29,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     registration_number = db.Column(db.String(50), unique=True, nullable=True)
     course = db.Column(db.String(150), nullable=True)
+    profile_image = db.Column(db.String(300), nullable=True)
 
     password_hash = db.Column(db.String(255), nullable=False)
 
@@ -33,20 +43,49 @@ class User(UserMixin, db.Model):
     last_login = db.Column(db.DateTime, nullable=True)
 
     memberships = db.relationship("ClubMembership", backref="user", lazy=True)
+    password_history = db.relationship("PasswordHistory", backref="user", lazy=True, cascade="all, delete-orphan")
 
     @property
     def full_name(self):
-        return f"{self.first_name} {self.last_name}"
+        first = (self.first_name or "").strip()
+        last = (self.last_name or "").strip()
+        return (f"{first} {last}").strip()
+
+    @property
+    def name(self):
+        """
+        Compatibility alias used across templates.
+        Falls back to email if names are missing.
+        """
+        return self.full_name or (self.email or "")
 
     @property
     def is_admin(self):
         return self.role == "admin"
 
     def set_password(self, password):
+        # Save current password to history before changing
+        if self.password_hash:
+            history = PasswordHistory(password_hash=self.password_hash)
+            self.password_history.append(history)
+            
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def check_password_reuse(self, new_password):
+        """Returns True if the new password has been used before (in current or history)"""
+        # Check current password
+        if self.password_hash and check_password_hash(self.password_hash, new_password):
+            return True
+            
+        # Check history
+        for history in self.password_history:
+            if check_password_hash(history.password_hash, new_password):
+                return True
+                
+        return False
 
     def __repr__(self):
         return f"<User {self.email}>"
@@ -82,10 +121,19 @@ class Club(db.Model):
     last_review_date = db.Column(db.DateTime)
 
     # ----------------------------------------------------------
-    # PATRON (Foreign Key to User)
+    # PATRON (External or Internal)
     # ----------------------------------------------------------
-    patron_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    patron_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     patron = db.relationship("User", backref="patroned_clubs")
+
+    patron_name = db.Column(db.String(150), nullable=True)
+    patron_email = db.Column(db.String(120), nullable=True)
+    patron_status = db.Column(db.String(20), default="pending")  # pending | accepted | rejected
+
+    # ----------------------------------------------------------
+    # REGISTRATION
+    # ----------------------------------------------------------
+    registration_number = db.Column(db.String(50), unique=True, nullable=True)
 
     # ----------------------------------------------------------
     # DOCUMENT FLAGS
@@ -98,6 +146,9 @@ class Club(db.Model):
 
     has_patron_letter = db.Column(db.Boolean, default=False)
     patron_letter_file = db.Column(db.String(255))
+
+    has_rules = db.Column(db.Boolean, default=False)
+    rules_file = db.Column(db.String(255))
 
     # ----------------------------------------------------------
     # MEETINGS
@@ -156,11 +207,8 @@ class Club(db.Model):
 
     @property
     def member_count(self):
+        # Calculate total memberships tied to this club regardless of status
         return len(self.memberships)
-
-    @property
-    def member_count(self):
-        return self.active_members
 
 
     @property
@@ -168,11 +216,20 @@ class Club(db.Model):
         return 20
 
     @property
+    def member_count(self): # Added new member_count property as per instruction
+        from cams.models import ClubMembership
+        return ClubMembership.query.filter_by(
+            club_id=self.id,
+            status="active"
+        ).count()
+
+    @property
     def latest_election(self):
+        from cams.models import Election
         return Election.query.filter_by(
             club_id=self.id,
             status="completed"
-        ).order_by(Election.election_date.desc()).first()
+        ).order_by(Election.voting_end.desc()).first()
 
     @property
     def latest_financial_report(self):
@@ -291,6 +348,8 @@ class ClubMembership(db.Model):
 
     role = db.Column(db.String(20), default='member')
     # member | president | secretary | treasurer
+    
+    rejection_count = db.Column(db.Integer, default=0)
 
     has_paid_fees = db.Column(db.Boolean, default=False)
     fee_amount = db.Column(db.Float, default=0.0)
@@ -335,8 +394,12 @@ class Event(db.Model):
     club_id = db.Column(db.Integer, db.ForeignKey("club.id"))
     title = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    date = db.Column(db.DateTime, nullable=False)
-
+    location = db.Column(db.String(255), nullable=True)
+    image_path = db.Column(db.String(255), nullable=True)
+    
+    date = db.Column(db.DateTime, nullable=False) # Start time
+    end_date = db.Column(db.DateTime, nullable=True) # End time
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     attendance = db.relationship("Attendance", backref="event", lazy=True)
@@ -354,10 +417,13 @@ class Attendance(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey("event.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
+    # attended | absent | apology
+    status = db.Column(db.String(20), default="attended")
+
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"<Attendance User:{self.user_id} Event:{self.event_id}>"
+        return f"<Attendance User:{self.user_id} Event:{self.event_id} Status:{self.status}>"
 
 
 class DeregistrationRecord(db.Model):
@@ -404,6 +470,7 @@ class Notification(db.Model):
     priority = db.Column(db.String(20), default='normal')
 
     is_read = db.Column(db.Boolean, default=False)
+    link = db.Column(db.String(255), nullable=True)
     created_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -513,7 +580,6 @@ class Election(db.Model):
                                  onupdate=lambda: datetime.now(timezone.utc))
 
     club = db.relationship("Club", back_populates="elections")
-
     creator = db.relationship(
               "User",
                foreign_keys=[created_by]
@@ -525,30 +591,24 @@ class Election(db.Model):
         cascade="all, delete-orphan"
         ) 
 
-    nominations = db.relationship(
-          "Nomination",
-          back_populates="election",
-         cascade="all, delete-orphan"
-        )
-
     @property
     def is_nomination_open(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         return (self.status == ElectionStatus.NOMINATION
                 and self.nomination_start and self.nomination_end
                 and self.nomination_start <= now <= self.nomination_end)
 
     @property
     def is_voting_open(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         return (self.status == ElectionStatus.VOTING
                 and self.voting_start and self.voting_end
                 and self.voting_start <= now <= self.voting_end)
 
     @property
     def total_votes_cast(self):
-        return Vote.query.join(Nomination).filter(
-            Nomination.election_id == self.id
+        return Vote.query.filter(
+            Vote.election_id == self.id
         ).count()
 
     def __repr__(self):
@@ -569,52 +629,9 @@ class ElectionPosition(db.Model):
     max_winners = db.Column(db.Integer, default=1)
 
     election    = db.relationship("Election", back_populates="positions")
-    nominations = db.relationship("Nomination", back_populates="position",
-                                  cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Position {self.title} (Election {self.election_id})>"
-
-
-# ─────────────────────────────────────────
-# NOMINATION  (a member's candidacy application)
-# ─────────────────────────────────────────
-
-class Nomination(db.Model):
-    __tablename__ = "nominations"
-    __table_args__ = (
-        db.UniqueConstraint("election_id", "position_id", "member_id",
-                            name="uq_nomination_member_position"),
-    )
-
-    id          = db.Column(db.Integer, primary_key=True)
-    election_id = db.Column(db.Integer, db.ForeignKey("elections.id"),          nullable=False)
-    position_id = db.Column(db.Integer, db.ForeignKey("election_positions.id"), nullable=False)
-    member_id   = db.Column(db.Integer, db.ForeignKey("user.id"),              nullable=False)
-
-    manifesto   = db.Column(db.Text,         nullable=True)
-    photo_url   = db.Column(db.String(300),  nullable=True)
-
-    status          = db.Column(db.Enum(NominationStatus),
-                                default=NominationStatus.PENDING, nullable=False)
-    reviewed_by     = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    review_note     = db.Column(db.Text,    nullable=True)
-    reviewed_at     = db.Column(db.DateTime, nullable=True)
-    submitted_at    = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-
-    election    = db.relationship("Election",         back_populates="nominations")
-    position    = db.relationship("ElectionPosition", back_populates="nominations")
-    member      = db.relationship("User", foreign_keys=[member_id])
-    reviewer    = db.relationship("User", foreign_keys=[reviewed_by])
-    votes       = db.relationship("Vote", back_populates="nomination",
-                                  cascade="all, delete-orphan")
-
-    @property
-    def vote_count(self):
-        return len(self.votes)
-
-    def __repr__(self):
-        return f"<Nomination {self.id}: member={self.member_id} [{self.status.value}]>"
 
 
 # ─────────────────────────────────────────
@@ -631,25 +648,45 @@ class Vote(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     election_id   = db.Column(db.Integer, db.ForeignKey("elections.id"),          nullable=False)
     position_id   = db.Column(db.Integer, db.ForeignKey("election_positions.id"), nullable=False)
-    nomination_id = db.Column(db.Integer, db.ForeignKey("nominations.id"),        nullable=False)
+    application_id = db.Column(db.Integer, db.ForeignKey("leadership_application.id"), nullable=False)
     voter_id      = db.Column(db.Integer, db.ForeignKey("user.id"),              nullable=False)
     cast_at       = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    nomination    = db.relationship("Nomination", back_populates="votes")
+    application   = db.relationship("LeadershipApplication", back_populates="votes")
     voter         = db.relationship("User", foreign_keys=[voter_id])
 
     def __repr__(self):
-        return f"<Vote voter={self.voter_id} nomination={self.nomination_id}>"
+        return f"<Vote voter={self.voter_id} application={self.application_id}>"
 
 
 # ─────────────────────────────────────────
 # ELIGIBILITY HELPERS
 # ─────────────────────────────────────────
 
+def _is_final_year_student(user):
+    """
+    Helper to guess if a student is in their final year based on their reg_no.
+    Example: S13/07803/22 -> admission year 2022.
+    Assuming a 4-year degree, if current_year - 2022 >= 3, they are in their final year.
+    """
+    if not user.registration_number:
+        return False  # Can't determine, assume not final year
+        
+    parts = user.registration_number.split('/')
+    if len(parts) == 3 and parts[2].isdigit():
+        admission_year = 2000 + int(parts[2])
+        current_year = date.today().year
+        # If they are in their 4th year (or beyond), consider them final year
+        if current_year - admission_year >= 3:
+            return True
+            
+    return False
+
+
 def check_nomination_eligibility(member, club_id):
     """
     Returns (is_eligible: bool, reason: str)
-    Rules: active member of the club AND membership >= 1 year
+    Rules: active member of the club AND NOT in final year of study
     """
     membership = ClubMembership.query.filter_by(
         user_id=member.id, club_id=club_id, status='active'
@@ -658,19 +695,16 @@ def check_nomination_eligibility(member, club_id):
     if not membership:
         return False, "You are not an active member of this club."
 
-    days = (date.today() - membership.join_date.date()).days
-    if days < 365:
-        return False, (
-            f"Members must have at least 1 year of membership to stand for election. "
-            f"You joined {days // 30} month(s) ago."
-        )
+    if _is_final_year_student(member):
+        return False, "Final year students are not eligible to stand for election."
+        
     return True, "Eligible"
 
 
 def check_voting_eligibility(voter, election):
     """
     Returns (can_vote: bool, reason: str)
-    Rule: active member of the election's club
+    Rule: any active member of the election's club can vote.
     """
     membership = ClubMembership.query.filter_by(
         user_id=voter.id, club_id=election.club_id, status='active'
@@ -678,6 +712,7 @@ def check_voting_eligibility(voter, election):
 
     if not membership:
         return False, "You are not an active member of this club."
+
     return True, "Eligible"
 
 @event.listens_for(Club, "before_update")
@@ -845,6 +880,7 @@ class LeadershipApplication(db.Model):
     status       = db.Column(db.String(20), default="pending")
         # values: pending | approved | rejected
     review_note  = db.Column(db.Text, nullable=True)
+    photo_url    = db.Column(db.String(300), nullable=True)
     reviewed_by  = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     reviewed_at  = db.Column(db.DateTime, nullable=True)
     created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -853,4 +889,39 @@ class LeadershipApplication(db.Model):
     student  = db.relationship("User", foreign_keys=[student_id], backref="leadership_applications")
     reviewer = db.relationship("User", foreign_keys=[reviewed_by])
     club     = db.relationship("Club", backref="leadership_applications")
+    votes    = db.relationship("Vote", back_populates="application", cascade="all, delete-orphan")
+
+    @property
+    def vote_count(self):
+        return len(self.votes)
+
+
+# -----------------------------
+# ANNOUNCEMENTS
+# -----------------------------
+class Announcement(db.Model):
+    __tablename__ = "announcement"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    
+    # Target audience: all, student, club_leader, admin
+    target_audience = db.Column(db.String(50), default="all")
+
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=True)
+
+    author = db.relationship("User", foreign_keys=[author_id])
+
+    @property
+    def is_active(self):
+        if self.expires_at:
+            return datetime.utcnow() < self.expires_at
+        return True
+
+    def __repr__(self):
+        return f"<Announcement {self.title}>"
 

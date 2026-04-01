@@ -30,7 +30,7 @@
                     </h5>
                 </div>
                 
-                <form method="POST" action="{{ url_for('club_leader.create_event') }}">
+                <form method="POST" action="{{ url_for('club_leader.create_event') }}" enctype="multipart/form-data">
                     <div class="card-body p-4">
                         
                         <div class="form-group mb-4">
@@ -54,8 +54,25 @@
                         </div>
 
                         <div class="form-group mb-4">
-                            <label class="font-weight-bold text-secondary">Date and Time <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold text-secondary">Start Date and Time <span class="text-danger">*</span></label>
                             <input type="datetime-local" class="form-control px-3 py-2" name="date" required style="border-radius:8px;">
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="font-weight-bold text-secondary">End Date and Time <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control px-3 py-2" name="end_date" required style="border-radius:8px;">
+                            <small class="form-text text-muted">When does this event officially conclude?</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="font-weight-bold text-secondary">Location</label>
+                            <input type="text" class="form-control px-3 py-2" name="location" placeholder="e.g. Main Auditorium, Hall B" style="border-radius:8px;">
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="font-weight-bold text-secondary">Event Photo</label>
+                            <input type="file" class="form-control-file" name="image" accept="image/*">
+                            <small class="form-text text-muted">Optional. Upload a banner image for this event (JPEG, PNG).</small>
                         </div>
 
                         <div class="form-group mb-4">

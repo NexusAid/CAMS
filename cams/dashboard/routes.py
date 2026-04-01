@@ -4,7 +4,7 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import extract
 import os
 
@@ -17,7 +17,8 @@ from cams.models import (
     ActivityLog,
     Event,
     DeregistrationRecord,
-    AdminTask
+    AdminTask,
+    LeadershipApplication
 )
 
 from cams.utils.notifications import send_notification
@@ -30,22 +31,78 @@ dashboard = Blueprint("dashboard", __name__)
 
 # =====================================================
 # DASHBOARD HOME
+# The main administrative landing page showing system stats
 # =====================================================
 @dashboard.route("/dashboard")
 @login_required
 def dashboard_home():
 
+    # Calculate system totals for the top summary cards
     total_clubs = Club.query.count()
     total_members = ClubMembership.query.filter_by(status="active").count()
 
+    # Fetch the next 5 upcoming events across all clubs
     upcoming_events_query = Event.query.filter(Event.date >= datetime.utcnow())
     upcoming_events = upcoming_events_query.order_by(Event.date.asc()).limit(5).all()
+
+    # -------------------------
+    # Compliance snapshot data (used by dashboard template)
+    # -------------------------
+    compliance_alerts = []
+    elections_due_list = []
+    overdue_financial_list = []
+    dormant_clubs_list = []
+
+    active_clubs = Club.query.filter(Club.status != "deregistered").all()
+    for club in active_clubs:
+        try:
+            issues = club.check_compliance_issues()
+        except Exception:
+            issues = []
+
+        # Compliance alerts (show first issue as a headline)
+        if issues:
+            compliance_alerts.append({
+                "club_name": club.name,
+                "message": issues[0],
+            })
+
+        # Dormancy
+        try:
+            if club.is_dormant():
+                dormant_clubs_list.append(club)
+        except Exception:
+            pass
+
+        # Overdue financials (use latest_financial_report if present)
+        try:
+            report = club.latest_financial_report
+            if (not report) or ((datetime.utcnow() - report.report_date).days > 365):
+                overdue_financial_list.append(club)
+        except Exception:
+            pass
+
+        # Elections due (best-effort; some projects may not track election dates cleanly)
+        # If no election records exist for the club, consider it due.
+        try:
+            from cams.models import Election
+            has_any_election = Election.query.filter_by(club_id=club.id).first() is not None
+            if not has_any_election:
+                elections_due_list.append(club)
+        except Exception:
+            pass
 
     stats = {
         "total_clubs": total_clubs,
         "total_members": total_members,
         "upcoming_events": upcoming_events_query.count(),
-        "pending_approvals": ClubMembership.query.filter_by(status="pending").count()
+        "pending_approvals": ClubMembership.query.filter_by(status="pending").count(),
+
+        # Compliance snapshot cards
+        "elections_due": len(elections_due_list),
+        "overdue_financials": len(overdue_financial_list),
+        "dormant_clubs": len(dormant_clubs_list),
+        "non_compliant_clubs": len(compliance_alerts),
     }
 
     current_year = datetime.utcnow().year
@@ -73,6 +130,12 @@ def dashboard_home():
         ActivityLog.timestamp.desc()
     ).limit(5).all()
 
+    from cams.models import Announcement
+    active_announcements = Announcement.query.filter(
+        (Announcement.target_audience.in_(['all', 'admin'])),
+        (Announcement.expires_at == None) | (Announcement.expires_at > datetime.utcnow())
+    ).order_by(Announcement.created_at.desc()).all()
+
     return render_template(
         "dashboard/index.html",
         stats=stats,
@@ -80,7 +143,15 @@ def dashboard_home():
         monthly_members=monthly_members,
         club_labels=club_labels,
         club_data=club_data,
-        recent_activities=recent_activities
+        recent_activities=recent_activities,
+        announcements=active_announcements,
+
+
+        # Template expects these lists
+        compliance_alerts=compliance_alerts[:10],
+        elections_due_list=elections_due_list[:10],
+        overdue_financial_list=overdue_financial_list[:10],
+        dormant_clubs_list=dormant_clubs_list[:10],
     )
 
 
@@ -90,12 +161,14 @@ def dashboard_home():
 
 # =====================================================
 # CLUB LIST
+# Displays a list of all registered clubs in the system
 # =====================================================
 @dashboard.route("/clubs")
 @login_required
 def clubs_list():
 
-    if current_user.is_admin:
+    # Admin/dean/assistant_admin can see all clubs regardless of status.
+    if current_user.role in ["admin", "dean", "assistant_admin"]:
         clubs = Club.query.all()
     else:
         clubs = Club.query.filter_by(status="active").all()
@@ -188,7 +261,7 @@ def deregister_club(club_id):
             club_id=club.id
         )
 
-        patron = User.query.get(club.patron_id)
+        patron = User.query.get(club.patron_id) if club.patron_id else None
 
         if patron:
             send_email(
@@ -209,7 +282,7 @@ CAMS Administration
             )
 
         flash("Club deregistered successfully.", "success")
-        return redirect(url_for("dashboard.pending_clubs"))
+        return redirect(url_for("dashboard.clubs_list"))
 
     return render_template("admin/confirm_deregister.html", club=club)
 
@@ -334,7 +407,7 @@ def email_broadcast():
             flash("No recipients found for the selected target.", "warning")
             return redirect(url_for("dashboard.email_broadcast"))
 
-        success_count: int = 0
+        success_count = 0
         for email in recipient_emails:
             try:
                 send_email(email, subject, message_body)
@@ -361,6 +434,76 @@ def assistants():
     return render_template("admin/assistants.html", assistants=assistants)
 
 
+# =====================================================
+# DEAN – LEADERSHIP APPLICATION REVIEW
+# =====================================================
+@dashboard.route("/admin/applications/review")
+@login_required
+@dean_required
+def application_review_list():
+    """Dean sees all pending leadership applications."""
+    pending = (
+        LeadershipApplication.query
+        .filter_by(status="pending")
+        .order_by(LeadershipApplication.created_at.asc())
+        .all()
+    )
+    return render_template("admin/application_review_list.html", applications=pending)
+
+
+@dashboard.route("/admin/applications/<int:app_id>/review", methods=["GET", "POST"])
+@login_required
+@dean_required
+def application_review(app_id):
+    """Dean approves or rejects a single leadership application."""
+    application = LeadershipApplication.query.get_or_404(app_id)
+
+    if application.status != "pending":
+        flash("This application has already been reviewed.", "info")
+        return redirect(url_for("dashboard.application_review_list"))
+
+    if request.method == "POST":
+        action      = request.form.get("action")          # "approve" | "reject"
+        review_note = request.form.get("review_note", "").strip()
+
+        if action == "approve":
+            application.status = "approved"
+        elif action == "reject":
+            if not review_note:
+                flash("Please provide a reason for rejection.", "danger")
+                return render_template("admin/application_review.html", application=application)
+            application.status = "rejected"
+        else:
+            flash("Invalid action.", "danger")
+            return render_template("admin/application_review.html", application=application)
+
+        application.reviewed_by  = current_user.id
+        application.review_note  = review_note
+        application.reviewed_at  = datetime.now(timezone.utc)
+        db.session.commit()
+
+        # Notify the student
+        try:
+            subject = f"CAMS - Leadership Application {action.title()}d"
+            body = f"""Hello {application.student.first_name},
+
+Your leadership application for the role of {application.position.replace('_', ' ').title()} in {application.club.name} has been {action}d.
+
+"""
+            if review_note:
+                body += f"Reviewer Note: {review_note}\n\n"
+            
+            body += "Regards,\nCAMS System"
+            send_email(application.student.email, subject, body)
+        except Exception as e:
+            current_app.logger.error(f"Error sending email to {application.student.email}: {e}")
+
+        flash(f"Application {action}d successfully.", "success")
+        return redirect(url_for("dashboard.application_review_list"))
+
+    return render_template("admin/application_review.html", application=application)
+
+
 @dashboard.route("/admin/assistants/create", methods=["POST"])
 @login_required
 @admin_only
@@ -381,8 +524,7 @@ def create_assistant():
         role="assistant_admin",
         is_active=True
     )
-    from werkzeug.security import generate_password_hash
-    new_admin.password_hash = generate_password_hash(password)
+    new_admin.set_password(password)
 
     db.session.add(new_admin)
     db.session.commit()
@@ -440,8 +582,11 @@ def reset_assistant_password(id):
 
     new_password = request.form.get("new_password")
     
-    from werkzeug.security import generate_password_hash
-    assistant.password_hash = generate_password_hash(new_password)
+    if assistant.check_password_reuse(new_password):
+        flash("Cannot reuse a previous password for this Assistant.", "danger")
+        return redirect(url_for("dashboard.assistants"))
+        
+    assistant.set_password(new_password)
     db.session.commit()
 
     subject = "CAMS - Password Reset by Dean"
@@ -551,3 +696,77 @@ def delete_task(id):
     db.session.commit()
     flash("Task deleted successfully.", "success")
     return redirect(url_for("dashboard.tasks"))
+
+# -------------------------------------------------
+# NOTIFICATIONS
+# -------------------------------------------------
+@dashboard.route("/notifications")
+@login_required
+def notifications():
+    from cams.models import Notification
+    notifications_list = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_date.desc()).all()
+    return render_template("dashboard/notifications.html", notifications=notifications_list)
+
+@dashboard.route("/notifications/<int:id>/read", methods=["POST"])
+@login_required
+def mark_read(id):
+    from cams.models import Notification
+    notif = Notification.query.get_or_404(id)
+    if notif.user_id == current_user.id:
+        notif.is_read = True
+        db.session.commit()
+    return redirect(url_for('dashboard.notifications'))
+
+@dashboard.route("/notifications/read-all", methods=["POST"])
+@login_required
+def mark_all_read():
+    from cams.models import Notification
+    Notification.query.filter_by(user_id=current_user.id, is_read=False).update(dict(is_read=True))
+    db.session.commit()
+    flash("All notifications marked as read.", "success")
+    return redirect(url_for('dashboard.notifications'))
+
+# -------------------------------------------------
+# ANNOUNCEMENTS
+# -------------------------------------------------
+@dashboard.route("/admin/announcements", methods=["GET", "POST"])
+@login_required
+@dean_only
+def announcements():
+    from cams.models import Announcement
+    if request.method == "POST":
+        title = request.form.get("title")
+        content = request.form.get("content")
+        target_audience = request.form.get("target_audience", "all")
+        expires_at_str = request.form.get("expires_at")
+        
+        expires_at = None
+        if expires_at_str:
+            from datetime import datetime
+            expires_at = datetime.strptime(expires_at_str, '%Y-%m-%d')
+            
+        ann = Announcement(
+            title=title,
+            content=content,
+            target_audience=target_audience,
+            author_id=current_user.id,
+            expires_at=expires_at
+        )
+        db.session.add(ann)
+        db.session.commit()
+        flash("Announcement created successfully.", "success")
+        return redirect(url_for('dashboard.announcements'))
+        
+    all_announcements = Announcement.query.order_by(Announcement.created_at.desc()).all()
+    return render_template("dashboard/announcements.html", announcements=all_announcements)
+
+@dashboard.route("/admin/announcements/<int:id>/delete", methods=["POST"])
+@login_required
+@dean_only
+def delete_announcement(id):
+    from cams.models import Announcement
+    ann = Announcement.query.get_or_404(id)
+    db.session.delete(ann)
+    db.session.commit()
+    flash("Announcement deleted.", "success")
+    return redirect(url_for("dashboard.announcements"))

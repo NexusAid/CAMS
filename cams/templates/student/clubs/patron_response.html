@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patron Verification - CAMS</title>
+    <!-- AdminLTE & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/dist/css/adminlte.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; }
+        .verification-container { max-width: 600px; margin: 4rem auto; }
+        .card { border: none; border-radius: 20px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .card-header { text-align: center; border-bottom: none; border-radius: 20px 20px 0 0 !important; padding: 2rem 1.5rem 1rem; }
+        
+        /* Dynamic Styles Based on Action */
+        {% if action == 'accepted' %}
+        .card-header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .icon-circle { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; }
+        .btn-brand { background: #10b981; border: none; color: white; font-weight: 600; padding: 10px 24px; border-radius: 8px; transition: background 0.2s; }
+        .btn-brand:hover { background: #059669; color: white; }
+        {% else %}
+        .card-header { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+        .icon-circle { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; }
+        .btn-brand { background: #ef4444; border: none; color: white; font-weight: 600; padding: 10px 24px; border-radius: 8px; transition: background 0.2s; }
+        .btn-brand:hover { background: #dc2626; color: white; }
+        {% endif %}
+        
+        .card-title { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; margin: 0; }
+        .card-body { padding: 2.5rem; text-align: center; }
+        .info-box { background: #f1f5f9; border-radius: 12px; padding: 1.5rem; text-align: left; margin: 1.5rem 0; border: 1px solid #e2e8f0; }
+        .info-label { font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+        .info-value { font-weight: 600; font-size: 1rem; color: #0f172a; margin-bottom: 1rem; }
+        .info-value:last-child { margin-bottom: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container verification-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="icon-circle">
+                {% if action == 'accepted' %}
+                <i class="fas fa-check"></i>
+                {% else %}
+                <i class="fas fa-times"></i>
+                {% endif %}
+            </div>
+            <h3 class="card-title">
+                {% if action == 'accepted' %}
+                Nomination Accepted
+                {% else %}
+                Nomination Rejected
+                {% endif %}
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if action == 'accepted' %}
+            <p class="mb-4 text-muted" style="font-size: 1.1rem; line-height: 1.6;">
+                Thank you for confirming your role as Patron. The club application is now complete and has been forwarded to the Dean of Students for final approval.
+            </p>
+            {% else %}
+            <p class="mb-4 text-muted" style="font-size: 1.1rem; line-height: 1.6;">
+                You have rejected the patron nomination for this club. The registration application has been automatically declined, and the student founders have been notified. No further action is required.
+            </p>
+            {% endif %}
+
+            <div class="info-box">
+                <div class="info-label">Club Name</div>
+                <div class="info-value">{{ club.name }}</div>
+
+                <div class="info-label">Category</div>
+                <div class="info-value">{{ club.category }}</div>
+                
+                <div class="info-label">Registration ID</div>
+                <div class="info-value" style="font-family: monospace; letter-spacing: 1px;">{{ club.registration_number }}</div>
+            </div>
+
+            <p class="text-sm text-center text-muted mt-4">
+                Thank you for using the CAMS Platform. You may now close this page.
+            </p>
+            <div class="mt-4">
+                <!-- If they were logged in, they wouldn't be seeing this as external likely, but just a button to safely exit -->
+                <a href="/" class="btn btn-brand rounded-pill px-4">Return Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://adminlte.io/themes/v3/plugins/jquery/jquery.min.js"></script>
+<script src="https://adminlte.io/themes/v3/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

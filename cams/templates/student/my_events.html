@@ -1,0 +1,148 @@
+{% extends "base/base.html" %}
+
+{% block title %}My Events{% endblock %}
+{% block page_title %}Upcoming Events{% endblock %}
+
+{% block content %}
+<div class="row">
+    <style>
+        .nav-pills .nav-link.active {
+            background-color: var(--g800) !important;
+            color: #fff !important;
+        }
+        .nav-pills .nav-link {
+            color: var(--g800);
+            font-weight: 600;
+        }
+    </style>
+
+    <div class="col-12">
+        <ul class="nav nav-pills mb-4 shadow-sm bg-white p-2 rounded-pill d-inline-flex" id="eventsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-4" id="upcoming-tab" data-bs-toggle="pill" data-bs-target="#upcoming" type="button" role="tab">
+                    <i class="fas fa-calendar-plus me-2"></i>Upcoming Events
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-4" id="past-tab" data-bs-toggle="pill" data-bs-target="#past" type="button" role="tab">
+                    <i class="fas fa-history me-2"></i>Past Events
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="eventsTabContent">
+            <!-- UPCOMING EVENTS TAB -->
+            <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
+                {% if upcoming_events %}
+                    <div class="row">
+                        {% for event in upcoming_events %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
+                                {% if event.image_path %}
+                                <div style="height:170px; overflow:hidden;">
+                                    <img src="{{ url_for('static', filename=event.image_path) }}" alt="{{ event.title }}" style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                                {% endif %}
+                                <div class="card-header bg-success text-white py-3">
+                                    <h5 class="mb-0" style="font-family:'Outfit',sans-serif;font-weight:700;">
+                                        <i class="fas fa-calendar-alt me-2"></i>{{ event.title }}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-clock me-1 text-primary"></i> 
+                                        {{ event.date.strftime('%B %d, %Y at %I:%M %p') }}
+                                    </p>
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-users me-1 text-info"></i> {{ event.club.name }}
+                                    </p>
+                                    {% if event.location %}
+                                    <p class="text-muted small mb-3">
+                                        <i class="fas fa-map-marker-alt me-1 text-danger"></i> {{ event.location }}
+                                    </p>
+                                    {% endif %}
+                                    <p>{{ event.description }}</p>
+                                </div>
+                                <div class="card-footer bg-white border-0 text-end py-3">
+                                    <span class="badge bg-light text-dark shadow-sm px-3 py-2 rounded-pill border">
+                                        Upcoming
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert bg-white shadow-sm" style="border-radius:12px; padding:2rem; text-align:center; border-left:4px solid var(--g500);">
+                        <i class="fas fa-calendar-times text-muted" style="font-size:3rem; margin-bottom:1rem; opacity:0.5;"></i>
+                        <h5 style="font-family:'Outfit',sans-serif;font-weight:700; color:var(--g800);">No Upcoming Events</h5>
+                        <p class="text-muted mb-0">Your clubs have not scheduled any upcoming events yet.</p>
+                        <a href="{{ url_for('student.list_clubs') }}" class="btn btn-success mt-3 shadow-sm rounded-pill px-4">
+                            Browse Clubs
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- PAST EVENTS TAB -->
+            <div class="tab-pane fade" id="past" role="tabpanel">
+                {% if past_events %}
+                    <div class="row">
+                        {% for item in past_events %}
+                        {% set event = item.event %}
+                        {% set status = item.status %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden; opacity: 0.9;">
+                                {% if event.image_path %}
+                                <div style="height:170px; overflow:hidden; filter: grayscale(40%);">
+                                    <img src="{{ url_for('static', filename=event.image_path) }}" alt="{{ event.title }}" style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                                {% endif %}
+                                <div class="card-header bg-secondary text-white py-3">
+                                    <h5 class="mb-0" style="font-family:'Outfit',sans-serif;font-weight:700;">
+                                        <i class="fas fa-history me-2"></i>{{ event.title }}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-clock me-1"></i> 
+                                        {{ event.date.strftime('%B %d, %Y') }}
+                                    </p>
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-users me-1"></i> {{ event.club.name }}
+                                    </p>
+                                    <p>{{ event.description }}</p>
+                                </div>
+                                <div class="card-footer bg-light border-0 py-3 d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small font-weight-bold">Attendance:</span>
+                                    
+                                    {% if status == 'attended' %}
+                                        <span class="badge bg-success shadow-sm px-3 py-2 rounded-pill" style="font-size: 0.9rem;">
+                                            <i class="fas fa-check-circle me-1"></i> Attended
+                                        </span>
+                                    {% elif status == 'apology' %}
+                                        <span class="badge bg-warning text-dark shadow-sm px-3 py-2 rounded-pill" style="font-size: 0.9rem;">
+                                            <i class="fas fa-envelope-open-text me-1"></i> Apology
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger shadow-sm px-3 py-2 rounded-pill" style="font-size: 0.9rem;">
+                                            <i class="fas fa-times-circle me-1"></i> Absent
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert bg-white shadow-sm" style="border-radius:12px; padding:2rem; text-align:center; border-left:4px solid #6c757d;">
+                        <i class="fas fa-clock text-muted" style="font-size:3rem; margin-bottom:1rem; opacity:0.5;"></i>
+                        <h5 style="font-family:'Outfit',sans-serif;font-weight:700; color:#6c757d;">No Past Events</h5>
+                        <p class="text-muted mb-0">There is no attendance history available for you yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -9,43 +9,69 @@ with app.app_context():
     db.create_all()
 
     # -------------------------------
-    # CREATE ADMIN USER
+    # ADMIN USER
     # -------------------------------
-    admin_email = "admin@cams.com"
-    admin = User.query.filter_by(email=admin_email).first()
+    admin_email = "nexusaidtechnologies@gmail.com"
 
+    admin = User.query.filter_by(email=admin_email).first()
     if not admin:
         admin = User(
-            first_name="System",
-            last_name="Administrator",
+            first_name="NexusAid",
+            last_name="Admin",
             email=admin_email,
             role="admin",
+            is_active=True,
             must_change_password=False
         )
-        admin.set_password("1234")
+        admin.set_password("password1234")
         db.session.add(admin)
-        print(f"Admin created: {admin_email} / 1234")
-    else:
-        print("Admin already exists")
+        print("Admin created")
 
     # -------------------------------
-    # CREATE STUDENT USER
+    # CLUB LEADER
     # -------------------------------
-    student_reg = "S13/07803/22"
-    student = User.query.filter_by(email=student_reg).first()
+    leader_email = "keyobrah20@gmail.com"
 
-    if not student:
-        student = User(
-            first_name="Test",
-            last_name="Student",
-            email=student_reg,
-            role="student"
+    leader = User.query.filter_by(email=leader_email).first()
+    if not leader:
+        leader = User(
+            first_name="Gachema",
+            last_name="Brian",
+            email=leader_email,
+            registration_number="S12/07804/25",
+            role="club_leader",
+            is_active=True
         )
-        student.set_password("password123")
-        db.session.add(student)
-        print(f"Student user created: {student_reg} / password123")
-    else:
-        print(f"Student user already exists: {student_reg}")
+        leader.set_password("millionaire123")
+        db.session.add(leader)
+        print("Leader created")
+
+    # -------------------------------
+    # STUDENTS
+    # -------------------------------
+    students_data = [
+        ("Brian", "Ngunyi", "S13/07803/22", "keyobrah11@gmail.com"),
+        ("Dorinn", "Ooyi", "E12/04435/24", "keyobrah3@gmail.com"),
+        ("Ke", "Yobrah", "S13/07772/22", "keyobrah47@gmail.com"),
+    ]
+
+    for first, last, reg_no, email in students_data:
+        user = User.query.filter_by(registration_number=reg_no).first()
+
+        if not user:
+            user = User(
+                first_name=first,
+                last_name=last,
+                email=email,
+                registration_number=reg_no.upper(),
+                role="student",
+                is_active=True
+            )
+            user.set_password("brayoh254")
+            db.session.add(user)
+            print(f"Student created: {first} {last}")
+        else:
+            print(f"Student already exists: {first} {last}")
 
     db.session.commit()
 
@@ -53,8 +79,8 @@ with app.app_context():
     # CREATE DEMO CLUB
     # -------------------------------
     club_name = "Demo Club"
-    club = Club.query.filter_by(name=club_name).first()
 
+    club = Club.query.filter_by(name=club_name).first()
     if not club:
         club = Club(
             name=club_name,
@@ -62,36 +88,15 @@ with app.app_context():
             status="active"
         )
         db.session.add(club)
-        print("Demo Club created")
-
-    db.session.commit()
-
-    # -------------------------------
-    # CREATE CLUB LEADER USER
-    # -------------------------------
-    leader_email = "leader@cams.com"
-    leader = User.query.filter_by(email=leader_email).first()
-
-    if not leader:
-        leader = User(
-            first_name="Club",
-            last_name="Leader",
-            email=leader_email,
-            role="club_leader",
-            must_change_password=False
-        )
-        leader.set_password("leader123")
-        db.session.add(leader)
         db.session.commit()
-        print(f"Club Leader created: {leader_email} / leader123")
-
-    # Refresh objects
-    club = Club.query.filter_by(name=club_name).first()
-    leader = User.query.filter_by(email=leader_email).first()
+        print("Club created")
 
     # -------------------------------
     # ASSIGN LEADER TO CLUB
     # -------------------------------
+    leader = User.query.filter_by(email=leader_email).first()
+    club = Club.query.filter_by(name=club_name).first()
+
     membership = ClubMembership.query.filter_by(
         user_id=leader.id,
         club_id=club.id
@@ -106,9 +111,6 @@ with app.app_context():
         )
         db.session.add(membership)
         db.session.commit()
+        print("Leader assigned to club")
 
-        print("Leader assigned as President of Demo Club")
-    else:
-        print("Leader already assigned to club")
-
-    print("All demo users created successfully!")
+    print("✅ Setup complete!")

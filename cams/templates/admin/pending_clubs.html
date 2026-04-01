@@ -2,486 +2,393 @@
 
 {% block title %}Pending Approvals - CAMS Admin{% endblock %}
 
-{% block page_title %}Pending Approvals & Compliance{% endblock %}
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
-{% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard_home') }}">Dashboard</a></li>
-<li class="breadcrumb-item active">Pending Approvals</li>
+  :root {
+    --g900: #052e16; --g800: #064e24; --g700: #065f33;
+    --g600: #16a34a; --g500: #22c55e; --g400: #4ade80;
+    --g300: #86efac; --g100: #dcfce7; --g50:  #f0fdf4;
+
+    --s900: #0f172a; --s800: #1e293b; --s700: #334155;
+    --s500: #64748b; --s300: #cbd5e1; --s200: #e2e8f0;
+    --s100: #f1f5f9; --s50:  #f8fafc;
+
+    --amber: #f59e0b; --amber-bg: #fef3c7;
+    --red:   #ef4444; --red-bg:   #fee2e2;
+    --blue:  #3b82f6; --blue-bg:  #dbeafe;
+
+    --radius: 14px;
+    --shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+  }
+
+  body { background: #f0f4f0; font-family: 'DM Sans', sans-serif; }
+
+  /* ── PAGE HEADER ──────────────────────────── */
+  .page-header {
+    padding: 1.5rem 0 1rem;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.65rem; font-weight: 800;
+    color: var(--s900); margin: 0; line-height: 1.1;
+  }
+  .page-header h1 span { color: var(--g700); }
+
+  /* ── NAV TABS ─────────────────────────────── */
+  .modern-tabs {
+    display: flex; gap: 1rem; border-bottom: 2px solid var(--s200); margin-bottom: 1.5rem;
+  }
+  .modern-tab {
+    padding: .8rem 1.2rem; font-family: 'DM Sans', sans-serif; font-weight: 700;
+    font-size: .85rem; color: var(--s500); cursor: pointer; text-transform: uppercase;
+    letter-spacing: .05em; border-bottom: 3px solid transparent; margin-bottom: -2px;
+    transition: all .2s; border-radius: 8px 8px 0 0; text-decoration: none;
+  }
+  .modern-tab:hover { color: var(--s800); background: var(--s50); }
+  .modern-tab.active { color: var(--g800); border-bottom-color: var(--g600); }
+
+  /* ── DATA CARD & TABLE ────────────────────── */
+  .data-card {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem;
+  }
+  .table-responsive { width: 100%; overflow-x: auto; }
+  .modern-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+  .modern-table th {
+    font-size: .75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--s500); background: var(--s50);
+    padding: .9rem 1.4rem; text-align: left; border-bottom: 1px solid var(--s200);
+  }
+  .modern-table td {
+    padding: 1rem 1.4rem; font-size: .85rem; color: var(--s800); font-weight: 500;
+    border-bottom: 1px solid var(--s100); vertical-align: middle;
+  }
+  .modern-table tbody tr:hover { background: var(--s50); }
+  
+  .club-name { font-weight: 700; color: var(--s900); font-size: .9rem; display: block; margin-bottom: .2rem; }
+  .club-desc { font-size: .75rem; color: var(--s500); max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── PILLS & BADGES ───────────────────────── */
+  .pill {
+    display: inline-flex; align-items: center; gap: .3rem; font-size: .65rem; font-weight: 700;
+    padding: .25rem .6rem; border-radius: 99px; letter-spacing: .03em;
+  }
+  .p-green { background: var(--g100); color: var(--g800); }
+  .p-amber { background: var(--amber-bg); color: #92400e; }
+  .p-red { background: var(--red-bg); color: #991b1b; }
+  .p-slate { background: var(--s100); color: var(--s700); }
+
+  .doc-checks { display: flex; flex-direction: column; gap: .3rem; }
+  .doc-pill {
+    display: inline-flex; align-items: center; gap: .4rem; padding: .2rem .5rem;
+    border-radius: 4px; font-size: .7rem; font-weight: 600;
+  }
+  .doc-ok { background: var(--g50); color: var(--g800); border: 1px solid var(--g300); }
+  .doc-missing { background: var(--red-bg); color: #991b1b; border: 1px solid #fca5a5; }
+
+  /* ── ACTIONS ──────────────────────────────── */
+  .action-wrap { display: flex; gap: .4rem; }
+  .btn-action {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .75rem; font-weight: 700; padding: .35rem .8rem;
+    border-radius: 8px; border: none; cursor: pointer; transition: all .2s;
+    text-decoration: none;
+  }
+  .btn-view { background: var(--blue-bg); color: #1d4ed8; }
+  .btn-view:hover { background: #bfdbfe; }
+  .btn-approve { background: var(--g100); color: var(--g800); }
+  .btn-approve:hover { background: #bbf7d0; }
+  .btn-reject { background: var(--red-bg); color: #991b1b; }
+  .btn-reject:hover { background: #fecaca; }
+
+  /* ── QUICK STATS ROW ──────────────────────── */
+  .quick-stat {
+    background: #fff; padding: 1.2rem; border-radius: var(--radius);
+    box-shadow: var(--shadow); border-left: 4px solid var(--s200);
+    display: flex; flex-direction: column; gap: .3rem;
+  }
+  .qs-amber { border-left-color: var(--amber); }
+  .qs-red { border-left-color: var(--red); }
+  .qs-slate { border-left-color: var(--s700); }
+  .qs-val { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; line-height: 1; }
+  .qs-label { font-size: .75rem; font-weight: 700; color: var(--s500); text-transform: uppercase; }
+
+  .anim { animation: slideUp .4s ease both; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Pending Registration Tabs -->
-        <div class="card">
-            <div class="card-header p-0">
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#tab-pending">
-                            Pending Registration
-                            {% if pending_clubs %}
-                            <span class="badge badge-warning">{{ pending_clubs|length }}</span>
-                            {% endif %}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tab-warning">
-                            Compliance Warnings
-                            {% if warning_clubs %}
-                            <span class="badge badge-warning">{{ warning_clubs|length }}</span>
-                            {% endif %}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tab-deregistration">
-                            Pending Deregistration
-                            {% if pending_dereg %}
-                            <span class="badge badge-danger">{{ pending_dereg|length }}</span>
-                            {% endif %}
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="card-body">
-                <div class="tab-content">
-                    
-                    <!-- Tab 1: Pending Registration -->
-                    <div class="tab-pane active" id="tab-pending">
-                        {% if pending_clubs %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Club Name</th>
-                                        <th>Category</th>
-                                        <th>Submitted</th>
-                                        <th>Documents</th>
-                                        <th>Patron</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for club in pending_clubs %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ club.name }}</strong>
-                                            <br>
-                                            <small class="text-muted">{{ club.description|truncate(60) }}</small>
-                                        </td>
-                                        <td>{{ club.category }}</td>
-                                        <td>
-                                            {{ club.date_created.strftime('%Y-%m-%d') }}
-                                            <br>
-                                            <small class="text-muted">{{ club.date_created.strftime('%H:%M') }}</small>
-                                        </td>
-                                        <td>
-                                            <div class="document-status">
-                                                <span class="badge badge-{% if club.has_constitution %}success{% else %}danger{% endif %}">
-                                                    Constitution {% if club.has_constitution %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-times"></i>{% endif %}
-                                                </span>
-                                                <span class="badge badge-{% if club.has_minutes %}success{% else %}danger{% endif %}">
-                                                    Minutes {% if club.has_minutes %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-times"></i>{% endif %}
-                                                </span>
-                                                <span class="badge badge-{% if club.has_patron_letter %}success{% else %}danger{% endif %}">
-                                                    Patron Letter {% if club.has_patron_letter %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-times"></i>{% endif %}
-                                                </span>
-                                                <span class="badge badge-{% if club.member_count >= 20 %}success{% else %}warning{% endif %}">
-                                                    Members: {{ club.member_count }}/20
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {% if club.patron_name %}
-                                            {{ club.patron_name }}
-                                            <br>
-                                            <small>{{ club.patron_department }}</small>
-                                            {% else %}
-                                            <span class="text-danger">No patron</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <a href="{{ url_for('dashboard.club_details', club_id=club.id) }}" 
-                                                   class="btn btn-info btn-sm" title="Review">
-                                                    <i class="fas fa-search"></i> Review
-                                                </a>
-                                                <a href="{{ url_for('dashboard.approve_club', club_id=club.id) }}" 
-                                                   class="btn btn-success btn-sm" title="Approve"
-                                                   onclick="return confirm('Approve {{ club.name }}?')">
-                                                    <i class="fas fa-check"></i> Approve
-                                                </a>
-                                                <button type="button" class="btn btn-danger btn-sm" title="Reject"
-                                                        data-toggle="modal" data-target="#rejectModal{{ club.id }}">
-                                                    <i class="fas fa-times"></i> Reject
-                                                </button>
-                                            </div>
-                                            
-                                            <!-- Reject Modal -->
-                                            <div class="modal fade" id="rejectModal{{ club.id }}">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Reject Club Registration</h5>
-                                                            <button type="button" class="close" data-dismiss="modal">
-                                                                <span>&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Are you sure you want to reject <strong>{{ club.name }}</strong>?</p>
-                                                            <div class="form-group">
-                                                                <label for="rejectReason{{ club.id }}">Reason for rejection:</label>
-                                                                <textarea class="form-control" id="rejectReason{{ club.id }}" 
-                                                                          rows="3" placeholder="Specify reason for rejection..."></textarea>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                            <button type="button" class="btn btn-danger">Reject Club</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                            <h4>No Pending Approvals</h4>
-                            <p class="text-muted">All clubs have been reviewed and approved.</p>
-                        </div>
-                        {% endif %}
+<div class="container-fluid px-3 pb-5">
+  
+  <div class="page-header anim">
+    <h1>Pending <span>Action items</span></h1>
+  </div>
+
+  <div class="row g-3 mb-4 anim" style="animation-delay: .1s;">
+    <div class="col-md-4">
+      <div class="quick-stat qs-amber">
+        <div class="qs-val" style="color:#92400e">{{ pending_clubs|length }}</div>
+        <div class="qs-label">Awaiting Registration</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="quick-stat qs-red">
+        <div class="qs-val" style="color:#991b1b">{{ warning_clubs|length }}</div>
+        <div class="qs-label">Compliance Warnings</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="quick-stat qs-slate">
+        <div class="qs-val" style="color:var(--s900)">{{ pending_dereg|length }}</div>
+        <div class="qs-label">Pending Deregistration</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modern-tabs anim" style="animation-delay: .2s;">
+    <a href="#tab-pending" data-bs-toggle="tab" class="modern-tab active">
+      Pending Registration <span class="pill p-amber ms-1">{{ pending_clubs|length }}</span>
+    </a>
+    <a href="#tab-warning" data-bs-toggle="tab" class="modern-tab">
+      Compliance Warnings <span class="pill p-red ms-1">{{ warning_clubs|length }}</span>
+    </a>
+    <a href="#tab-deregistration" data-bs-toggle="tab" class="modern-tab">
+      Pending Deregistration <span class="pill p-slate ms-1">{{ pending_dereg|length }}</span>
+    </a>
+  </div>
+
+  <div class="tab-content anim" style="animation-delay: .3s;">
+    
+    <!-- PENDING REGISTRATION -->
+    <div class="tab-pane active" id="tab-pending">
+      {% if pending_clubs %}
+      <div class="data-card">
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Club Info</th>
+                <th>Category</th>
+                <th>Submitted</th>
+                <th>Documents & Requirements</th>
+                <th>Patron</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for club in pending_clubs %}
+              <tr>
+                <td>
+                  <span class="club-name">{{ club.name }}</span>
+                  <div class="club-desc">{{ club.description|truncate(60) }}</div>
+                </td>
+                <td><span class="pill p-slate">{{ club.category }}</span></td>
+                <td>
+                  <div style="font-weight:700; font-size:.85rem">{{ club.date_created.strftime('%d %b %Y') }}</div>
+                  <div style="font-size:.7rem; color:var(--s500)">{{ club.date_created.strftime('%H:%M') }}</div>
+                </td>
+                <td>
+                  <div class="doc-checks">
+                    <div class="doc-pill {{ 'doc-ok' if club.has_constitution else 'doc-missing' }}">
+                      <i class="fas {{ 'fa-check' if club.has_constitution else 'fa-times' }}"></i> Constitution
                     </div>
-                    
-                    <!-- Tab 2: Compliance Warnings -->
-                    <div class="tab-pane" id="tab-warning">
-                        {% if warning_clubs %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Club Name</th>
-                                        <th>Issues</th>
-                                        <th>Days in Warning</th>
-                                        <th>Members</th>
-                                        <th>Last Check</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for club in warning_clubs %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ club.name }}</strong>
-                                            <br>
-                                            <small class="text-muted">{{ club.category }}</small>
-                                        </td>
-                                        <td>
-                                            {% set issues = [] %}
-                                            {% if club.member_count < 20 %}
-                                                {% set _ = issues.append('Insufficient members') %}
-                                            {% endif %}
-                                            {% if not club.patron_id %}
-                                                {% set _ = issues.append('No patron') %}
-                                            {% endif %}
-                                            {% if not club.has_constitution %}
-                                                {% set _ = issues.append('Missing constitution') %}
-                                            {% endif %}
-                                            {% if not club.has_financial_report and club.last_financial_report and (now - club.last_financial_report).days > 365 %}
-                                                {% set _ = issues.append('Financial report overdue') %}
-                                            {% endif %}
-                                            
-                                            {% for issue in issues[:3] %}
-                                            <span class="badge badge-danger mb-1">{{ issue }}</span><br>
-                                            {% endfor %}
-                                            {% if issues|length > 3 %}
-                                            <small class="text-muted">+{{ issues|length - 3 }} more issues</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if club.first_warning_date %}
-                                                {% set warning_days = (now - club.first_warning_date).days %}
-                                                <span class="badge badge-{% if warning_days >= 10 %}danger{% elif warning_days >= 5 %}warning{% else %}info{% endif %}">
-                                                    {{ warning_days }} days
-                                                </span>
-                                                <br>
-                                                <small class="text-muted">{{ 14 - warning_days }} days left</small>
-                                            {% else %}
-                                                <span class="text-muted">Unknown</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-light">{{ club.member_count }}</span>
-                                            {% if club.member_count < 20 %}
-                                            <br><small class="text-danger">Need {{ 20 - club.member_count }} more</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if club.last_compliance_check %}
-                                            {{ club.last_compliance_check.strftime('%Y-%m-%d') }}
-                                            {% else %}
-                                            <span class="text-muted">Never</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{{ url_for('dashboard.club_details', club_id=club.id) }}" 
-                                               class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> View
-                                            </a>
-                                            <button class="btn btn-warning btn-sm" 
-                                                    data-toggle="modal" 
-                                                    data-target="#sendWarningModal{{ club.id }}">
-                                                <i class="fas fa-bell"></i> Notify
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                            <h4>No Compliance Warnings</h4>
-                            <p class="text-muted">All clubs are currently compliant with regulations.</p>
-                        </div>
-                        {% endif %}
+                    <div class="doc-pill {{ 'doc-ok' if club.has_minutes else 'doc-missing' }}">
+                      <i class="fas {{ 'fa-check' if club.has_minutes else 'fa-times' }}"></i> Minutes
                     </div>
-                    
-                    <!-- Tab 3: Pending Deregistration -->
-                    <div class="tab-pane" id="tab-deregistration">
-                        {% if pending_dereg %}
-                        <div class="alert alert-danger">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <strong>Important:</strong> These clubs have had compliance issues for 14+ days and are pending deregistration.
-                                        </div>
-                                        
-                                        <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Club Name</th>
-                                                        <th>Category</th>
-                                                        <th>Days Non-Compliant</th>
-                                                        <th>Major Issues</th>
-                                                        <th>Patron</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for club in pending_dereg %}
-                                                    <tr>
-                                                        <td>
-                                                            <strong>{{ club.name }}</strong>
-                                                            <br>
-                                                            <small class="text-muted">Registered: {{ club.date_created.strftime('%Y-%m-%d') }}</small>
-                                                        </td>
-                                                        <td>{{ club.category }}</td>
-                                                        <td>
-                                                            {% if club.first_warning_date %}
-                                                                {% set non_compliant_days = (now - club.first_warning_date).days %}
-                                                                <span class="badge badge-danger">{{ non_compliant_days }} days</span>
-                                                            {% else %}
-                                                                <span class="text-muted">Unknown</span>
-                                                            {% endif %}
-                                                        </td>
-                                                        <td>
-                                                            {% set issues = [] %}
-                                                            {% if club.member_count < 20 %}
-                                                                {% set _ = issues.append('Insufficient members (' ~ club.member_count ~ '/20)') %}
-                                                            {% endif %}
-                                                            {% if not club.patron_id %}
-                                                                {% set _ = issues.append('No patron') %}
-                                                            {% endif %}
-                                                            {% if club.last_financial_report and (now - club.last_financial_report).days > 365 %}
-                                                                {% set _ = issues.append('Financial report overdue') %}
-                                                            {% endif %}
-                                                            
-                                                            <ul class="mb-0 pl-3">
-                                                                {% for issue in issues %}
-                                                                <li>{{ issue }}</li>
-                                                                {% endfor %}
-                                                            </ul>
-                                                        </td>
-                                                        <td>
-                                                            {% if club.patron_name %}
-                                                            {{ club.patron_name }}
-                                                            <br>
-                                                            <small class="text-muted">{{ club.patron_department }}</small>
-                                                            {% else %}
-                                                            <span class="text-danger">No patron</span>
-                                                            {% endif %}
-                                                        </td>
-                                                        <td>
-                                                            <div class="btn-group">
-                                                                <button class="btn btn-danger btn-sm" 
-                                                                        data-toggle="modal" 
-                                                                        data-target="#deregisterModal{{ club.id }}">
-                                                                    <i class="fas fa-trash"></i> Deregister
-                                                                </button>
-                                                                <button class="btn btn-warning btn-sm"
-                                                                        data-toggle="modal"
-                                                                        data-target="#extendModal{{ club.id }}">
-                                                                    <i class="fas fa-clock"></i> Extend
-                                                                </button>
-                                                            </div>
-                                                            
-                                                            <!-- Deregister Modal -->
-                                                            <div class="modal fade" id="deregisterModal{{ club.id }}">
-                                                                <div class="modal-dialog">
-                                                                    <div class="modal-content">
-                                                                        <div class="modal-header bg-danger text-white">
-                                                                            <h5 class="modal-title">Confirm Deregistration</h5>
-                                                                            <button type="button" class="close text-white" data-dismiss="modal">
-                                                                                <span>&times;</span>
-                                                                            </button>
-                                                                        </div>
-                                                                        <form method="POST" action="#">
-                                                                            <div class="modal-body">
-                                                                                <p>You are about to deregister <strong>{{ club.name }}</strong>.</p>
-                                                                                <div class="alert alert-warning">
-                                                                                    <i class="fas fa-exclamation-circle"></i>
-                                                                                    <strong>Effects of deregistration:</strong>
-                                                                                    <ul class="mb-0 mt-2">
-                                                                                        <li>Club will be marked as deregistered</li>
-                                                                                        <li>All club activities will be suspended</li>
-                                                                                        <li>Members will be notified</li>
-                                                                                        <li>Club can apply for re-registration after 6 months</li>
-                                                                                    </ul>
-                                                                                </div>
-                                                                                <div class="form-group">
-                                                                                    <label for="deregisterReason{{ club.id }}">Reason for deregistration:</label>
-                                                                                    <textarea class="form-control" id="deregisterReason{{ club.id }}" 
-                                                                                              name="reason" rows="3" required
-                                                                                              placeholder="Specify reason for deregistration..."></textarea>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="modal-footer">
-                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                                                <button type="submit" class="btn btn-danger">Confirm Deregistration</button>
-                                                                            </div>
-                                                                        </form>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <!-- Extend Modal -->
-                                                            <div class="modal fade" id="extendModal{{ club.id }}">
-                                                                <div class="modal-dialog">
-                                                                    <div class="modal-content">
-                                                                        <div class="modal-header bg-warning">
-                                                                            <h5 class="modal-title">Extend Grace Period</h5>
-                                                                            <button type="button" class="close" data-dismiss="modal">
-                                                                                <span>&times;</span>
-                                                                            </button>
-                                                                        </div>
-                                                                        <form method="POST" action="#">
-                                                                            <div class="modal-body">
-                                                                                <p>Extend grace period for <strong>{{ club.name }}</strong>.</p>
-                                                                                <div class="form-group">
-                                                                                    <label for="extensionDays{{ club.id }}">Additional days:</label>
-                                                                                    <select class="form-control" id="extensionDays{{ club.id }}" name="days">
-                                                                                        <option value="7">7 days</option>
-                                                                                        <option value="14" selected>14 days</option>
-                                                                                        <option value="30">30 days</option>
-                                                                                        <option value="60">60 days</option>
-                                                                                    </select>
-                                                                                </div>
-                                                                                <div class="form-group">
-                                                                                    <label for="extensionReason{{ club.id }}">Reason for extension:</label>
-                                                                                    <textarea class="form-control" id="extensionReason{{ club.id }}" 
-                                                                                              name="reason" rows="3" 
-                                                                                              placeholder="Why are you extending the grace period?"></textarea>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="modal-footer">
-                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                                                <button type="submit" class="btn btn-warning">Grant Extension</button>
-                                                                            </div>
-                                                                        </form>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        {% else %}
-                                        <div class="text-center py-5">
-                                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                                            <h4>No Clubs Pending Deregistration</h4>
-                                            <p class="text-muted">All clubs are either compliant or have been properly deregistered.</p>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="doc-pill {{ 'doc-ok' if club.has_patron_letter else 'doc-missing' }}">
+                      <i class="fas {{ 'fa-check' if club.has_patron_letter else 'fa-times' }}"></i> Patron Letter
                     </div>
-                </div>
-                
-                <!-- Quick Stats -->
-                <div class="row mt-4">
-                    <div class="col-md-4">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Pending Approvals</span>
-                                <span class="info-box-number">{{ pending_clubs|length }}</span>
-                                <div class="progress">
-                                    <div class="progress-bar bg-warning" style="width: 100%"></div>
-                                </div>
-                                <small>Awaiting review</small>
-                            </div>
+                    {% if club.member_count >= 20 %}
+                      <div class="doc-pill doc-ok"><i class="fas fa-check"></i> Members ({{ club.member_count }}/20)</div>
+                    {% else %}
+                      <div class="doc-pill doc-missing"><i class="fas fa-times"></i> Members ({{ club.member_count }}/20)</div>
+                    {% endif %}
+                  </div>
+                </td>
+                <td>
+                  {% if club.patron_name %}
+                    <div style="font-weight:700; font-size:.8rem">{{ club.patron_name }}</div>
+                    <div style="font-size:.7rem; color:var(--s500);">{{ club.patron_department }}</div>
+                  {% else %}
+                    <span class="pill p-red">No patron</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-wrap flex-column">
+                    <a href="{{ url_for('dashboard.club_details', club_id=club.id) }}" class="btn-action btn-view">
+                      <i class="fas fa-search"></i> Review
+                    </a>
+                    <form action="{{ url_for('dashboard.approve_club', club_id=club.id) }}" method="POST" style="margin:0;">
+                      <button type="submit" class="btn-action btn-approve w-100" onclick="return confirm('Approve {{ club.name }}?')">
+                        <i class="fas fa-check"></i> Approve
+                      </button>
+                    </form>
+                    <button type="button" class="btn-action btn-reject" data-bs-toggle="modal" data-bs-target="#rejectModal{{ club.id }}">
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                  </div>
+
+                  <!-- Reject Modal -->
+                  <div class="modal fade" id="rejectModal{{ club.id }}">
+                    <div class="modal-dialog">
+                      <div class="modal-content" style="border-radius:var(--radius); border:none; box-shadow:var(--shadow-hover)">
+                        <div class="modal-header" style="border-bottom:1px solid var(--s100);">
+                          <h5 class="modal-title" style="font-family:'Syne'; font-weight:700;">Reject Registration</h5>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Compliance Warnings</span>
-                                <span class="info-box-number">{{ warning_clubs|length }}</span>
-                                <div class="progress">
-                                    <div class="progress-bar bg-danger" style="width: 100%"></div>
-                                </div>
-                                <small>Need attention</small>
-                            </div>
+                        <div class="modal-body">
+                          <p style="font-size:.9rem; color:var(--s700)">Are you sure you want to reject <strong>{{ club.name }}</strong>?</p>
+                          <textarea class="form-control" rows="3" placeholder="Reason for rejection..." style="font-family:'DM Sans'; font-size:.9rem; padding:.8rem; border-radius:10px"></textarea>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-dark"><i class="fas fa-trash"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Pending Deregistration</span>
-                                <span class="info-box-number">{{ pending_dereg|length }}</span>
-                                <div class="progress">
-                                    <div class="progress-bar bg-dark" style="width: 100%"></div>
-                                </div>
-                                <small>14+ days non-compliant</small>
-                            </div>
+                        <div class="modal-footer" style="border-top:1px solid var(--s100);">
+                          <button type="button" class="btn-action btn-view" data-bs-dismiss="modal">Cancel</button>
+                          <button type="button" class="btn-action btn-reject">Confirm Reject</button>
                         </div>
+                      </div>
                     </div>
-                </div>
-                {% endblock %}
-                
-                {% block scripts %}
-                <script>
-                    $(document).ready(function() {
-                        // Auto-refresh page every 60 seconds to check for new pending items
-                        setInterval(function() {
-                            location.reload();
-                        }, 60000);
-                        
-                        // Tab click tracking
-                        $('.nav-tabs a').click(function() {
-                            var tabName = $(this).attr('href').replace('#tab-', '');
-                            console.log('Switched to tab:', tabName);
-                        });
-                    });
-                </script>
-                {% endblock %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align:center; padding: 4rem 1rem;">
+        <i class="fas fa-check-circle" style="font-size:3rem; color:var(--g300); margin-bottom:1rem;"></i>
+        <h4 style="font-family:'Syne'; font-weight:700; color:var(--s800)">No Pending Approvals</h4>
+        <p style="color:var(--s500)">All new club registrations have been processed.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- COMPLIANCE WARNINGS -->
+    <div class="tab-pane" id="tab-warning">
+      {% if warning_clubs %}
+      <div class="data-card">
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Club Name</th>
+                <th>Issues</th>
+                <th>Warning Time</th>
+                <th>Members</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for club in warning_clubs %}
+              <tr>
+                <td>
+                  <span class="club-name">{{ club.name }}</span>
+                  <div class="club-desc">{{ club.category }}</div>
+                </td>
+                <td>
+                  <div class="doc-checks">
+                  {% if club.member_count < 20 %}<span class="pill p-red">Low Members</span>{% endif %}
+                  {% if not club.patron_id %}<span class="pill p-red">No Patron</span>{% endif %}
+                  {% if not club.has_constitution %}<span class="pill p-red">No Constitution</span>{% endif %}
+                  {% if club.last_financial_report and (now - club.last_financial_report).days > 365 %}
+                    <span class="pill p-red">Overdue Financials</span>
+                  {% endif %}
+                  </div>
+                </td>
+                <td>
+                  {% if club.first_warning_date %}
+                    {% set warning_days = (now - club.first_warning_date).days %}
+                    <div style="font-weight:700; color:#991b1b;">{{ warning_days }} days</div>
+                    <div style="font-size:.7rem; color:var(--s500)">{{ 14 - warning_days }} days left</div>
+                  {% else %}
+                    <span class="pill p-slate">Unknown</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span style="font-weight:700;">{{ club.member_count }}</span>
+                </td>
+                <td>
+                  <div class="action-wrap">
+                    <a href="{{ url_for('dashboard.club_details', club_id=club.id) }}" class="btn-action btn-view">View</a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align:center; padding: 4rem 1rem;">
+        <i class="fas fa-shield-alt" style="font-size:3rem; color:var(--g300); margin-bottom:1rem;"></i>
+        <h4 style="font-family:'Syne'; font-weight:700; color:var(--s800)">Excellent Compliance</h4>
+        <p style="color:var(--s500)">All active clubs are currently compliant with regulations.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- PENDING DEREGISTRATION -->
+    <div class="tab-pane" id="tab-deregistration">
+      {% if pending_dereg %}
+      <div class="data-card border border-danger">
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Club Name</th>
+                <th>Days Non-Compliant</th>
+                <th>Patron</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for club in pending_dereg %}
+              <tr>
+                <td>
+                  <span class="club-name">{{ club.name }}</span>
+                  <div class="club-desc">Registered: {{ club.date_created.strftime('%Y-%m-%d') }}</div>
+                </td>
+                <td>
+                  {% if club.first_warning_date %}
+                    <span class="pill p-red">{{ (now - club.first_warning_date).days }} days</span>
+                  {% else %}
+                    <span class="pill p-slate">Unknown</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if club.patron_name %}
+                    <div style="font-weight:700; font-size:.8rem">{{ club.patron_name }}</div>
+                  {% else %}
+                    <span class="pill p-red">None</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-wrap">
+                    <button class="btn-action btn-reject" data-bs-toggle="modal" data-bs-target="#deregisterModal{{ club.id }}">
+                      <i class="fas fa-trash"></i> Deregister
+                    </button>
+                  </div>
+                  <!-- Deregister Modal (Keep same structure just change classes if desired) -->
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align:center; padding: 4rem 1rem;">
+        <i class="fas fa-ban" style="font-size:3rem; color:var(--s300); margin-bottom:1rem;"></i>
+        <h4 style="font-family:'Syne'; font-weight:700; color:var(--s800)">No Clubs to Deregister</h4>
+        <p style="color:var(--s500)">There are no clubs pending final deregistration.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

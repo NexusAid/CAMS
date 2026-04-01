@@ -69,7 +69,8 @@
                             <i class="fas fa-upload mr-1"></i> Upload
                         </button>
                     </form>
-                    {% if selected_club.has_constitution %}
+                    </form>
+                    {% if selected_club.has_constitution and selected_club.constitution_file %}
                     <a href="{{ url_for('static', filename=selected_club.constitution_file) }}" target="_blank" class="btn btn-outline-success btn-block rounded-pill mt-2">
                         <i class="fas fa-download mr-1"></i> View Current
                     </a>
@@ -105,7 +106,8 @@
                             <i class="fas fa-upload mr-1"></i> Upload
                         </button>
                     </form>
-                    {% if selected_club.has_minutes %}
+                    </form>
+                    {% if selected_club.has_minutes and selected_club.minutes_file %}
                     <a href="{{ url_for('static', filename=selected_club.minutes_file) }}" target="_blank" class="btn btn-outline-info btn-block rounded-pill mt-2">
                         <i class="fas fa-download mr-1"></i> View Current
                     </a>
@@ -141,8 +143,45 @@
                             <i class="fas fa-upload mr-1"></i> Upload
                         </button>
                     </form>
-                    {% if selected_club.has_patron_letter %}
+                    </form>
+                    {% if selected_club.has_patron_letter and selected_club.patron_letter_file %}
                     <a href="{{ url_for('static', filename=selected_club.patron_letter_file) }}" target="_blank" class="btn btn-outline-warning btn-block rounded-pill mt-2">
+                        <i class="fas fa-download mr-1"></i> View Current
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Rules & Regulations -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm" style="border-radius:15px; overflow:hidden;">
+                <div class="card-header bg-white border-bottom-0 pt-4 text-center">
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width:70px; height:70px;">
+                        <i class="fas fa-gavel text-danger fa-2x"></i>
+                    </div>
+                    <h5 class="font-weight-bold mb-1">Rules & Regulations</h5>
+                    {% if selected_club.has_rules %}
+                        <span class="badge bg-success text-white">Uploaded</span>
+                    {% else %}
+                        <span class="badge bg-danger text-white">Missing</span>
+                    {% endif %}
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted small">Upload the official rules and regulations document for the club.</p>
+                </div>
+                <div class="card-footer bg-white border-top-0 pb-4">
+                    <form action="{{ url_for('club_leader.documents', club_id=selected_club.id) }}" method="POST" enctype="multipart/form-data">
+                        <div class="custom-file mb-3">
+                            <input type="file" class="custom-file-input" id="rules" name="rules" accept=".pdf,.docx,.doc" required>
+                            <label class="custom-file-label" for="rules">Choose file</label>
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-block rounded-pill text-white">
+                            <i class="fas fa-upload mr-1"></i> Upload
+                        </button>
+                    </form>
+                    {% if selected_club.has_rules and selected_club.rules_file %}
+                    <a href="{{ url_for('static', filename=selected_club.rules_file) }}" target="_blank" class="btn btn-outline-danger btn-block rounded-pill mt-2">
                         <i class="fas fa-download mr-1"></i> View Current
                     </a>
                     {% endif %}

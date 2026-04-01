@@ -1,4 +1,4 @@
-{% extends "base/admin_base.html" %}
+{% extends "base/club_leader.html" if current_user.role == "club_leader" else "base/admin_base.html" %}
 {% block title %}My Audit Reports{% endblock %}
 {% block page_title %}Audit Reports{% endblock %}
 {% block breadcrumb %}

@@ -4,447 +4,501 @@
 
 {% block extra_css %}
 <style>
-  /* ── DESIGN TOKENS ──────────────────────────────────────── */
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+  /* ── TOKENS ─────────────────────────────────────────────── */
   :root {
-    --g900: #052e16;
-    --g800: #064e24;
-    --g700: #065f33;
-    --g600: #16a34a;
-    --g500: #22c55e;
-    --g400: #4ade80;
-    --g300: #86efac;
-    --g100: #dcfce7;
-    --g50:  #f0fdf4;
+    --g900: #052e16; --g800: #064e24; --g700: #065f33;
+    --g600: #16a34a; --g500: #22c55e; --g400: #4ade80;
+    --g300: #86efac; --g100: #dcfce7; --g50:  #f0fdf4;
 
-    --slate900: #0f172a;
-    --slate800: #1e293b;
-    --slate700: #334155;
-    --slate500: #64748b;
-    --slate300: #cbd5e1;
-    --slate100: #f1f5f9;
-    --slate50:  #f8fafc;
+    --s900: #0f172a; --s800: #1e293b; --s700: #334155;
+    --s500: #64748b; --s300: #cbd5e1; --s200: #e2e8f0;
+    --s100: #f1f5f9; --s50:  #f8fafc;
 
-    --amber500: #f59e0b;
-    --amber100: #fef3c7;
-    --red500:   #ef4444;
-    --red100:   #fee2e2;
-    --blue500:  #3b82f6;
-    --blue100:  #dbeafe;
-    --teal500:  #14b8a6;
-    --teal100:  #ccfbf1;
+    --amber: #f59e0b; --amber-bg: #fef3c7;
+    --red:   #ef4444; --red-bg:   #fee2e2;
+    --blue:  #3b82f6; --blue-bg:  #dbeafe;
+    --teal:  #14b8a6; --teal-bg:  #ccfbf1;
 
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 18px;
-    --radius-xl: 24px;
-
-    --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-    --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
-    --shadow-lg: 0 10px 40px rgba(0,0,0,.12);
-    --shadow-green: 0 4px 20px rgba(34,197,94,.20);
+    --radius: 14px;
+    --shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+    --shadow-hover: 0 8px 28px rgba(0,0,0,.11), 0 2px 8px rgba(0,0,0,.06);
   }
 
-  /* ── BASE ───────────────────────────────────────────────── */
-  body { background: var(--slate50); }
+  body { background: #f0f4f0; font-family: 'DM Sans', sans-serif; }
+
+  /* ── PAGE HEADER ─────────────────────────────────────────── */
+  .dash-header {
+    padding: 1.5rem 0 1rem;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: .5rem;
+  }
+  .dash-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.65rem; font-weight: 800;
+    color: var(--s900); margin: 0; line-height: 1.1;
+  }
+  .dash-header h1 span { color: var(--g700); }
+  .dash-date {
+    font-size: .8rem; font-weight: 600;
+    color: var(--s500);
+    background: #fff;
+    border: 1px solid var(--s200);
+    border-radius: 99px;
+    padding: .3rem .9rem;
+  }
 
   /* ── SECTION LABEL ──────────────────────────────────────── */
   .section-label {
-    font-family: 'Outfit', sans-serif;
-    font-size: .68rem;
-    font-weight: 800;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--slate500);
-    margin: 1.75rem 0 .75rem;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
+    font-family: 'Syne', sans-serif;
+    font-size: .7rem; font-weight: 700;
+    letter-spacing: .13em; text-transform: uppercase;
+    color: var(--s500);
+    margin: 2rem 0 .85rem;
+    display: flex; align-items: center; gap: .6rem;
   }
+  .section-label i { color: var(--g600); font-size: .75rem; }
   .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1.5px;
-    background: var(--slate300);
-    border-radius: 99px;
+    content: ''; flex: 1;
+    height: 1px; background: var(--s200); border-radius: 99px;
   }
 
-  /* ── STAT CARDS ─────────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════════════
+     STAT CARDS — clean white with bold left accent + icon box
+  ═══════════════════════════════════════════════════════════ */
   .stat-card {
-    border: none;
-    border-radius: var(--radius-lg);
-    padding: 1.5rem 1.6rem;
-    position: relative;
-    overflow: hidden;
-    transition: transform .22s ease, box-shadow .22s ease;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.4rem 1.5rem 1.4rem 1.6rem;
+    border-left: 4px solid transparent;
+    display: flex; align-items: flex-start; gap: 1.1rem;
+    transition: transform .2s ease, box-shadow .2s ease;
     cursor: default;
+    position: relative; overflow: hidden;
   }
   .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg) !important;
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
   }
-
-  /* colour variants */
-  .stat-card.green  { background: linear-gradient(135deg, var(--g800), var(--g600)); }
-  .stat-card.teal   { background: linear-gradient(135deg, #0d9488, var(--teal500)); }
-  .stat-card.amber  { background: linear-gradient(135deg, #b45309, var(--amber500)); }
-  .stat-card.red    { background: linear-gradient(135deg, #991b1b, var(--red500)); }
-  .stat-card.blue   { background: linear-gradient(135deg, #1d4ed8, var(--blue500)); }
-  .stat-card.slate  { background: linear-gradient(135deg, var(--slate800), var(--slate700)); }
-  .stat-card.dark   { background: linear-gradient(135deg, #111827, #1f2937); }
-
-  .stat-card .stat-bg-icon {
-    position: absolute;
-    right: -10px;
-    bottom: -12px;
-    font-size: 5.5rem;
-    opacity: .12;
-    color: #fff;
-    pointer-events: none;
-    line-height: 1;
-    transition: opacity .22s, transform .22s;
-  }
-  .stat-card:hover .stat-bg-icon { opacity: .2; transform: scale(1.08) rotate(-5deg); }
-
-  .stat-card .stat-label {
-    font-size: .72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .09em;
-    color: rgba(255,255,255,.65);
-    margin-bottom: .35rem;
-  }
-  .stat-card .stat-value {
-    font-family: 'Outfit', sans-serif;
-    font-size: 2.4rem;
-    font-weight: 900;
-    color: #fff;
-    line-height: 1;
-    margin-bottom: .5rem;
-  }
-  .stat-card .stat-sub {
-    font-size: .75rem;
-    color: rgba(255,255,255,.6);
-    display: flex;
-    align-items: center;
-    gap: .3rem;
-  }
-  .stat-card .stat-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: .25rem;
-    background: rgba(255,255,255,.18);
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 4px; height: 100%;
     border-radius: 99px;
-    padding: .15rem .55rem;
-    font-size: .68rem;
-    font-weight: 700;
-    color: #fff;
   }
 
-  /* ── CHART CARDS ────────────────────────────────────────── */
+  /* accent colours */
+  .stat-card.c-green  { border-left-color: var(--g600); }
+  .stat-card.c-green  .s-icon { background: var(--g100); color: var(--g700); }
+  .stat-card.c-teal   { border-left-color: var(--teal); }
+  .stat-card.c-teal   .s-icon { background: var(--teal-bg); color: #0f766e; }
+  .stat-card.c-amber  { border-left-color: var(--amber); }
+  .stat-card.c-amber  .s-icon { background: var(--amber-bg); color: #92400e; }
+  .stat-card.c-red    { border-left-color: var(--red); }
+  .stat-card.c-red    .s-icon { background: var(--red-bg); color: #991b1b; }
+  .stat-card.c-blue   { border-left-color: var(--blue); }
+  .stat-card.c-blue   .s-icon { background: var(--blue-bg); color: #1d4ed8; }
+  .stat-card.c-slate  { border-left-color: var(--s500); }
+  .stat-card.c-slate  .s-icon { background: var(--s100); color: var(--s700); }
+
+  .s-icon {
+    width: 46px; height: 46px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; flex-shrink: 0;
+  }
+  .s-body { flex: 1; min-width: 0; }
+  .s-label {
+    font-size: .7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .09em;
+    color: var(--s500); margin-bottom: .28rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .s-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem; font-weight: 800;
+    color: var(--s900); line-height: 1; margin-bottom: .35rem;
+  }
+  .s-tag {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .65rem; font-weight: 700;
+    padding: .18rem .55rem; border-radius: 99px;
+    letter-spacing: .04em;
+  }
+  .stat-card.c-green  .s-tag { background: var(--g100);      color: var(--g800); }
+  .stat-card.c-teal   .s-tag { background: var(--teal-bg);   color: #0f766e; }
+  .stat-card.c-amber  .s-tag { background: var(--amber-bg);  color: #92400e; }
+  .stat-card.c-red    .s-tag { background: var(--red-bg);    color: #991b1b; }
+  .stat-card.c-blue   .s-tag { background: var(--blue-bg);   color: #1d4ed8; }
+  .stat-card.c-slate  .s-tag { background: var(--s100);      color: var(--s700); }
+
+  /* ═══════════════════════════════════════════════════════════
+     CHART CARDS
+  ═══════════════════════════════════════════════════════════ */
   .chart-card {
     background: #fff;
-    border: none;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow .22s;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     overflow: hidden;
+    transition: box-shadow .2s;
   }
-  .chart-card:hover { box-shadow: var(--shadow-md); }
+  .chart-card:hover { box-shadow: var(--shadow-hover); }
+  .chart-card .ch-head {
+    padding: 1.1rem 1.4rem .9rem;
+    border-bottom: 1px solid var(--s100);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .chart-card .ch-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: .92rem;
+    color: var(--s900); margin: 0;
+    display: flex; align-items: center; gap: .55rem;
+  }
+  .chart-card .ch-title .ct-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--g100); color: var(--g700);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem;
+  }
+  .chart-card .ch-sub {
+    font-size: .72rem; color: var(--s500); font-weight: 600;
+  }
+  .chart-card .ch-body { padding: 1.3rem; }
 
-  .chart-card .chart-header {
-    padding: 1.1rem 1.4rem .7rem;
-    border-bottom: 2px solid var(--g100);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .chart-card .chart-title {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: .95rem;
-    color: var(--g800);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-  }
-  .chart-card .chart-title i { color: var(--g500); }
-  .chart-card .chart-body { padding: 1.25rem; }
-
-  /* ── ALERT / LIST CARDS ─────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════════════
+     LIST CARDS (alerts, elections, financials, dormant)
+  ═══════════════════════════════════════════════════════════ */
   .list-card {
     background: #fff;
-    border: none;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     overflow: hidden;
-    transition: box-shadow .22s;
+    transition: box-shadow .2s;
   }
-  .list-card:hover { box-shadow: var(--shadow-md); }
+  .list-card:hover { box-shadow: var(--shadow-hover); }
 
-  .list-card .list-header {
-    padding: 1rem 1.4rem;
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-    border-bottom: 2px solid var(--g100);
+  .list-card .lh {
+    padding: .95rem 1.3rem;
+    display: flex; align-items: center; gap: .7rem;
+    border-bottom: 1px solid var(--s100);
+    background: var(--s50);
   }
-  .list-card .list-header h6 {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: .92rem;
-    color: var(--g800);
-    margin: 0;
-  }
-  .list-card .list-header .header-icon {
-    width: 32px; height: 32px;
-    border-radius: 8px;
+  .list-card .lh-icon {
+    width: 34px; height: 34px; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    font-size: .85rem;
-    flex-shrink: 0;
+    font-size: .85rem; flex-shrink: 0;
   }
-  .list-card .list-header .count-badge {
-    margin-left: auto;
-    font-family: 'Outfit', sans-serif;
-    font-size: .7rem;
-    font-weight: 800;
-    padding: .18rem .6rem;
-    border-radius: 99px;
-    border: none;
+  .list-card .lh h6 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: .88rem;
+    color: var(--s900); margin: 0; flex: 1;
   }
-
-  .list-card .list-item {
-    display: flex;
-    align-items: center;
-    gap: .85rem;
-    padding: .8rem 1.4rem;
-    border-bottom: 1px solid var(--slate100);
-    transition: background .15s;
-  }
-  .list-card .list-item:last-child { border-bottom: none; }
-  .list-card .list-item:hover { background: var(--g50); }
-
-  .list-card .list-item .item-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .list-card .list-item .item-club {
-    font-weight: 600;
-    font-size: .875rem;
-    color: var(--slate800);
-    flex: 1;
-  }
-  .list-card .list-item .item-msg {
-    font-size: .78rem;
-    color: var(--slate500);
-    flex: 2;
-  }
-  .list-card .list-item .item-badge {
-    font-size: .65rem;
-    font-weight: 700;
-    padding: .22rem .65rem;
-    border-radius: 99px;
-    border: none;
-    flex-shrink: 0;
+  .list-card .lh .lh-badge {
+    font-size: .65rem; font-weight: 800;
+    padding: .2rem .6rem; border-radius: 99px;
     letter-spacing: .04em;
   }
 
-  .list-card .list-empty {
-    padding: 2rem;
+  .list-card .li {
+    display: flex; align-items: center; gap: .9rem;
+    padding: .75rem 1.3rem;
+    border-bottom: 1px solid var(--s100);
+    transition: background .15s;
+  }
+  .list-card .li:last-child { border-bottom: none; }
+  .list-card .li:hover { background: var(--g50); }
+
+  .li-num {
+    font-family: 'Syne', sans-serif;
+    font-size: .75rem; font-weight: 800;
+    color: var(--s300); width: 18px; flex-shrink: 0;
+    text-align: right;
+  }
+  .li-name {
+    font-weight: 600; font-size: .855rem;
+    color: var(--s800); flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .li-msg {
+    font-size: .775rem; color: var(--s500);
+    flex: 2; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .li-pill {
+    font-size: .63rem; font-weight: 800;
+    padding: .2rem .65rem; border-radius: 99px;
+    letter-spacing: .05em; flex-shrink: 0;
+  }
+
+  .pill-red    { background: var(--red-bg);   color: #991b1b; }
+  .pill-amber  { background: var(--amber-bg); color: #92400e; }
+  .pill-blue   { background: var(--blue-bg);  color: #1d4ed8; }
+  .pill-slate  { background: var(--s100);     color: var(--s700); }
+  .pill-green  { background: var(--g100);     color: var(--g800); }
+
+  .list-empty {
+    padding: 2.5rem 1rem;
     text-align: center;
-    color: var(--slate500);
-    font-size: .875rem;
+    color: var(--s500);
+    font-size: .85rem;
+    display: flex; flex-direction: column; align-items: center; gap: .6rem;
   }
-  .list-card .list-empty i {
-    font-size: 2rem;
-    color: var(--g300);
-    display: block;
-    margin-bottom: .5rem;
+  .list-empty i { font-size: 1.6rem; color: var(--g400); }
+
+  /* ═══════════════════════════════════════════════════════════
+     ANNOUNCEMENT BANNER
+  ═══════════════════════════════════════════════════════════ */
+  .ann-banner {
+    border-radius: var(--radius);
+    padding: 1rem 1.3rem;
+    display: flex; gap: 1rem; align-items: flex-start;
+    border: 1px solid transparent;
+  }
+  .ann-banner.t-alert   { background: var(--red-bg);   border-color: #fca5a5; }
+  .ann-banner.t-success { background: var(--g100);     border-color: var(--g300); }
+  .ann-banner.t-warning { background: var(--amber-bg); border-color: #fcd34d; }
+  .ann-banner.t-info    { background: var(--blue-bg);  border-color: #93c5fd; }
+  .ann-banner .ann-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem; flex-shrink: 0;
+    background: rgba(255,255,255,.6);
+  }
+  .ann-banner.t-alert   .ann-icon { color: var(--red); }
+  .ann-banner.t-success .ann-icon { color: var(--g700); }
+  .ann-banner.t-warning .ann-icon { color: #b45309; }
+  .ann-banner.t-info    .ann-icon { color: #1d4ed8; }
+  .ann-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: .88rem;
+    color: var(--s900); margin-bottom: .2rem;
+  }
+  .ann-msg { font-size: .8rem; color: var(--s700); font-weight: 500; }
+  .ann-date {
+    margin-left: auto; font-size: .68rem; font-weight: 700;
+    color: var(--s500); white-space: nowrap; padding-top: .15rem;
   }
 
-  /* status dot colours */
-  .dot-red    { background: var(--red500); }
-  .dot-amber  { background: var(--amber500); }
-  .dot-blue   { background: var(--blue500); }
-  .dot-teal   { background: var(--teal500); }
-  .dot-slate  { background: var(--slate500); }
-
-  /* ── BADGE COLOURS ──────────────────────────────────────── */
-  .badge-red   { background: var(--red100);  color: #991b1b; }
-  .badge-amber { background: var(--amber100); color: #78350f; }
-  .badge-teal  { background: var(--teal100); color: #134e4a; }
-  .badge-slate { background: var(--slate100); color: var(--slate700); }
+  /* ═══════════════════════════════════════════════════════════
+     EVENT CARDS
+  ═══════════════════════════════════════════════════════════ */
+  .event-card {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
+  .event-img {
+    height: 160px; overflow: hidden; position: relative;
+  }
+  .event-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .35s ease;
+  }
+  .event-card:hover .event-img img { transform: scale(1.04); }
+  .event-no-img {
+    height: 160px; background: linear-gradient(135deg, var(--g100), var(--teal-bg));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; color: var(--g400);
+  }
+  .event-body { padding: 1.1rem 1.2rem; }
+  .event-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: .9rem;
+    color: var(--s900); margin-bottom: .55rem;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .event-meta {
+    font-size: .77rem; color: var(--s500); font-weight: 500;
+    display: flex; align-items: center; gap: .4rem; margin-bottom: .35rem;
+  }
+  .event-meta i { color: var(--g600); font-size: .72rem; width: 13px; }
+  .event-club {
+    margin-top: .6rem;
+    font-size: .72rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: var(--g100); color: var(--g800);
+    padding: .22rem .65rem; border-radius: 99px;
+  }
 
   /* ── ANIMATIONS ─────────────────────────────────────────── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
+  @keyframes up {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
   }
-  .anim { animation: fadeUp .45s ease both; }
-  .anim-d1 { animation-delay: .05s; }
-  .anim-d2 { animation-delay: .10s; }
-  .anim-d3 { animation-delay: .15s; }
-  .anim-d4 { animation-delay: .20s; }
-  .anim-d5 { animation-delay: .25s; }
-  .anim-d6 { animation-delay: .30s; }
-  .anim-d7 { animation-delay: .35s; }
-  .anim-d8 { animation-delay: .40s; }
+  .anim { animation: up .42s ease both; }
+  .d1{animation-delay:.04s} .d2{animation-delay:.09s}
+  .d3{animation-delay:.14s} .d4{animation-delay:.19s}
+  .d5{animation-delay:.24s} .d6{animation-delay:.29s}
+  .d7{animation-delay:.34s} .d8{animation-delay:.39s}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid px-3 pb-5">
 
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- PRIMARY STATS                                          -->
-  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PAGE HEADER -->
+  <div class="dash-header anim d1">
+    <h1>Admin <span>Dashboard</span></h1>
+    <div class="dash-date"><i class="far fa-calendar-alt me-1"></i> {{ now().strftime('%d %B %Y') if now else '' }}</div>
+  </div>
+
+  <!-- ANNOUNCEMENTS -->
+  {% if announcements %}
+  <div class="section-label mt-0"><i class="fas fa-bullhorn"></i> Announcements</div>
+  <div class="d-flex flex-column gap-2 anim d2">
+    {% for a in announcements %}
+    <div class="ann-banner t-{{ a.type }}">
+      <div class="ann-icon"><i class="fas fa-{{ 'exclamation-triangle' if a.type=='alert' else 'check-circle' if a.type=='success' else 'exclamation-circle' if a.type=='warning' else 'info-circle' }}"></i></div>
+      <div style="flex:1">
+        <div class="ann-title">{{ a.title }}</div>
+        <div class="ann-msg">{{ a.message }}</div>
+      </div>
+      <div class="ann-date">{{ a.created_at.strftime('%d %b %Y') }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ══════════════════════════════════════════════════════
+       PRIMARY STATS
+  ══════════════════════════════════════════════════════════ -->
   <div class="section-label"><i class="fas fa-chart-line"></i> Overview</div>
-
   <div class="row g-3">
 
-    <!-- Total Clubs -->
-    <div class="col-xl-3 col-md-6 anim anim-d1">
-      <div class="stat-card green shadow-md h-100">
-        <div class="stat-label">Total Clubs</div>
-        <div class="stat-value">{{ stats.total_clubs }}</div>
-        <div class="stat-sub">
-          <span class="stat-badge"><i class="fas fa-shield-alt mr-1"></i> Registered</span>
+    <div class="col-xl-3 col-md-6 anim d1">
+      <div class="stat-card c-green">
+        <div class="s-icon"><i class="fas fa-users"></i></div>
+        <div class="s-body">
+          <div class="s-label">Total Clubs</div>
+          <div class="s-value">{{ stats.total_clubs }}</div>
+          <span class="s-tag"><i class="fas fa-shield-alt"></i> Registered</span>
         </div>
-        <div class="stat-bg-icon"><i class="fas fa-users"></i></div>
       </div>
     </div>
 
-    <!-- Active Members -->
-    <div class="col-xl-3 col-md-6 anim anim-d2">
-      <div class="stat-card teal shadow-md h-100">
-        <div class="stat-label">Active Members</div>
-        <div class="stat-value">{{ stats.total_members }}</div>
-        <div class="stat-sub">
-          <span class="stat-badge"><i class="fas fa-check-circle mr-1"></i> Verified</span>
+    <div class="col-xl-3 col-md-6 anim d2">
+      <div class="stat-card c-teal">
+        <div class="s-icon"><i class="fas fa-user-check"></i></div>
+        <div class="s-body">
+          <div class="s-label">Active Members</div>
+          <div class="s-value">{{ stats.total_members }}</div>
+          <span class="s-tag"><i class="fas fa-check-circle"></i> Verified</span>
         </div>
-        <div class="stat-bg-icon"><i class="fas fa-user-check"></i></div>
       </div>
     </div>
 
-    <!-- Upcoming Events -->
-    <div class="col-xl-3 col-md-6 anim anim-d3">
-      <div class="stat-card amber shadow-md h-100">
-        <div class="stat-label">Upcoming Events</div>
-        <div class="stat-value">{{ stats.upcoming_events }}</div>
-        <div class="stat-sub">
-          <span class="stat-badge"><i class="fas fa-calendar mr-1"></i> Scheduled</span>
+    <div class="col-xl-3 col-md-6 anim d3">
+      <div class="stat-card c-amber">
+        <div class="s-icon"><i class="fas fa-calendar-alt"></i></div>
+        <div class="s-body">
+          <div class="s-label">Upcoming Events</div>
+          <div class="s-value">{{ stats.upcoming_events }}</div>
+          <span class="s-tag"><i class="fas fa-calendar"></i> Scheduled</span>
         </div>
-        <div class="stat-bg-icon"><i class="fas fa-calendar-alt"></i></div>
       </div>
     </div>
 
-    <!-- Pending Approvals -->
-    <div class="col-xl-3 col-md-6 anim anim-d4">
-      <div class="stat-card red shadow-md h-100">
-        <div class="stat-label">Pending Approvals</div>
-        <div class="stat-value">{{ stats.pending_approvals }}</div>
-        <div class="stat-sub">
-          <span class="stat-badge"><i class="fas fa-hourglass-half mr-1"></i> Awaiting</span>
+    <div class="col-xl-3 col-md-6 anim d4">
+      <div class="stat-card c-red">
+        <div class="s-icon"><i class="fas fa-clock"></i></div>
+        <div class="s-body">
+          <div class="s-label">Pending Approvals</div>
+          <div class="s-value">{{ stats.pending_approvals }}</div>
+          <span class="s-tag"><i class="fas fa-hourglass-half"></i> Awaiting</span>
         </div>
-        <div class="stat-bg-icon"><i class="fas fa-clock"></i></div>
       </div>
     </div>
 
   </div>
 
-
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- COMPLIANCE STATS                                        -->
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="section-label"><i class="fas fa-balance-scale"></i> Compliance Snapshot</div>
-
+  <!-- ══════════════════════════════════════════════════════
+       COMPLIANCE STATS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-balance-scale"></i> Compliance</div>
   <div class="row g-3">
 
-    <!-- Elections Due -->
-    <div class="col-xl-3 col-md-6 anim anim-d1">
-      <div class="stat-card blue shadow-md h-100">
-        <div class="stat-label">Elections Due</div>
-        <div class="stat-value">{{ stats.elections_due }}</div>
-        <div class="stat-sub">
-          <span class="stat-badge"><i class="fas fa-vote-yea mr-1"></i> Action Required</span>
+    <div class="col-xl-3 col-md-6 anim d1">
+      <div class="stat-card c-blue">
+        <div class="s-icon"><i class="fas fa-vote-yea"></i></div>
+        <div class="s-body">
+          <div class="s-label">Elections Due</div>
+          <div class="s-value">{{ stats.elections_due }}</div>
+          <span class="s-tag"><i class="fas fa-exclamation"></i> Action Required</span>
         </div>
-        <div class="stat-bg-icon"><i class="fas fa-vote-yea"></i></div>
       </div>
     </div>
 
-    <!-- Overdue Financial Reports -->
-    <div class="col-xl-3 col-md-6 anim anim-d2">
-      <div class="stat-card amber shadow-md h-100">
-        <div class="stat-label">Overdue Financials</div>
-        <div class="stat-value">{{ stats.overdue_financials }}</div>
-        <div class="stat-sub">
-          <span class="stat-badge"><i class="fas fa-file-invoice-dollar mr-1"></i> Reports</span>
+    <div class="col-xl-3 col-md-6 anim d2">
+      <div class="stat-card c-amber">
+        <div class="s-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div class="s-body">
+          <div class="s-label">Overdue Financials</div>
+          <div class="s-value">{{ stats.overdue_financials }}</div>
+          <span class="s-tag"><i class="fas fa-file-alt"></i> Reports</span>
         </div>
-        <div class="stat-bg-icon"><i class="fas fa-file-invoice-dollar"></i></div>
       </div>
     </div>
 
-    <!-- Dormant Clubs -->
-    <div class="col-xl-3 col-md-6 anim anim-d3">
-      <div class="stat-card slate shadow-md h-100">
-        <div class="stat-label">Dormant Clubs</div>
-        <div class="stat-value">{{ stats.dormant_clubs }}</div>
-        <div class="stat-sub">
-          <span class="stat-badge"><i class="fas fa-moon mr-1"></i> 6+ months</span>
+    <div class="col-xl-3 col-md-6 anim d3">
+      <div class="stat-card c-slate">
+        <div class="s-icon"><i class="fas fa-moon"></i></div>
+        <div class="s-body">
+          <div class="s-label">Dormant Clubs</div>
+          <div class="s-value">{{ stats.dormant_clubs }}</div>
+          <span class="s-tag"><i class="fas fa-clock"></i> 6+ months</span>
         </div>
-        <div class="stat-bg-icon"><i class="fas fa-exclamation-triangle"></i></div>
       </div>
     </div>
 
-    <!-- Non-Compliant Clubs -->
-    <div class="col-xl-3 col-md-6 anim anim-d4">
-      <div class="stat-card red shadow-md h-100">
-        <div class="stat-label">Non-Compliant</div>
-        <div class="stat-value">{{ stats.non_compliant_clubs }}</div>
-        <div class="stat-sub">
-          <span class="stat-badge"><i class="fas fa-times-circle mr-1"></i> Clubs</span>
+    <div class="col-xl-3 col-md-6 anim d4">
+      <div class="stat-card c-red">
+        <div class="s-icon"><i class="fas fa-balance-scale"></i></div>
+        <div class="s-body">
+          <div class="s-label">Non-Compliant</div>
+          <div class="s-value">{{ stats.non_compliant_clubs }}</div>
+          <span class="s-tag"><i class="fas fa-times-circle"></i> Clubs</span>
         </div>
-        <div class="stat-bg-icon"><i class="fas fa-balance-scale"></i></div>
       </div>
     </div>
 
   </div>
 
-
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- CHARTS ROW                                              -->
-  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════════
+       CHARTS
+  ══════════════════════════════════════════════════════════ -->
   <div class="section-label"><i class="fas fa-chart-bar"></i> Analytics</div>
+  <div class="row g-3 anim d5">
 
-  <div class="row g-3 anim anim-d5">
-
-    <!-- Monthly Members Trend -->
-    <div class="col-xl-8 col-md-12">
+    <div class="col-xl-8">
       <div class="chart-card h-100">
-        <div class="chart-header">
-          <h6 class="chart-title">
-            <i class="fas fa-user-plus"></i> Monthly Member Registrations
+        <div class="ch-head">
+          <h6 class="ch-title">
+            <span class="ct-icon"><i class="fas fa-user-plus"></i></span>
+            Monthly Member Registrations
           </h6>
-          <span style="font-size:.72rem;color:var(--slate500);font-weight:600;">
-            This Year
-          </span>
+          <span class="ch-sub">This Year</span>
         </div>
-        <div class="chart-body">
+        <div class="ch-body">
           <canvas id="membersChart" style="height:240px;"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- Club Distribution Donut -->
-    <div class="col-xl-4 col-md-12">
+    <div class="col-xl-4">
       <div class="chart-card h-100">
-        <div class="chart-header">
-          <h6 class="chart-title">
-            <i class="fas fa-layer-group"></i> Clubs by Category
+        <div class="ch-head">
+          <h6 class="ch-title">
+            <span class="ct-icon"><i class="fas fa-layer-group"></i></span>
+            Clubs by Category
           </h6>
         </div>
-        <div class="chart-body d-flex align-items-center justify-content-center">
+        <div class="ch-body d-flex align-items-center justify-content-center">
           <canvas id="clubChart" style="max-height:260px;"></canvas>
         </div>
       </div>
@@ -452,39 +506,36 @@
 
   </div>
 
-
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- COMPLIANCE ALERTS + ELECTIONS DUE                      -->
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="section-label"><i class="fas fa-bell"></i> Alerts & Actions</div>
-
+  <!-- ══════════════════════════════════════════════════════
+       ALERTS & ACTIONS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-bell"></i> Alerts &amp; Actions</div>
   <div class="row g-3">
 
     <!-- Compliance Alerts -->
-    <div class="col-md-6 anim anim-d6">
+    <div class="col-md-6 anim d6">
       <div class="list-card h-100">
-        <div class="list-header">
-          <div class="header-icon" style="background:var(--red100);color:var(--red500);">
+        <div class="lh">
+          <div class="lh-icon" style="background:var(--red-bg);color:var(--red);">
             <i class="fas fa-exclamation-circle"></i>
           </div>
           <h6>Compliance Alerts</h6>
           {% if compliance_alerts %}
-          <span class="count-badge badge-red count-badge">{{ compliance_alerts|length }}</span>
+          <span class="lh-badge pill-red">{{ compliance_alerts|length }}</span>
           {% endif %}
         </div>
-
         {% if compliance_alerts %}
           {% for alert in compliance_alerts %}
-          <div class="list-item">
-            <span class="item-dot dot-red"></span>
-            <span class="item-club">{{ alert.club_name }}</span>
-            <span class="item-msg">{{ alert.message }}</span>
-            <span class="item-badge badge-red">Alert</span>
+          <div class="li">
+            <span class="li-num">{{ loop.index }}</span>
+            <span class="li-name">{{ alert.club_name }}</span>
+            <span class="li-msg">{{ alert.message }}</span>
+            <span class="li-pill pill-red">Alert</span>
           </div>
           {% endfor %}
         {% else %}
           <div class="list-empty">
-            <i class="fas fa-check-circle" style="color:var(--g400);"></i>
+            <i class="fas fa-check-circle"></i>
             No compliance issues detected
           </div>
         {% endif %}
@@ -492,29 +543,28 @@
     </div>
 
     <!-- Elections Due -->
-    <div class="col-md-6 anim anim-d7">
+    <div class="col-md-6 anim d7">
       <div class="list-card h-100">
-        <div class="list-header">
-          <div class="header-icon" style="background:var(--blue100);color:var(--blue500);">
+        <div class="lh">
+          <div class="lh-icon" style="background:var(--blue-bg);color:var(--blue);">
             <i class="fas fa-vote-yea"></i>
           </div>
           <h6>Elections Due</h6>
           {% if elections_due_list %}
-          <span class="count-badge" style="background:var(--blue100);color:#1d4ed8;">{{ elections_due_list|length }}</span>
+          <span class="lh-badge pill-blue">{{ elections_due_list|length }}</span>
           {% endif %}
         </div>
-
         {% if elections_due_list %}
           {% for club in elections_due_list %}
-          <div class="list-item">
-            <span class="item-dot dot-blue"></span>
-            <span class="item-club flex-grow-1">{{ club.name }}</span>
-            <span class="item-badge badge-amber">Due</span>
+          <div class="li">
+            <span class="li-num">{{ loop.index }}</span>
+            <span class="li-name">{{ club.name }}</span>
+            <span class="li-pill pill-amber">Due</span>
           </div>
           {% endfor %}
         {% else %}
           <div class="list-empty">
-            <i class="fas fa-check-circle" style="color:var(--g400);"></i>
+            <i class="fas fa-check-circle"></i>
             No elections pending
           </div>
         {% endif %}
@@ -523,36 +573,80 @@
 
   </div>
 
+  <!-- ══════════════════════════════════════════════════════
+       UPCOMING EVENTS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-calendar-alt"></i> Upcoming Events</div>
+  <div class="row g-3">
+    {% for event in upcoming_events %}
+    <div class="col-xl-4 col-md-6 anim d{{ (loop.index0 % 4) + 1 }}">
+      <div class="event-card">
+        {% if event.image_path %}
+        <div class="event-img">
+          <img src="{{ url_for('static', filename=event.image_path) }}" alt="{{ event.title }}">
+        </div>
+        {% else %}
+        <div class="event-no-img"><i class="fas fa-calendar-day"></i></div>
+        {% endif %}
+        <div class="event-body">
+          <div class="event-title">{{ event.title }}</div>
+          <div class="event-meta">
+            <i class="far fa-clock"></i>
+            {{ event.date.strftime('%d %b %Y, %I:%M %p') }}
+          </div>
+          {% if event.location %}
+          <div class="event-meta">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ event.location }}
+          </div>
+          {% endif %}
+          <div class="event-club">
+            <i class="fas fa-users"></i> {{ event.club.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+      <div class="list-card">
+        <div class="list-empty">
+          <i class="fas fa-calendar-times"></i>
+          No upcoming events scheduled
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- OVERDUE FINANCIALS + DORMANT CLUBS                     -->
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="row g-3 mt-0">
+  <!-- ══════════════════════════════════════════════════════
+       FINANCIALS + DORMANT
+  ══════════════════════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-folder-open"></i> Reports</div>
+  <div class="row g-3">
 
-    <!-- Overdue Financial Reports -->
-    <div class="col-md-6 anim anim-d7">
+    <!-- Overdue Financials -->
+    <div class="col-md-6 anim d7">
       <div class="list-card h-100">
-        <div class="list-header">
-          <div class="header-icon" style="background:var(--amber100);color:#b45309;">
+        <div class="lh">
+          <div class="lh-icon" style="background:var(--amber-bg);color:#b45309;">
             <i class="fas fa-file-invoice-dollar"></i>
           </div>
           <h6>Overdue Financial Reports</h6>
           {% if overdue_financial_list %}
-          <span class="count-badge badge-amber">{{ overdue_financial_list|length }}</span>
+          <span class="lh-badge pill-amber">{{ overdue_financial_list|length }}</span>
           {% endif %}
         </div>
-
         {% if overdue_financial_list %}
           {% for club in overdue_financial_list %}
-          <div class="list-item">
-            <span class="item-dot dot-amber"></span>
-            <span class="item-club flex-grow-1">{{ club.name }}</span>
-            <span class="item-badge badge-red">Overdue</span>
+          <div class="li">
+            <span class="li-num">{{ loop.index }}</span>
+            <span class="li-name">{{ club.name }}</span>
+            <span class="li-pill pill-red">Overdue</span>
           </div>
           {% endfor %}
         {% else %}
           <div class="list-empty">
-            <i class="fas fa-check-circle" style="color:var(--g400);"></i>
+            <i class="fas fa-check-circle"></i>
             All financial reports up to date
           </div>
         {% endif %}
@@ -560,29 +654,28 @@
     </div>
 
     <!-- Dormant Clubs -->
-    <div class="col-md-6 anim anim-d8">
+    <div class="col-md-6 anim d8">
       <div class="list-card h-100">
-        <div class="list-header">
-          <div class="header-icon" style="background:var(--slate100);color:var(--slate700);">
+        <div class="lh">
+          <div class="lh-icon" style="background:var(--s100);color:var(--s700);">
             <i class="fas fa-moon"></i>
           </div>
-          <h6>Dormant Clubs <span style="font-size:.72rem;font-weight:500;color:var(--slate500);">(6+ months)</span></h6>
+          <h6>Dormant Clubs <span style="font-size:.72rem;font-weight:500;color:var(--s500);">(6+ months)</span></h6>
           {% if dormant_clubs_list %}
-          <span class="count-badge badge-slate">{{ dormant_clubs_list|length }}</span>
+          <span class="lh-badge pill-slate">{{ dormant_clubs_list|length }}</span>
           {% endif %}
         </div>
-
         {% if dormant_clubs_list %}
           {% for club in dormant_clubs_list %}
-          <div class="list-item">
-            <span class="item-dot dot-slate"></span>
-            <span class="item-club flex-grow-1">{{ club.name }}</span>
-            <span class="item-badge badge-slate">Dormant</span>
+          <div class="li">
+            <span class="li-num">{{ loop.index }}</span>
+            <span class="li-name">{{ club.name }}</span>
+            <span class="li-pill pill-slate">Dormant</span>
           </div>
           {% endfor %}
         {% else %}
           <div class="list-empty">
-            <i class="fas fa-check-circle" style="color:var(--g400);"></i>
+            <i class="fas fa-check-circle"></i>
             No dormant clubs
           </div>
         {% endif %}
@@ -598,23 +691,21 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const GREEN_PALETTE = [
+const PALETTE = [
   '#065f33','#16a34a','#22c55e','#4ade80','#86efac',
   '#14b8a6','#0d9488','#3b82f6','#f59e0b','#ef4444',
 ];
 
-// ── Members Trend Line Chart ─────────────────────────────
-const ctxLine = document.getElementById('membersChart').getContext('2d');
-new Chart(ctxLine, {
+// Members Line Chart
+new Chart(document.getElementById('membersChart').getContext('2d'), {
   type: 'line',
   data: {
-    labels: ["Jan","Feb","Mar","Apr","May","Jun",
-             "Jul","Aug","Sep","Oct","Nov","Dec"],
+    labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
     datasets: [{
       label: 'New Members',
       data: {{ monthly_members | tojson }},
       fill: true,
-      backgroundColor: 'rgba(34,197,94,.08)',
+      backgroundColor: 'rgba(34,197,94,.07)',
       borderColor: '#16a34a',
       borderWidth: 2.5,
       pointBackgroundColor: '#16a34a',
@@ -626,19 +717,13 @@ new Chart(ctxLine, {
     }]
   },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
+    responsive: true, maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#1e293b',
-        titleColor: '#86efac',
-        bodyColor: '#fff',
-        padding: 10,
-        cornerRadius: 8,
-        callbacks: {
-          label: ctx => ` ${ctx.raw} new members`
-        }
+        backgroundColor: '#1e293b', titleColor: '#86efac',
+        bodyColor: '#fff', padding: 10, cornerRadius: 8,
+        callbacks: { label: c => ` ${c.raw} new members` }
       }
     },
     scales: {
@@ -654,47 +739,36 @@ new Chart(ctxLine, {
   }
 });
 
-// ── Club Distribution Doughnut ───────────────────────────
-const ctxDoughnut = document.getElementById('clubChart').getContext('2d');
-new Chart(ctxDoughnut, {
+// Club Doughnut
+new Chart(document.getElementById('clubChart').getContext('2d'), {
   type: 'doughnut',
   data: {
     labels: {{ club_labels | tojson }},
     datasets: [{
       data: {{ club_data | tojson }},
-      backgroundColor: GREEN_PALETTE,
-      borderWidth: 3,
-      borderColor: '#fff',
-      hoverBorderColor: '#fff',
-      hoverOffset: 6,
+      backgroundColor: PALETTE,
+      borderWidth: 3, borderColor: '#fff',
+      hoverBorderColor: '#fff', hoverOffset: 6,
     }]
   },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: '62%',
+    responsive: true, maintainAspectRatio: false, cutout: '62%',
     plugins: {
       legend: {
         position: 'bottom',
         labels: {
-          padding: 14,
-          usePointStyle: true,
-          pointStyleWidth: 10,
+          padding: 14, usePointStyle: true, pointStyleWidth: 10,
           font: { family: 'DM Sans', weight: '600', size: 11 },
           color: '#334155'
         }
       },
       tooltip: {
-        backgroundColor: '#1e293b',
-        titleColor: '#86efac',
-        bodyColor: '#fff',
-        padding: 10,
-        cornerRadius: 8,
+        backgroundColor: '#1e293b', titleColor: '#86efac',
+        bodyColor: '#fff', padding: 10, cornerRadius: 8,
         callbacks: {
-          label: ctx => {
-            const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
-            const pct = ((ctx.raw / total) * 100).toFixed(1);
-            return ` ${ctx.raw} clubs (${pct}%)`;
+          label: c => {
+            const t = c.dataset.data.reduce((a,b)=>a+b,0);
+            return ` ${c.raw} clubs (${((c.raw/t)*100).toFixed(1)}%)`;
           }
         }
       }

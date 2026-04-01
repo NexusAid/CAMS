@@ -1,0 +1,224 @@
+{% extends "base/admin_base.html" %}
+
+{% block page_title %}Review Application{% endblock %}
+{% block breadcrumb %}
+<span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
+<a href="{{ url_for('dashboard.application_review_list') }}">Pending Applications</a>
+<span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
+<span>Review</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-detail-card {
+    border-radius: 18px;
+    background: #fff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+.app-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    padding: 2.5rem 2rem;
+    color: #fff;
+    position: relative;
+}
+.app-header::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: #fff;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+.candidate-badge {
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.content-section {
+    padding: 2rem;
+}
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.section-title i {
+    color: #3b82f6;
+}
+.text-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: #475569;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+}
+.meta-item {
+    background: #f1f5f9;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+}
+.meta-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.meta-value {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.95rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="app-detail-card mb-4">
+            <!-- Header -->
+            <div class="app-header">
+                {% if application.status == 'pending' %}
+                <div class="candidate-badge border-warning text-warning">Pending Review</div>
+                {% elif application.status == 'approved' %}
+                <div class="candidate-badge border-success text-success">Approved</div>
+                {% else %}
+                <div class="candidate-badge border-danger text-danger">Rejected</div>
+                {% endif %}
+                <div class="d-flex align-items-center gap-4 position-relative" style="z-index: 2;">
+                    {% if application.photo_url %}
+                        <img src="{{ application.photo_url }}" alt="Candidate Photo" 
+                             style="width: 100px; height: 100px; border-radius: 20px; object-fit: cover; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                    {% elif application.student.profile_image %}
+                        <img src="{{ application.student.profile_image }}" alt="Candidate Photo" 
+                             style="width: 100px; height: 100px; border-radius: 20px; object-fit: cover; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                    {% else %}
+                        <div style="width: 100px; height: 100px; border-radius: 20px; background: rgba(255,255,255,0.1); border: 3px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                            {{ application.student.first_name[0] }}
+                        </div>
+                    {% endif %}
+                    
+                    <div>
+                        <h2 class="mb-1 fw-bold font-outfit">{{ application.student.full_name }}</h2>
+                        <div class="d-flex align-items-center gap-3 text-white-50 small">
+                            <span><i class="fas fa-id-card me-1"></i> {{ application.student.registration_number }}</span>
+                            <span><i class="fas fa-envelope me-1"></i> {{ application.student.email }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-section">
+                <!-- Meta Grid -->
+                <div class="meta-grid mb-4">
+                    <div class="meta-item">
+                        <div class="meta-label">Club</div>
+                        <div class="meta-value">{{ application.club.name }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Position Applied For</div>
+                        <div class="meta-value text-primary"><i class="fas fa-crown me-1 text-primary"></i> {{ application.position|replace('_', ' ')|title }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Availability Commitment</div>
+                        <div class="meta-value">{{ application.availability|title }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Applied On</div>
+                        <div class="meta-value">{{ application.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+                    </div>
+                </div>
+                
+                <hr class="text-secondary opacity-25 my-4">
+                
+                <!-- Statements -->
+                <div class="mb-4">
+                    <h5 class="section-title"><i class="fas fa-quote-left"></i> Motivation Statement</h5>
+                    <div class="text-box">{{ application.motivation }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <h5 class="section-title"><i class="fas fa-briefcase"></i> Relevant Experience</h5>
+                    <div class="text-box">{{ application.experience or 'None provided.' }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <h5 class="section-title"><i class="fas fa-bullseye"></i> Goals for the Term</h5>
+                    <div class="text-box">{{ application.goals or 'None provided.' }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Form -->
+        <div class="app-detail-card" id="review-form">
+            <div class="content-section bg-light">
+                {% if application.status == 'pending' %}
+                <h5 class="section-title mb-3"><i class="fas fa-gavel text-warning"></i> Dean's Decision</h5>
+                
+                <form method="POST">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-secondary">Review Note / Reason (Required if rejecting)</label>
+                        <textarea name="review_note" class="form-control border-0" rows="3" style="border-radius:12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" placeholder="Provide any feedback or reasons for rejection..."></textarea>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" name="action" value="approve" class="btn btn-success flex-grow-1 fw-bold py-2 rounded-3" style="box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);">
+                            <i class="fas fa-check-circle me-2"></i> Approve Candidate
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger flex-grow-1 fw-bold py-2 rounded-3" style="box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);">
+                            <i class="fas fa-times-circle me-2"></i> Reject Candidate
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <h5 class="section-title mb-3">
+                    {% if application.status == 'approved' %}
+                    <i class="fas fa-check-circle text-success"></i> Application Approved
+                    {% else %}
+                    <i class="fas fa-times-circle text-danger"></i> Application Rejected
+                    {% endif %}
+                </h5>
+                <div class="p-3 bg-white rounded-3 shadow-sm mb-3 text-secondary">
+                    {% if application.reviewer %}
+                    <div class="mb-2"><i class="fas fa-user-check me-2"></i> Reviewed by <strong>{{ application.reviewer.full_name }}</strong> on {{ application.reviewed_at.strftime('%d %b %Y, %H:%M') }}</div>
+                    {% endif %}
+                    {% if application.review_note %}
+                    <div class="fst-italic border-start border-3 ps-3 mt-2 border-secondary">
+                        "{{ application.review_note }}"
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

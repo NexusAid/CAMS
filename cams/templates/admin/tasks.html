@@ -10,7 +10,7 @@
             </div>
             {% if current_user.role == 'dean' %}
             <div class="col-sm-6 text-end">
-                <button class="btn btn-primary text-white" data-toggle="modal" data-target="#createTaskModal">
+                <button class="btn btn-primary text-white" data-bs-toggle="modal" data-bs-target="#createTaskModal">
                     <i class="fas fa-plus me-2"></i> Assign New Task
                 </button>
             </div>
@@ -80,7 +80,7 @@
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-light border-0">
                 <h5 class="modal-title fw-bold">Assign New Task</h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('dashboard.create_task') }}" method="POST">
                 <div class="modal-body p-4">
@@ -103,7 +103,7 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 bg-light">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary text-white">Assign Task</button>
                 </div>
             </form>

@@ -2,7 +2,7 @@
 from datetime import datetime
 from ..models import db, Notification
 
-def send_notification(title, message, notification_type, priority="normal", user_id=None, club_id=None):
+def send_notification(title, message, notification_type, priority="normal", user_id=None, club_id=None, link=None):
     """
     Helper function to create and save notifications
     
@@ -13,6 +13,7 @@ def send_notification(title, message, notification_type, priority="normal", user
         priority: Priority level (low, normal, high, urgent)
         user_id: Target user ID (optional)
         club_id: Associated club ID (optional)
+        link: Clickable action link (optional)
     """
     notification = Notification(
         title=title,
@@ -21,6 +22,7 @@ def send_notification(title, message, notification_type, priority="normal", user
         priority=priority,
         user_id=user_id,
         club_id=club_id,
+        link=link,
         created_date=datetime.now(),
         is_read=False
     )

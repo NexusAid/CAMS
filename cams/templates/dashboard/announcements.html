@@ -1,0 +1,106 @@
+{% extends 'base/admin_base.html' %}
+
+{% block title %}System Announcements - CAMS Admin{% endblock %}
+
+{% block page_title %}Announcements{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800" style="font-family: 'Outfit', sans-serif; font-weight: 700;">System Announcements</h1>
+            <p class="text-muted mb-0">Broadcast messages to students, leaders, or admins.</p>
+        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newAnnouncementModal">
+            <i class="fas fa-bullhorn me-2"></i> New Announcement
+        </button>
+    </div>
+
+    <!-- Announcements List -->
+    <div class="row g-4">
+        {% for ann in announcements %}
+        <div class="col-12 col-lg-6">
+            <div class="card h-100 border-0 shadow-sm" style="border-radius: var(--radius-lg);">
+                <div class="card-body p-4 position-relative">
+                    
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title fw-bold mb-0" style="font-family: 'Outfit', sans-serif;">{{ ann.title }}</h5>
+                        <form action="{{ url_for('dashboard.delete_announcement', id=ann.id) }}" method="POST" onsubmit="return confirm('Delete this announcement?');">
+                            <button type="submit" class="btn btn-sm text-danger" style="background: var(--red-l); border: none; border-radius: 8px;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <p class="card-text text-secondary mb-3">{{ ann.content }}</p>
+                    
+                    <div class="d-flex align-items-center gap-3 mt-auto pt-3 border-top" style="font-size: 13px;">
+                        <span class="text-muted"><i class="fas fa-users text-primary"></i> Audience: <strong>{{ ann.target_audience|title }}</strong></span>
+                        <span class="text-muted"><i class="far fa-clock text-warning"></i> Created: {{ ann.created_at.strftime('%Y-%m-%d') }}</span>
+                        {% if ann.expires_at %}
+                        <span class="text-muted"><i class="fas fa-hourglass-end text-danger"></i> Expires: {{ ann.expires_at.strftime('%Y-%m-%d') }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5" style="background: var(--s50); border: 2px dashed var(--s300); border-radius: var(--radius-lg);">
+                <div class="mb-3">
+                    <i class="fas fa-comment-dots text-muted" style="font-size: 48px;"></i>
+                </div>
+                <h5 class="fw-bold text-secondary">No Announcements Yet</h5>
+                <p class="text-muted mb-0">Create your first announcement to reach your audience.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- New Announcement Modal -->
+<div class="modal fade" id="newAnnouncementModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: var(--radius-lg); border: none;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" style="font-family: 'Outfit', sans-serif;">Create Announcement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{{ url_for('dashboard.announcements') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-bold">Title</label>
+                        <input type="text" name="title" class="form-control" style="border-radius: var(--radius-sm);" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-bold">Message Content</label>
+                        <textarea name="content" class="form-control" rows="4" style="border-radius: var(--radius-sm); resize: none;" required></textarea>
+                    </div>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold">Target Audience</label>
+                            <select name="target_audience" class="form-select" style="border-radius: var(--radius-sm);">
+                                <option value="all">Everyone</option>
+                                <option value="student">Students</option>
+                                <option value="club_leader">Club Leaders</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold">Auto-Expire Date (Optional)</label>
+                            <input type="date" name="expires_at" class="form-control" style="border-radius: var(--radius-sm);">
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary py-2 fw-bold" style="border-radius: var(--radius-md);">
+                            Publish Announcement <i class="fas fa-paper-plane ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends "base/student_base.html" %}
+{% extends "base/base.html" %}
 
 {% block title %}Register New Club - CAMS{% endblock %}
 
@@ -10,148 +10,363 @@
 <li class="breadcrumb-item active">Register Club</li>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+.register-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.step-header {
+    font-family: 'Outfit', sans-serif;
+    color: var(--g800);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.step-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--g100);
+    color: var(--g600);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.upload-box {
+    border: 2px dashed var(--s300);
+    background: var(--s50);
+    border-radius: var(--radius-md);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+.upload-box:hover, .upload-box.dragover {
+    border-color: var(--g500);
+    background: var(--g50);
+}
+
+.upload-box i {
+    font-size: 2rem;
+    color: var(--s400);
+    margin-bottom: 0.5rem;
+    transition: color 0.2s;
+}
+
+.upload-box:hover i {
+    color: var(--g500);
+}
+
+.upload-box input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+}
+
+.file-name-display {
+    display: block;
+    margin-top: 0.5rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--g700);
+    background: var(--g100);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    display: none;
+    word-break: break-all;
+}
+
+.patron-card {
+    background: white;
+    border: 1px solid var(--s200);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    height: 100%;
+}
+
+.patron-list {
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    scrollbar-width: thin;
+}
+
+.patron-item {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--s100);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.patron-item:last-child {
+    border-bottom: none;
+}
+
+.patron-item i {
+    color: var(--s400);
+}
+
+.patron-item strong {
+    color: var(--s700);
+}
+
+.patron-item span {
+    color: var(--s500);
+    font-size: 0.8rem;
+}
+
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Club Registration Form</h3>
-                <div class="card-tools">
-                    <span class="badge badge-warning">Required documents: Constitution, Minutes, Patron Letter</span>
+<div class="register-container">
+    <div class="card border-0 shadow-sm" style="border-radius: var(--radius-xl); overflow: hidden;">
+        <div class="card-header bg-white border-bottom p-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; box-shadow: var(--shadow-sm);">
+                    <i class="fas fa-users" style="font-size: 1.25rem;"></i>
+                </div>
+                <div>
+                    <h3 class="mb-1" style="font-family:'Outfit',sans-serif;font-weight:800;color:var(--s900);">Club Registration</h3>
+                    <p class="text-muted mb-0" style="font-size:14px;">Submit a new club application for approval</p>
                 </div>
             </div>
-            <form method="POST" action="{{ url_for('student.clubs_register') }}" enctype="multipart/form-data">
-                <div class="card-body">
-                    <!-- Club Basic Information -->
-                    <div class="row">
+            <div class="alert alert-warning border-0 mt-4 mb-0 d-flex align-items-center gap-3 shadow-sm rounded-lg" style="background:#fffbeb; color:#92400e;">
+                <i class="fas fa-exclamation-triangle fs-5 text-warning"></i>
+                <div style="font-size: 0.9rem;">
+                    <strong>Required Documents:</strong> Constitution, Approval Minutes, and Patron Acceptance Letter. Without these, your application will be automatically rejected.
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <form method="POST" action="{{ url_for('student.clubs_register') }}" enctype="multipart/form-data" id="registrationForm">
+                
+                <!-- Section 1: Basic Information -->
+                <div class="mb-5">
+                    <h4 class="step-header">
+                        <span class="step-icon">1</span> Basic Information
+                    </h4>
+                    
+                    <div class="row g-4 mb-3">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="name">Club Name *</label>
-                                <input type="text" class="form-control" id="name" name="name" 
-                                       placeholder="Enter club name" required>
-                                <small class="text-muted">Unique name for your club</small>
+                            <label for="name" class="form-label">Club Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Debate Club" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="" disabled selected>Select category...</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe your club's purpose, activities, and goals..." required></textarea>
+                    </div>
+                </div>
+
+                <hr class="my-5 flex-grow-1" style="opacity: 0.1;">
+
+                <!-- Section 2: Patron details -->
+                <div class="mb-5">
+                    <h4 class="step-header">
+                        <span class="step-icon">2</span> Club Patron
+                    </h4>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="patron_name" class="form-label">Patron Full Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control mb-3" id="patron_name" name="patron_name" placeholder="e.g. Dr. John Doe" required>
+                            
+                            <label for="patron_email" class="form-label">Patron Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control mb-2" id="patron_email" name="patron_email" placeholder="patron@egerton.ac.ke" required>
+                            <div class="alert alert-primary bg-primary bg-opacity-10 border-0 p-3 mt-3">
+                                <i class="fas fa-info-circle text-primary me-2"></i>
+                                <small>The patron must be an active staff member at Egerton University with a valid @egerton.ac.ke email address. An email will be sent to confirm their acceptance before approval.</small>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="category">Category *</label>
-                                <select class="form-control" id="category" name="category" required>
-                                    <option value="" disabled selected>Select category</option>
-                                    {% for cat in categories %}
-                                    <option value="{{ cat }}">{{ cat }}</option>
+                            <div class="patron-card">
+                                <label class="form-label mb-3 text-muted" style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;">Available Staff Directory</label>
+                                <div class="patron-list">
+                                    {% for staff in staff_members %}
+                                    <div class="patron-item">
+                                        <i class="fas fa-user-tie"></i>
+                                        <div class="ms-2">
+                                            <strong>{{ staff.first_name }} {{ staff.last_name }}</strong><br>
+                                            <span>{{ staff.email }}</span>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-muted text-center py-3">
+                                        <i class="fas fa-search mb-2" style="font-size: 1.5rem; opacity: 0.5;"></i><br>
+                                        <small>No staff members found.</small>
+                                    </div>
                                     {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="description">Description *</label>
-                        <textarea class="form-control" id="description" name="description" 
-                                  rows="3" placeholder="Describe your club's purpose and activities" required></textarea>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="patron_email">Patron Email *</label>
-                                <input type="email" class="form-control" id="patron_email" name="patron_email" 
-                                       placeholder="patron@egerton.ac.ke" required>
-                                <small class="text-muted">Must be a staff member at Egerton University</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Available Staff (Patrons)</label>
-                                <div class="small-box bg-light p-2">
-                                    <ul class="mb-0 pl-3">
-                                        {% for staff in staff_members %}
-                                        <li>{{ staff.name }} &lt;{{ staff.email }}&gt;</li>
-                                        {% else %}
-                                        <li class="text-muted">No staff members found</li>
-                                        {% endfor %}
-                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <hr class="my-4">
+                <hr class="my-5 flex-grow-1" style="opacity: 0.1;">
 
-                    <!-- Required Documents -->
-                    <h4 class="mb-3">Required Documents</h4>
-                    <p class="text-danger"><small>All documents are required for registration approval</small></p>
-
-                    <div class="row">
+                <!-- Section 3: Document Uploads -->
+                <div class="mb-5">
+                    <h4 class="step-header">
+                        <span class="step-icon">3</span> Supporting Documents
+                    </h4>
+                    
+                    <div class="row g-4">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="constitution">Club Constitution *</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="constitution" name="constitution" accept=".pdf,.doc,.docx" required>
-                                    <label class="custom-file-label" for="constitution">Choose constitution file</label>
-                                </div>
-                                <small class="text-muted">PDF or Word document containing club constitution</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="patron_letter">Patron Acceptance Letter *</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="patron_letter" name="patron_letter" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
-                                    <label class="custom-file-label" for="patron_letter">Choose patron letter</label>
-                                </div>
-                                <small class="text-muted">Letter from patron accepting responsibility</small>
+                            <label class="form-label fw-bold">Club Constitution <span class="text-danger">*</span></label>
+                            <div class="upload-box" id="box-constitution">
+                                <i class="fas fa-file-pdf"></i>
+                                <div class="fw-bold text-dark mt-2">Upload Constitution</div>
+                                <div class="text-muted small">PDF or Word (.doc, .docx)</div>
+                                <input type="file" id="constitution" name="constitution" accept=".pdf,.doc,.docx" required>
+                                <span class="file-name-display" id="name-constitution"></span>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="minutes">Approval Minutes *</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="minutes" name="minutes" accept=".pdf,.doc,.docx" required>
-                                    <label class="custom-file-label" for="minutes">Choose minutes file</label>
-                                </div>
-                                <small class="text-muted">Minutes showing approval to form the club</small>
+                            <label class="form-label fw-bold">Approval Minutes <span class="text-danger">*</span></label>
+                            <div class="upload-box" id="box-minutes">
+                                <i class="fas fa-file-alt"></i>
+                                <div class="fw-bold text-dark mt-2">Upload Minutes</div>
+                                <div class="text-muted small">PDF or Word (.doc, .docx)</div>
+                                <input type="file" id="minutes" name="minutes" accept=".pdf,.doc,.docx" required>
+                                <span class="file-name-display" id="name-minutes"></span>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="members_list">Members List (Minimum 20)</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="members_list" name="members_list" accept=".pdf,.xls,.xlsx,.csv">
-                                    <label class="custom-file-label" for="members_list">Choose members list</label>
-                                </div>
-                                <small class="text-muted">Excel, CSV, or PDF containing at least 20 members</small>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Patron Acceptance Letter <span class="text-danger">*</span></label>
+                            <div class="upload-box" id="box-patron_letter">
+                                <i class="fas fa-envelope-open-text"></i>
+                                <div class="fw-bold text-dark mt-2">Upload Letter</div>
+                                <div class="text-muted small">PDF, Word, or Image</div>
+                                <input type="file" id="patron_letter" name="patron_letter" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                                <span class="file-name-display" id="name-patron_letter"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Members List <span class="text-muted fw-normal">(Optional)</span></label>
+                            <div class="upload-box" id="box-members_list">
+                                <i class="fas fa-file-excel"></i>
+                                <div class="fw-bold text-dark mt-2">Upload Members</div>
+                                <div class="text-muted small">Excel, CSV, or PDF (Min 20)</div>
+                                <input type="file" id="members_list" name="members_list" accept=".pdf,.xls,.xlsx,.csv">
+                                <span class="file-name-display" id="name-members_list"></span>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- University Regulations -->
-                    <div class="alert alert-info mt-4">
-                        <h5><i class="fas fa-info-circle"></i> University Regulations</h5>
-                        <p class="mb-1">By registering this club, you agree to comply with all Egerton University rules and regulations:</p>
-                        <ul class="mb-0">
-                            <li>Must have at least 20 active student members</li>
-                            <li>Must have an active staff patron (lecturer level or above)</li>
-                            <li>Must submit annual financial reports</li>
-                            <li>Must hold annual elections</li>
-                            <li>All meetings require prior approval</li>
+                <hr class="my-5 flex-grow-1" style="opacity: 0.1;">
+
+                <!-- Section 4: Nominated Leaders -->
+                <div class="mb-5">
+                    <h4 class="step-header">
+                        <span class="step-icon">4</span> Nominated Leaders
+                    </h4>
+                    <p class="text-muted mb-4" style="font-size: 0.9rem;">
+                        Please provide the registration numbers for the initial leadership committee. 
+                        They must be registered students in the system (e.g., S13/00000/22).
+                    </p>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="leader_president" class="form-label fw-bold">President <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="fas fa-crown"></i></span>
+                                <input type="text" class="form-control" id="leader_president" name="leader_president" placeholder="Registration Number" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="leader_vice_president" class="form-label fw-bold">Vice President</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="fas fa-star-half-stroke"></i></span>
+                                <input type="text" class="form-control" id="leader_vice_president" name="leader_vice_president" placeholder="Registration Number (Optional)">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="leader_secretary" class="form-label fw-bold">Secretary <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="fas fa-file-signature"></i></span>
+                                <input type="text" class="form-control" id="leader_secretary" name="leader_secretary" placeholder="Registration Number" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="leader_treasurer" class="form-label fw-bold">Treasurer <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="fas fa-coins"></i></span>
+                                <input type="text" class="form-control" id="leader_treasurer" name="leader_treasurer" placeholder="Registration Number" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-5 flex-grow-1" style="opacity: 0.1;">
+
+                <!-- Section 5: Rules & Submission -->
+                <div>
+                    <h4 class="step-header">
+                        <span class="step-icon">5</span> Terms & Submission
+                    </h4>
+
+                    <div class="alert bg-light border p-4 mb-4" style="border-radius: var(--radius-lg);">
+                        <h6 class="fw-bold mb-3 text-dark"><i class="fas fa-scale-balanced me-2 text-primary"></i> University Regulations</h6>
+                        <p class="mb-3 text-muted" style="font-size: 0.9rem;">By registering this club, you agree to comply with all Egerton University rules and regulations, including:</p>
+                        <ul class="text-muted" style="font-size: 0.9rem; padding-left: 1.2rem;">
+                            <li class="mb-1">Maintaining at least 20 active student members</li>
+                            <li class="mb-1">Retaining an active staff patron (lecturer level or above)</li>
+                            <li class="mb-1">Submitting periodic financial and activity reports</li>
+                            <li class="mb-1">Holding annual, fair, and transparent elections</li>
+                            <li class="mb-1">Requesting prior approval for off-campus or major events</li>
                         </ul>
                     </div>
-
-                    <div class="form-group">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="agree_terms" required>
-                            <label class="custom-control-label" for="agree_terms">
-                                I confirm that all information provided is accurate and I agree to comply with university regulations
+                    
+                    <div class="form-check mb-4 ps-0">
+                        <div class="d-flex gap-3 align-items-center">
+                            <input type="checkbox" class="form-check-input mt-0 ms-0" id="agree_terms" required style="width: 20px; height: 20px; cursor: pointer;">
+                            <label class="form-check-label fw-bold text-dark" for="agree_terms" style="cursor: pointer;">
+                                I confirm that all information provided is accurate and I agree to comply with university regulations.
                             </label>
                         </div>
                     </div>
+
+                    <div class="d-flex gap-3 justify-content-end mt-5 pt-3 border-top">
+                        <a href="{{ url_for('student.list_clubs') }}" class="btn btn-light border px-4 py-2 fw-bold text-muted">Cancel</a>
+                        <button type="submit" class="btn btn-success px-5 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px;">
+                            <span>Submit Application</span> <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Submit Registration
-                    </button>
-                    <a href="{{ url_for('student.list_clubs') }}" class="btn btn-default">Cancel</a>
-                </div>
+
             </form>
         </div>
     </div>
@@ -160,20 +375,49 @@
 
 {% block scripts %}
 <script>
-    // Show file names in custom file input
-    document.querySelectorAll('.custom-file-input').forEach(function(input) {
+    // File upload handlers for the modern boxes
+    document.querySelectorAll('.upload-box input[type="file"]').forEach(function(input) {
         input.addEventListener('change', function(e) {
-            var fileName = e.target.files[0].name;
-            var nextSibling = e.target.nextElementSibling;
-            nextSibling.innerText = fileName;
+            const fileName = e.target.files.length > 0 ? e.target.files[0].name : '';
+            const displaySpan = this.parentElement.querySelector('.file-name-display');
+            const icon = this.parentElement.querySelector('i');
+            
+            if (fileName) {
+                displaySpan.textContent = fileName;
+                displaySpan.style.display = 'inline-block';
+                this.parentElement.style.borderColor = 'var(--g500)';
+                icon.className = 'fas fa-check-circle text-success';
+            } else {
+                displaySpan.style.display = 'none';
+                this.parentElement.style.borderColor = 'var(--s300)';
+                
+                // Restore icon based on ID
+                if(this.id === 'constitution') icon.className = 'fas fa-file-pdf text-muted';
+                else if(this.id === 'minutes') icon.className = 'fas fa-file-alt text-muted';
+                else if(this.id === 'patron_letter') icon.className = 'fas fa-envelope-open-text text-muted';
+                else if(this.id === 'members_list') icon.className = 'fas fa-file-excel text-muted';
+            }
+        });
+        
+        // Drag over effects
+        input.addEventListener('dragover', () => {
+            input.parentElement.classList.add('dragover');
+        });
+        
+        input.addEventListener('dragleave', () => {
+            input.parentElement.classList.remove('dragover');
+        });
+        
+        input.addEventListener('drop', () => {
+            input.parentElement.classList.remove('dragover');
         });
     });
 
     // Form validation
-    document.querySelector('form').addEventListener('submit', function(e) {
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
         const patronEmail = document.getElementById('patron_email').value;
-        if (!patronEmail.endsWith('@egerton.ac.ke')) {
-            alert('Patron email must be an Egerton University email address (@egerton.ac.ke)');
+        if (patronEmail && !patronEmail.endsWith('@egerton.ac.ke')) {
+            alert('Patron email must be a valid Egerton University staff email address (@egerton.ac.ke)');
             e.preventDefault();
         }
     });

@@ -329,111 +329,53 @@
     <div class="lp-hero-text">
       <h4>Apply for a Leadership Position</h4>
       <p>
-        Take on a leadership role in your club — President, Vice President, Secretary or Treasurer.
-        You must have been an active member for at least 1 year to apply.
+        Take on a leadership role in your club — President, Vice President, Secretary or Treasurer. 
+        Note: Final year students are not eligible to apply.
       </p>
     </div>
   </div>
 
-  {% if leader_eligible_clubs %}
+  {% if election %}
 
     <!-- ── ELIGIBILITY NOTICE ──────────────────────────── -->
     <div class="elig-notice anim d2">
       <i class="fas fa-circle-info"></i>
       <div>
-        <strong>You are eligible to apply in {{ leader_eligible_clubs|length }} club{{ 's' if leader_eligible_clubs|length != 1 }}</strong>
+        <strong>You are applying for leadership in {{ election.club.name }}</strong>
         Applications are reviewed by the Dean and club administrators. You will be notified of the outcome.
       </div>
     </div>
 
-    <form method="POST" action="{{ url_for('student.submit_leadership_application') }}" id="leaderForm">
+    <form method="POST" action="{{ url_for('student.apply_leadership', election_id=election.id) }}" id="leaderForm" enctype="multipart/form-data">
 
-      <!-- ── STEP 1 — SELECT CLUB ─────────────────────── -->
-      <div class="form-card anim d2">
-        <div class="form-card-header">
-          <div class="fch-icon"><i class="fas fa-shield-halved"></i></div>
-          <h6>Step 1 — Select a Club</h6>
-        </div>
-        <div class="form-card-body">
-          <input type="hidden" name="club_id" id="clubIdInput" required>
-          <div class="clubs-grid">
-            {% for club in leader_eligible_clubs %}
-            <div class="club-card" onclick="selectClub({{ club.id }}, this)">
-              <div class="club-card-check"><i class="fas fa-check"></i></div>
-              <div class="club-card-top"></div>
-              <div class="club-card-body">
-                <div class="club-avatar">{{ club.name[0]|upper }}</div>
-                <div class="club-name">{{ club.name }}</div>
-                <div class="club-meta">
-                  <span class="club-meta-item">
-                    <i class="fas fa-users"></i>
-                    {% if club.member_count is defined %}{{ club.member_count }} members{% else %}Active Club{% endif %}
-                  </span>
-                  {% if club.category %}
-                  <span class="club-meta-item">
-                    <i class="fas fa-tag"></i> {{ club.category }}
-                  </span>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-          <p id="clubError" style="display:none;color:var(--red);font-size:.8rem;font-weight:600;">
-            <i class="fas fa-exclamation-circle me-1"></i>Please select a club to continue.
-          </p>
-        </div>
-      </div>
-
-      <!-- ── STEP 2 — CHOOSE ROLE ─────────────────────── -->
+      <!-- ── STEP 1 — CHOOSE ROLE ─────────────────────── -->
       <div class="form-card anim d3">
         <div class="form-card-header">
           <div class="fch-icon"><i class="fas fa-crown"></i></div>
-          <h6>Step 2 — Choose a Position</h6>
+          <h6>Step 1 — Choose a Position</h6>
         </div>
         <div class="form-card-body">
           <div class="role-grid">
+            {% for pos in election.positions %}
+            {% set pos_val = pos.title.lower().replace(' ', '_') %}
             <div class="role-option">
-              <input type="radio" name="position" id="pos-president" value="president" required>
-              <label class="role-label" for="pos-president">
-                <i class="fas fa-crown"></i>
-                <span class="role-name">President</span>
-                <span class="role-desc">Lead the club, chair meetings &amp; represent members</span>
+              <input type="radio" name="position" id="pos-{{ pos.id }}" value="{{ pos_val }}" required>
+              <label class="role-label" for="pos-{{ pos.id }}">
+                <i class="fas fa-bullseye"></i>
+                <span class="role-name">{{ pos.title }}</span>
+                <span class="role-desc">Apply for this position</span>
               </label>
             </div>
-            <div class="role-option">
-              <input type="radio" name="position" id="pos-vp" value="vice_president">
-              <label class="role-label" for="pos-vp">
-                <i class="fas fa-star-half-stroke"></i>
-                <span class="role-name">Vice President</span>
-                <span class="role-desc">Support the president &amp; stand in when needed</span>
-              </label>
-            </div>
-            <div class="role-option">
-              <input type="radio" name="position" id="pos-sec" value="secretary">
-              <label class="role-label" for="pos-sec">
-                <i class="fas fa-file-pen"></i>
-                <span class="role-name">Secretary</span>
-                <span class="role-desc">Record minutes, handle communications &amp; admin</span>
-              </label>
-            </div>
-            <div class="role-option">
-              <input type="radio" name="position" id="pos-treas" value="treasurer">
-              <label class="role-label" for="pos-treas">
-                <i class="fas fa-coins"></i>
-                <span class="role-name">Treasurer</span>
-                <span class="role-desc">Manage finances, fees &amp; financial reporting</span>
-              </label>
-            </div>
+            {% endfor %}
           </div>
         </div>
       </div>
 
-      <!-- ── STEP 3 — MOTIVATION + DETAILS ─────────────── -->
+      <!-- ── STEP 2 — MOTIVATION + DETAILS ─────────────── -->
       <div class="form-card anim d3">
         <div class="form-card-header">
           <div class="fch-icon"><i class="fas fa-align-left"></i></div>
-          <h6>Step 3 — Your Application</h6>
+          <h6>Step 2 — Your Application</h6>
         </div>
         <div class="form-card-body">
           <div class="row g-3">
@@ -502,6 +444,14 @@
               </select>
             </div>
 
+            <div class="col-12">
+              <label class="form-label" for="photo">
+                Candidate Photo <span class="text-danger">*</span>
+              </label>
+              <input type="file" id="photo" name="photo" class="form-control" accept="image/*" required>
+              <div class="form-hint">Upload a clear photo to be displayed during elections.</div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -517,8 +467,8 @@
             <li class="req-item">
               <span class="req-icon req-met"><i class="fas fa-check"></i></span>
               <div class="req-text">
-                <strong>Active Membership (1+ year)</strong>
-                You have been an active member of the selected club for the required period.
+                <strong>Active Membership</strong>
+                You are an active member of the selected club in good standing.
               </div>
             </li>
             <li class="req-item">
@@ -571,14 +521,13 @@
 
     </form>
 
-  {% else %}
   <!-- ── NO ELIGIBLE CLUBS ──────────────────────────────── -->
   <div class="no-eligible anim d2">
     <i class="fas fa-hourglass-half"></i>
-    <h5>Not Yet Eligible</h5>
+    <h5>Not Currently Eligible</h5>
     <p>
-      To apply for a leadership position, you must be an active member of a club for
-      <strong>at least 1 year</strong>. Keep participating and check back later!
+      To apply for a leadership position, you must be an active member of a club and 
+      <strong>not in your final year of study</strong>. Keep participating and check back later!
     </p>
     <a href="{{ url_for('student.list_clubs') }}" class="btn-apply" style="display:inline-flex;">
       <i class="fas fa-shield-halved"></i> Browse Clubs
@@ -617,13 +566,7 @@
 
 {% block scripts %}
 <script>
-/* Club selection */
-function selectClub(id, card) {
-  document.querySelectorAll('.club-card').forEach(c => c.classList.remove('selected'));
-  card.classList.add('selected');
-  document.getElementById('clubIdInput').value = id;
-  document.getElementById('clubError').style.display = 'none';
-}
+/* Removed Club selection since we load straight to election */
 
 /* Character counter */
 function countChars(textareaId, counterId, max) {
@@ -635,13 +578,6 @@ function countChars(textareaId, counterId, max) {
 
 /* Form validation before submit */
 document.getElementById('leaderForm')?.addEventListener('submit', function(e) {
-  const clubId = document.getElementById('clubIdInput').value;
-  if (!clubId) {
-    e.preventDefault();
-    document.getElementById('clubError').style.display = 'block';
-    document.getElementById('clubError').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
-  }
 
   const motivation = document.getElementById('motivation').value.trim();
   if (motivation.length < 80) {

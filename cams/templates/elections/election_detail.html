@@ -1,4 +1,4 @@
-{% extends "base/admin_base.html" %}
+{% extends base_template|default("base/admin_base.html") %}
 {% block title %}{{ election.title }} — CAMS{% endblock %}
 {% block page_title %}{{ election.title }}{% endblock %}
 {% block breadcrumb %}
@@ -145,29 +145,52 @@
                 {% endif %}
             </div>
 
-            {% set approved = pos.nominations | selectattr('status.value','eq','approved') | list %}
-            {% set pending  = pos.nominations | selectattr('status.value','eq','pending')  | list %}
-            {% set rejected = pos.nominations | selectattr('status.value','eq','rejected') | list %}
+            <!-- We get the matching applications passed from the route in `tallies` if closed, 
+                 but for active elections we need to query or pass them. 
+                 Since Jinja can't easily query, we rely on the route to pass the necessary candidate data or we simplify. -->
+            <!-- Note: The existing code relied on `pos.nominations` relationship which was removed. 
+                 To keep it simple without changing the route further, we can fetch all apps for the club and filter in Jinja -->
+            {% set all_apps = election.club.leadership_applications %}
+            {% set pos_slug = pos.title.lower().replace(' ', '_') %}
+            
+            {% set approved = [] %}
+            {% set pending = [] %}
+            {% set rejected = [] %}
+            
+            {% for app in all_apps %}
+                {% if app.position == pos_slug %}
+                    {% if app.status == 'approved' %}{% set _ = approved.append(app) %}
+                    {% elif app.status == 'pending' %}{% set _ = pending.append(app) %}
+                    {% elif app.status == 'rejected' %}{% set _ = rejected.append(app) %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
 
             {% if approved %}
             <p class="text-muted mb-2" style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
                 Approved Candidates ({{ approved|length }})
             </p>
-            {% for nom in approved %}
+            {% for app in approved %}
             <div class="candidate-pill">
-                <div class="candidate-avatar">{{ nom.member.name[0]|upper }}</div>
+                {% if app.photo_url %}
+                    <img src="{{ app.photo_url }}" class="candidate-avatar" style="object-fit: cover; border: 2px solid var(--g300);">
+                {% elif app.student.profile_image %}
+                    <img src="{{ app.student.profile_image }}" class="candidate-avatar" style="object-fit: cover; border: 2px solid var(--g300);">
+                {% else %}
+                    <div class="candidate-avatar">{{ app.student.name[0]|upper }}</div>
+                {% endif %}
                 <div class="flex-grow-1">
-                    <div class="candidate-name">{{ nom.member.name }}</div>
-                    {% if nom.manifesto %}
+                    <div class="candidate-name">{{ app.student.name }}</div>
+                    {% if app.motivation %}
                     <div class="candidate-meta text-truncate" style="max-width:400px;">
-                        "{{ nom.manifesto[:80] }}{% if nom.manifesto|length > 80 %}…{% endif %}"
+                        "{{ app.motivation[:80] }}{% if app.motivation|length > 80 %}…{% endif %}"
                     </div>
                     {% endif %}
                 </div>
                 {% if election.status.value in ['closed','published'] %}
                 <div class="text-right">
                     <span class="d-block font-weight-800 text-success" style="font-size:1.1rem;font-family:'Outfit',sans-serif;">
-                        {{ nom.vote_count }}
+                        {{ app.vote_count }}
                     </span>
                     <span style="font-size:.68rem;color:#94a3b8;">votes</span>
                 </div>
@@ -180,17 +203,23 @@
             <p class="text-muted mt-3 mb-2" style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
                 Pending Review ({{ pending|length }})
             </p>
-            {% for nom in pending %}
+            {% for app in pending %}
             <div class="candidate-pill pending-pill">
-                <div class="candidate-avatar" style="background:linear-gradient(135deg,#b45309,#f59e0b);">
-                    {{ nom.member.name[0]|upper }}
-                </div>
+                {% if app.photo_url %}
+                    <img src="{{ app.photo_url }}" class="candidate-avatar" style="object-fit: cover; border: 2px solid #f59e0b;">
+                {% elif app.student.profile_image %}
+                    <img src="{{ app.student.profile_image }}" class="candidate-avatar" style="object-fit: cover; border: 2px solid #f59e0b;">
+                {% else %}
+                    <div class="candidate-avatar" style="background:linear-gradient(135deg,#b45309,#f59e0b);">
+                        {{ app.student.name[0]|upper }}
+                    </div>
+                {% endif %}
                 <div class="flex-grow-1">
-                    <div class="candidate-name">{{ nom.member.name }}</div>
-                    <div class="candidate-meta">Submitted {{ nom.submitted_at.strftime('%d %b %Y') }}</div>
+                    <div class="candidate-name">{{ app.student.name }}</div>
+                    <div class="candidate-meta">Applied {{ app.created_at.strftime('%d %b %Y') }}</div>
                 </div>
                 {% if current_user.role in ('admin','dean') %}
-                <a href="{{ url_for('elections.nomination_review', nom_id=nom.id) }}"
+                <a href="{{ url_for('dashboard.application_review', app_id=app.id) }}"
                    class="btn btn-sm btn-warning">Review</a>
                 {% endif %}
             </div>
@@ -199,17 +228,17 @@
 
             {% if not approved and not pending %}
             <p class="text-muted text-center py-3" style="font-size:.85rem;">
-                No nominations for this position yet.
+                No applications for this position yet.
             </p>
             {% endif %}
 
             <!-- Vote button per position (during voting) -->
-            {% if election.is_voting_open and pos.id not in voted_positions and approved %}
+            {% if election.is_voting_open and can_vote and pos.id not in voted_positions and approved %}
             <a href="{{ url_for('elections.vote', election_id=election.id) }}"
                class="btn btn-primary btn-sm mt-2">
                 <i class="fas fa-vote-yea mr-1"></i> Cast My Vote
             </a>
-            {% elif election.is_voting_open and pos.id in voted_positions %}
+            {% elif election.is_voting_open and can_vote and pos.id in voted_positions %}
             <span class="badge-xs" style="background:#d1fae5;color:#065f33;display:inline-block;margin-top:.5rem;">
                 <i class="fas fa-check-circle mr-1"></i> Voted
             </span>
@@ -251,7 +280,7 @@
         </div>
 
         <!-- ADMIN action panel -->
-        {% if current_user.role == 'admin' %}
+        {% if current_user.role in ['admin', 'dean', 'assistant_admin'] %}
         <div class="action-panel">
             {% if election.status.value == 'draft' %}
             <h6><i class="fas fa-paper-plane mr-2"></i>Open Nominations</h6>
@@ -318,13 +347,13 @@
         {% endif %}
 
         <!-- MEMBER: nominate -->
-        {% if election.is_nomination_open and current_user.role == 'member' %}
+        {% if election.is_nomination_open and can_stand %}
         <div class="info-card" style="border:2px solid var(--g300);">
             <div class="info-card-title"><i class="fas fa-user-plus"></i> Stand for Election</div>
             <p style="font-size:.875rem;color:#64748b;">
                 Nominations are open. If you are an active member for 1+ year, you can apply.
             </p>
-            <a href="{{ url_for('elections.nominate', election_id=election.id) }}"
+            <a href="{{ url_for('student.apply_leadership', election_id=election.id) }}"
                class="btn btn-primary btn-block">
                 <i class="fas fa-paper-plane mr-2"></i>Submit My Nomination
             </a>
@@ -335,13 +364,13 @@
         {% if current_user.role in ('admin','dean') and election.status.value == 'review' %}
         <div class="info-card" style="border:2px solid #fbbf24;">
             <div class="info-card-title"><i class="fas fa-gavel"></i> Dean Review</div>
-            {% set pending_count = election.nominations | selectattr('status.value','eq','pending') | list | length %}
+            {% set pending_count = election.club.leadership_applications | selectattr('status','eq','pending') | list | length %}
             <p style="font-size:.875rem;color:#64748b;">
-                <strong>{{ pending_count }}</strong> nomination(s) awaiting your review.
+                <strong>{{ pending_count }}</strong> application(s) awaiting your review.
             </p>
-            <a href="{{ url_for('elections.nomination_review_list') }}"
+            <a href="{{ url_for('dashboard.application_review_list') }}"
                class="btn btn-warning btn-block">
-                <i class="fas fa-search mr-2"></i>Review Nominations
+                <i class="fas fa-search mr-2"></i>Review Applications
             </a>
         </div>
         {% endif %}

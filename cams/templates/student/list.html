@@ -1,30 +1,298 @@
 {% extends "base/base.html" %}
-{% block title %}Clubs{% endblock %}
+{% block title %}Clubs - CAMS{% endblock %}
 
 {% block page_title %}Available Clubs{% endblock %}
 
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --g900: #052e16; --g800: #064e24; --g700: #065f33;
+    --g600: #16a34a; --g500: #22c55e; --g400: #4ade80;
+    --g300: #86efac; --g100: #dcfce7; --g50:  #f0fdf4;
+
+    --s900: #0f172a; --s800: #1e293b; --s700: #334155;
+    --s500: #64748b; --s300: #cbd5e1; --s200: #e2e8f0;
+    --s100: #f1f5f9; --s50:  #f8fafc;
+
+    --radius-xl: 20px;
+    --radius-lg: 16px;
+    --radius-md: 12px;
+  }
+
+  body { font-family: 'DM Sans', sans-serif; background: #f0f4f0; }
+
+  .page-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+  }
+  .page-header h1 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      color: var(--s900); font-size: 2.2rem; margin: 0; line-height: 1.1;
+  }
+  .page-header p {
+      color: var(--s500); font-size: 1.05rem; margin-top: .5rem; margin-bottom: 0;
+  }
+
+  .gradient-add-btn {
+      background: linear-gradient(135deg, var(--g800), var(--g600));
+      color: white; border: none; border-radius: var(--radius-lg);
+      padding: 0.8rem 1.8rem; font-weight: 700; font-size: 1rem;
+      transition: all 0.2s; display: inline-flex; align-items: center;
+      gap: 0.5rem; text-decoration: none; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+  }
+  .gradient-add-btn:hover {
+      transform: translateY(-2px); box-shadow: 0 6px 15px rgba(22, 163, 74, 0.3); color: white;
+  }
+
+  /* Toolbar: Search & Filters */
+  .toolbar {
+      background: white; border-radius: var(--radius-lg); padding: 1rem 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; gap: 1rem;
+      align-items: center; justify-content: space-between; margin-bottom: 2rem;
+  }
+  
+  .search-wrap {
+      flex: 1; min-width: 250px; position: relative;
+  }
+  .search-wrap i {
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      color: var(--s400); font-size: 1.1rem;
+  }
+  .search-wrap input {
+      width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; border-radius: 99px;
+      border: 1px solid var(--s200); font-family: 'DM Sans', sans-serif;
+      font-size: .95rem; font-weight: 500; color: var(--s800); background: var(--s50);
+      transition: all 0.2s;
+  }
+  .search-wrap input:focus {
+      outline: none; border-color: var(--g400); background: white;
+      box-shadow: 0 0 0 4px var(--g100);
+  }
+
+  .filters-wrap {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+  }
+  .filter-pill {
+      padding: 0.5rem 1rem; border-radius: 99px; border: 1px solid var(--s200);
+      background: white; color: var(--s600); font-weight: 700; font-size: .85rem;
+      text-decoration: none; transition: all 0.2s; cursor: pointer;
+  }
+  .filter-pill:hover { background: var(--s50); color: var(--s800); }
+  .filter-pill.active { background: var(--g800); color: white; border-color: var(--g700); }
+
+  /* Grid & Cards */
+  .club-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;
+  }
+
+  .club-card {
+      background: #ffffff; border: 1px solid var(--s200); border-radius: var(--radius-xl);
+      overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; flex-direction: column; position: relative;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+  .club-card:hover {
+      transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08);
+      border-color: var(--g300);
+  }
+
+  .card-banner { height: 120px; position: relative; }
+  .bg-gradient-Academic { background: linear-gradient(135deg, #2563EB, #4F46E5); }
+  .bg-gradient-Sports { background: linear-gradient(135deg, #FF4B2B, #FF416C); }
+  .bg-gradient-Cultural { background: linear-gradient(135deg, #F5AF19, #F12711); }
+  .bg-gradient-Social { background: linear-gradient(135deg, #11998E, #38EF7D); }
+  .bg-gradient-Religious { background: linear-gradient(135deg, #8E2DE2, #4A00E0); }
+  .bg-gradient-Professional { background: linear-gradient(135deg, #232526, #414345); }
+  .bg-gradient-default { background: linear-gradient(135deg, var(--g900), var(--g700)); }
+
+  .category-badge {
+      position: absolute; top: 1rem; right: 1rem; background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px); color: white; padding: 0.35rem 0.8rem;
+      border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase; border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .club-icon-wrapper {
+      width: 64px; height: 64px; background: white; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.75rem;
+      color: var(--g700); position: absolute; bottom: -32px; left: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 2px solid white;
+  }
+
+  .club-content {
+      padding: 2.8rem 1.5rem 1.5rem; flex-grow: 1; display: flex; flex-direction: column;
+  }
+
+  .club-title {
+      font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800;
+      color: var(--s900); margin-bottom: 0.5rem; line-height: 1.2;
+  }
+
+  .club-desc {
+      color: var(--s600); font-size: 0.95rem; line-height: 1.6;
+      margin-bottom: 1.5rem; flex-grow: 1;
+  }
+
+  .club-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 1rem; border-top: 1px solid var(--s100); margin-top: auto;
+  }
+
+  .member-count {
+      display: flex; align-items: center; gap: 0.5rem; color: var(--s600);
+      font-size: 0.85rem; font-weight: 700;
+  }
+
+  .view-btn {
+      background: var(--g50); color: var(--g800); font-family: 'DM Sans', sans-serif;
+      border: none; padding: 0.5rem 1.2rem; border-radius: 99px;
+      font-size: 0.85rem; font-weight: 700; transition: all 0.2s; text-decoration: none;
+  }
+  .view-btn:hover { background: var(--g100); color: var(--g900); }
+
+  .empty-state {
+      text-align: center; padding: 5rem 2rem; background: white;
+      border-radius: var(--radius-xl); border: 2px dashed var(--s200); grid-column: 1 / -1;
+  }
+  .empty-state i { font-size: 3.5rem; color: var(--g100); margin-bottom: 1.5rem; }
+  .empty-state h3 { font-family: 'Syne', sans-serif; color: var(--s900); font-weight: 800; font-size: 1.8rem; margin-bottom: 0.5rem; }
+  
+  .anim { animation: fadeIn .5s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    {% for club in clubs %}
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h5 class="card-title">{{ club.name }}</h5>
-            </div>
-            <div class="card-body">
-                <p>{{ club.description[:100] }}{% if club.description|length > 100 %}...{% endif %}</p>
-                <a href="{{ url_for('student.club_details', club_id=club.id) }}" class="btn btn-primary btn-sm">
-                    View Details
-                </a>
-            </div>
+<div class="row anim">
+  <div class="col-12">
+    
+    <div class="page-header">
+        <div>
+            <h1>Explore Clubs</h1>
+            <p>Discover, join, and register vibrant communities at Egerton University.</p>
+        </div>
+        <a href="{{ url_for('student.clubs_register') }}" class="gradient-add-btn">
+            <i class="fas fa-plus"></i>
+            <span>Register New Club</span>
+        </a>
+    </div>
+
+    <!-- Toolbar: Search and Filters -->
+    <div class="toolbar">
+        <form method="GET" action="{{ url_for('student.list_clubs') }}" class="search-wrap d-flex" style="flex-grow: 1; max-width: 500px;" id="searchForm">
+            <i class="fas fa-search"></i>
+            <input type="text" name="q" placeholder="Search clubs by name..." value="{{ q or '' }}" autocomplete="off">
+            {% if current_category %}
+              <input type="hidden" name="category" value="{{ current_category }}">
+            {% endif %}
+            <button type="submit" class="btn btn-sm btn-dark ms-2" style="border-radius: 99px; padding: 0 1rem; font-weight: 700;">Search</button>
+            {% if q or current_category %}
+               <a href="{{ url_for('student.list_clubs') }}" class="btn btn-sm btn-light ms-2" style="border-radius: 99px; padding: 0.5rem 1rem; font-weight: 700;">Clear</a>
+            {% endif %}
+        </form>
+
+        <div class="filters-wrap">
+            <a href="{{ url_for('student.list_clubs', q=q) }}" class="filter-pill {{ 'active' if not current_category else '' }}">All</a>
+            {% for cat in categories %}
+              <a href="{{ url_for('student.list_clubs', category=cat, q=q) }}" class="filter-pill {{ 'active' if current_category == cat else '' }}">{{ cat }}</a>
+            {% endfor %}
         </div>
     </div>
-    {% else %}
-    <div class="col-12">
-        <div class="alert alert-info">
-            No clubs available at the moment.
+
+    <!-- Club Grid -->
+    <div class="club-grid">
+        {% for club in clubs %}
+        <div class="club-card">
+            <div class="card-banner bg-gradient-{{ club.category|replace(' ', '') if club.category else 'default' }}">
+                <span class="category-badge">{{ club.category or 'General' }}</span>
+                <div class="club-icon-wrapper">
+                    {% if club.category == 'Academic' %}<i class="fas fa-book-reader"></i>
+                    {% elif club.category == 'Sports' %}<i class="fas fa-futbol"></i>
+                    {% elif club.category == 'Cultural' %}<i class="fas fa-drum"></i>
+                    {% elif club.category == 'Social' %}<i class="fas fa-users"></i>
+                    {% elif club.category == 'Religious' %}<i class="fas fa-praying-hands"></i>
+                    {% elif club.category == 'Professional' %}<i class="fas fa-user-tie"></i>
+                    {% else %}<i class="fas fa-shield-alt"></i>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="club-content">
+                <h5 class="club-title">{{ club.name }}</h5>
+                <p class="club-desc">
+                    {{ (club.description or '')[:120] }}
+                    {% if club.description and club.description|length > 120 %}...{% endif %}
+                </p>
+                
+                <div class="club-footer">
+                    <div class="member-count">
+                        <i class="fas fa-users"></i>
+                        <!-- Dynamically resolve member count via the relationship if available, else 0 -->
+                        <span>{{ club.memberships|selectattr('status','equalto','active')|list|length if club.memberships is defined else (club.member_count|default(0)) }} Active</span>
+                    </div>
+                    <a href="{{ url_for('student.club_details', club_id=club.id) }}" class="view-btn">
+                        Details <i class="fas fa-arrow-right ms-1" style="font-size: .75rem;"></i>
+                    </a>
+                </div>
+            </div>
         </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search" style="color:var(--g300)"></i>
+            <h3>No Clubs Found</h3>
+            <p class="text-muted mb-4" style="font-size: 1.1rem;">
+               {% if q or current_category %}
+                  We couldn't find any clubs matching your filters.
+               {% else %}
+                  There are currently no active clubs. Why not start one?
+               {% endif %}
+            </p>
+            {% if q or current_category %}
+               <a href="{{ url_for('student.list_clubs') }}" class="btn btn-dark" style="border-radius:99px; padding:.75rem 1.5rem; font-weight:700;">View All Clubs</a>
+            {% else %}
+               <a href="{{ url_for('student.clubs_register') }}" class="gradient-add-btn">
+                   <i class="fas fa-plus"></i> Register Your Own Club
+               </a>
+            {% endif %}
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
+
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <div class="d-flex justify-content-center mt-5 mb-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-rounded" style="gap: .3rem;">
+                <li class="page-item {{ 'disabled' if not pagination.has_prev else '' }}">
+                    <a class="page-link" href="{{ url_for('student.list_clubs', page=pagination.prev_num, q=q, category=current_category) if pagination.has_prev else '#' }}" style="border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; font-weight: 700; color: var(--s700);">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == pagination.page else '' }}">
+                            <a class="page-link" href="{{ url_for('student.list_clubs', page=page_num, q=q, category=current_category) }}" style="border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; font-weight: 700; background-color: {{ 'var(--g800)' if page_num == pagination.page else 'transparent' }}; color: {{ 'white' if page_num == pagination.page else 'var(--s700)' }};">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link" style="border: none; background: transparent;"><i class="fas fa-ellipsis-h"></i></span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {{ 'disabled' if not pagination.has_next else '' }}">
+                    <a class="page-link" href="{{ url_for('student.list_clubs', page=pagination.next_num, q=q, category=current_category) if pagination.has_next else '#' }}" style="border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; font-weight: 700; color: var(--s700);">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+  </div>
 </div>
 {% endblock %}

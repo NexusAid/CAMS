@@ -1,18 +1,36 @@
 from flask import Flask, render_template, session, redirect, url_for, request
 from flask_login import current_user
+from sqlalchemy import func
+import traceback
 from cams.extensions import db, login_manager, mail
+from cams.models import Club, Event, ClubMembership, User
 
 
 def create_app():
+    # Create the core Flask application instance
     app = Flask(__name__)
+    
+    # Load settings from our config object (database URI, mail settings, etc.)
     app.config.from_object("cams.config.Config")
+    
+    # Ensure all unexpected errors propagate through the app for debugging
+    app.config.setdefault("PROPAGATE_EXCEPTIONS", True)
 
     # -------------------------
     # Initialize extensions
     # -------------------------
+    # Bind the database ORM to our newly created app
     db.init_app(app)
+    
+    # Bind the login manager for handling sessions and user persistence
     login_manager.init_app(app)
+    
+    # Bind the mail service for sending notifications
     mail.init_app(app)
+
+    # Route unauthenticated users to the correct login page
+    # based on which area they are trying to access.
+    # The default view is the auth login for admins/staff.
     login_manager.login_view = "auth.login"
 
     # -------------------------
@@ -51,32 +69,40 @@ def create_app():
     # -------------------------------------------
     @app.before_request
     def secure_session():
-
-        # Allow public routes
-        allowed_paths = (
-            "/",
+        # Define routes that do not require authentication to access.
+        # This includes all login, logout, registration, and static file routes.
+        allowed_prefixes = (
             "/auth/login",
             "/auth/logout",
+            "/auth/forgot_password",
+            "/auth/reset_password",
             "/student/login",
             "/student/logout",
+            "/student/register",
+            "/student/activate",
+            "/student/forgot_password",
+            "/student/reset_password",
             "/static",
         )
 
-        if request.path.startswith(allowed_paths):
+        if request.path == "/" or request.path.startswith(allowed_prefixes):
             return
 
-        # If logged in, refresh session
+        # If the user is successfully authenticated, continually refresh their session
+        # so they do not get logged out unexpectedly while active.
         if current_user.is_authenticated:
             session.modified = True
             return
 
-        # Student protected routes
+        # If the user is NOT authenticated and tries to reach a restricted student route,
+        # redirect them to the student login page.
         if request.path.startswith("/student"):
-            return redirect(url_for("student.login"))
+            return redirect(url_for("student.login", next=request.path))
 
-        # Admin protected routes
-        if request.path.startswith(("/dashboard", "/clubs", "/admin")):
-            return redirect(url_for("auth.login"))
+        # If the user is NOT authenticated and tries to reach a staff/admin route,
+        # redirect them to the generic staff login page.
+        if request.path.startswith(("/dashboard", "/clubs", "/admin", "/audit", "/elections", "/leader")):
+            return redirect(url_for("auth.login", next=request.path))
 
     # -------------------------------------------
     # MAKE BLUEPRINTS AVAILABLE IN TEMPLATES
@@ -86,11 +112,52 @@ def create_app():
         from flask import current_app
         return dict(blueprints=current_app.blueprints)
 
-    # -------------------------
-    # HOME ROUTE
-    # -------------------------
+    @app.context_processor
+    def inject_notifications():
+        from flask_login import current_user
+        from cams.models import Notification
+        count = 0
+        if current_user.is_authenticated:
+            count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+        return dict(unread_notifications_count=count)
+
+    # -------------------------------------------
+    # HOMEPAGE ROUTE
+    # -------------------------------------------
     @app.route("/")
     def home():
-        return render_template("home.html")
+
+        # -------- SYSTEM STATS --------
+        total_clubs = Club.query.count()
+
+        total_members = db.session.query(
+            func.count(ClubMembership.user_id)
+        ).filter(ClubMembership.status == "active").scalar()
+
+        total_events = Event.query.count()
+
+        total_patrons = User.query.filter_by(role="staff").count()
+
+        stats = {
+            "clubs": total_clubs,
+            "members": total_members,
+            "events": total_events,
+            "patrons": total_patrons
+        }
+
+        # -------- LATEST EVENTS --------
+        latest_events = Event.query.order_by(Event.date.desc()).limit(3).all()
+
+        return render_template(
+            "home.html",
+            stats=stats,
+            events=latest_events
+        )
+
+    # -------------------------------------------
+    # REGISTER CLI COMMANDS
+    # -------------------------------------------
+    from cams.utils.cli import register_cli_commands
+    register_cli_commands(app)
 
     return app

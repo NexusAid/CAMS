@@ -1,4 +1,4 @@
-{% extends "base/admin_base.html" %}
+{% extends base_template|default("base/admin_base.html") %}
 {% block title %}Elections — CAMS{% endblock %}
 {% block page_title %}Elections{% endblock %}
 {% block breadcrumb %}Elections{% endblock %}
@@ -130,7 +130,7 @@
                     </span>
                     <span class="stat-pill">
                         <i class="fas fa-user-tie" style="color:var(--g600);"></i>
-                        {{ e.nominations|selectattr('status.value','eq','approved')|list|length }} Candidates
+                        View Candidates
                     </span>
                     <span class="stat-pill">
                         <i class="fas fa-check-circle" style="color:var(--g600);"></i>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +10,8 @@
     <title>{% block title %}CAMS Club Leader{% endblock %}</title>
 
     <!-- Google Fonts: Outfit (display) + DM Sans (body) -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,14 +30,14 @@
             --g400: #4ade80;
             --g300: #86efac;
             --g100: #dcfce7;
-            --g50:  #f0fdf4;
+            --g50: #f0fdf4;
 
             --slate900: #0f172a;
             --slate800: #1e293b;
             --slate700: #334155;
             --slate400: #94a3b8;
             --slate200: #e2e8f0;
-            --slate50:  #f8fafc;
+            --slate50: #f8fafc;
 
             --white: #ffffff;
             --sidebar-w: 260px;
@@ -47,13 +49,25 @@
         }
 
         /* ─── BASE ───────────────────────────────────────────────── */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
         body {
             font-family: 'DM Sans', sans-serif;
             background: var(--slate50);
             color: var(--slate900);
         }
-        h1,h2,h3,h4,h5,h6 {
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
         }
@@ -63,75 +77,112 @@
             height: var(--header-h);
             background: var(--white) !important;
             border-bottom: 2px solid var(--g100);
-            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
             z-index: 1050;
         }
+
         .main-header .nav-link {
             color: var(--slate700) !important;
             font-weight: 500;
         }
-        .main-header .nav-link:hover { color: var(--g600) !important; }
-        .main-header [data-widget="pushmenu"] i { color: var(--g600); font-size: 1.15rem; }
+
+        .main-header .nav-link:hover {
+            color: var(--g600) !important;
+        }
+
+        .main-header [data-widget="pushmenu"] i {
+            color: var(--g600);
+            font-size: 1.15rem;
+        }
 
         /* User dropdown */
-        .user-image.img-circle { border: 2px solid var(--g300); }
+        .user-image.img-circle {
+            border: 2px solid var(--g300);
+        }
+
         .user-header {
             background: linear-gradient(135deg, var(--g800), var(--g600)) !important;
             padding: 1.25rem;
         }
-        .user-header p { color: var(--white); font-family: 'Outfit', sans-serif; }
-        .user-header p small { color: var(--g300); }
+
+        .user-header p {
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .user-header p small {
+            color: var(--g300);
+        }
 
         /* ─── SIDEBAR ────────────────────────────────────────────── */
         .main-sidebar {
             width: var(--sidebar-w);
             background: linear-gradient(180deg, var(--slate900) 0%, var(--slate800) 100%);
-            box-shadow: 2px 0 20px rgba(0,0,0,.18);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, .18);
         }
+
         .brand-link {
             display: flex;
             align-items: center;
             gap: .75rem;
             padding: .9rem 1.25rem;
             background: linear-gradient(135deg, var(--g800), var(--g600)) !important;
-            border-bottom: 1px solid rgba(255,255,255,.08) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
             text-decoration: none !important;
         }
+
         .brand-icon-wrap {
-            width: 36px; height: 36px;
-            background: rgba(255,255,255,.15);
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, .15);
             border-radius: var(--radius-sm);
-            display: grid; place-items: center; flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
         }
-        .brand-icon-wrap i { color: var(--white); font-size: 1rem; }
+
+        .brand-icon-wrap i {
+            color: var(--white);
+            font-size: 1rem;
+        }
+
         .brand-text {
             font-family: 'Outfit', sans-serif;
-            font-weight: 800; font-size: 1.15rem !important;
-            color: var(--white) !important; line-height: 1;
+            font-weight: 800;
+            font-size: 1.15rem !important;
+            color: var(--white) !important;
+            line-height: 1;
         }
+
         .brand-text span {
-            display: block; font-size: .65rem; font-weight: 400;
-            color: var(--g300); text-transform: uppercase;
+            display: block;
+            font-size: .65rem;
+            font-weight: 400;
+            color: var(--g300);
+            text-transform: uppercase;
         }
 
         /* ─── NAV ITEMS ──────────────────────────────────────────── */
-        .nav-sidebar > .nav-item > .nav-link {
+        .nav-sidebar>.nav-item>.nav-link {
             border-radius: var(--radius-sm);
             margin: 1px 8px;
             padding: .55rem .9rem;
-            color: rgba(255,255,255,.72) !important;
-            font-size: .88rem; font-weight: 500;
+            color: rgba(255, 255, 255, .72) !important;
+            font-size: .88rem;
+            font-weight: 500;
             transition: all .22s ease;
         }
-        .nav-sidebar > .nav-item > .nav-link:hover {
-            background: rgba(34,197,94,.12) !important;
+
+        .nav-sidebar>.nav-item>.nav-link:hover {
+            background: rgba(34, 197, 94, .12) !important;
             color: var(--g400) !important;
             transform: translateX(3px);
         }
-        .nav-sidebar > .nav-item > .nav-link.active {
+
+        .nav-sidebar>.nav-item>.nav-link.active {
             background: linear-gradient(135deg, var(--g700), var(--g600)) !important;
             color: var(--white) !important;
-            box-shadow: 0 4px 20px rgba(34,197,94,.25);
+            box-shadow: 0 4px 20px rgba(34, 197, 94, .25);
         }
 
         /* ─── CONTENT AREA ───────────────────────────────────────── */
@@ -144,132 +195,169 @@
         .card {
             border: none;
             border-radius: var(--radius-lg);
-            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
             transition: box-shadow .25s, transform .25s;
         }
-        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.10); transform: translateY(-2px); }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .10);
+            transform: translateY(-2px);
+        }
+
         .card-header {
             background: var(--white) !important;
             border-bottom: 2px solid var(--g100) !important;
             font-family: 'Outfit', sans-serif;
-            font-weight: 700; color: var(--g800);
+            font-weight: 700;
+            color: var(--g800);
         }
-
-        {% block extra_css %}{% endblock %}
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
+
 <body class="hold-transition sidebar-mini layout-fixed">
-<div class="wrapper">
+    <div class="wrapper">
 
-    <!-- Top Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-widget="pushmenu" href="#" role="button" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </a>
-            </li>
-        </ul>
+        <!-- Top Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button" title="Toggle Sidebar">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+            </ul>
 
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown user-menu">
-                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-                    <img src="https://adminlte.io/themes/v3/dist/img/user1-128x128.jpg"
-                         class="user-image img-circle elevation-2" alt="Leader Image">
-                    <span class="d-none d-md-inline" style="font-weight:600;">
-                        {{ current_user.first_name }} {{ current_user.last_name }}
-                    </span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                    <li class="user-header">
+            <ul class="navbar-nav ml-auto">
+                <!-- Notifications Dropdown Menu -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('club_leader.notifications') }}" title="Notifications">
+                        <i class="far fa-bell"></i>
+                        {% if unread_notifications_count is defined and unread_notifications_count %}
+                        <span class="badge badge-warning navbar-badge">{{ unread_notifications_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                
+                <li class="nav-item dropdown user-menu">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                         <img src="https://adminlte.io/themes/v3/dist/img/user1-128x128.jpg"
-                             class="img-circle elevation-2" alt="Leader Image">
-                        <p>
+                            class="user-image img-circle elevation-2" alt="Leader Image">
+                        <span class="d-none d-md-inline" style="font-weight:600;">
                             {{ current_user.first_name }} {{ current_user.last_name }}
-                            <small>Club Leader</small>
-                        </p>
-                    </li>
-                    <li class="user-footer p-3">
-                        <a href="{{ url_for('club_leader.logout') }}" class="btn btn-danger btn-block rounded">
-                            <i class="fas fa-sign-out-alt mr-1"></i> Sign Out
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <li class="user-header">
+                            <img src="https://adminlte.io/themes/v3/dist/img/user1-128x128.jpg"
+                                class="img-circle elevation-2" alt="Leader Image">
+                            <p>
+                                {{ current_user.first_name }} {{ current_user.last_name }}
+                                <small>Club Leader</small>
+                            </p>
+                        </li>
+                        <li class="user-footer p-3">
+                            <a href="{{ url_for('club_leader.logout') }}" class="btn btn-danger btn-block rounded">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Sign Out
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
 
-    <!-- Sidebar -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="{{ url_for('club_leader.dashboard') }}" class="brand-link">
-            <div class="brand-icon-wrap">
-                <i class="fas fa-crown"></i>
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="{{ url_for('club_leader.dashboard') }}" class="brand-link">
+                <div class="brand-icon-wrap">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <span class="brand-text">
+                    CAMS
+                    <span>Club Leader Portal</span>
+                </span>
+            </a>
+
+            <div class="sidebar mt-3">
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                        data-accordion="false">
+                        <li class="nav-item">
+                            <a href="{{ url_for('club_leader.dashboard') }}"
+                                class="nav-link {% if request.endpoint == 'club_leader.dashboard' %}active{% endif %}">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('club_leader.members') }}"
+                                class="nav-link {% if request.endpoint == 'club_leader.members' %}active{% endif %}">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Members</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('club_leader.events') }}"
+                                class="nav-link {% if request.endpoint == 'club_leader.events' %}active{% endif %}">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <p>Events</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('club_leader.documents') }}"
+                                class="nav-link {% if request.endpoint == 'club_leader.documents' %}active{% endif %}">
+                                <i class="nav-icon fas fa-folder-open"></i>
+                                <p>Documents</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('club_leader.reports') }}"
+                                class="nav-link {% if request.endpoint == 'club_leader.reports' %}active{% endif %}">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <p>Reports</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('audit.audit_home') }}"
+                                class="nav-link {% if request.endpoint and request.endpoint.startswith('audit.') %}active{% endif %}">
+                                <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                                <p>Audit Module</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
-            <span class="brand-text">
-                CAMS
-                <span>Club Leader Portal</span>
-            </span>
-        </a>
+        </aside>
 
-        <div class="sidebar mt-3">
-            <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                    <li class="nav-item">
-                        <a href="{{ url_for('club_leader.dashboard') }}" class="nav-link {% if request.endpoint == 'club_leader.dashboard' %}active{% endif %}">
-                            <i class="nav-icon fas fa-chart-line"></i>
-                            <p>Dashboard</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('club_leader.members') }}" class="nav-link {% if request.endpoint == 'club_leader.members' %}active{% endif %}">
-                            <i class="nav-icon fas fa-users"></i>
-                            <p>Members</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('club_leader.events') }}" class="nav-link {% if request.endpoint == 'club_leader.events' %}active{% endif %}">
-                            <i class="nav-icon fas fa-calendar-alt"></i>
-                            <p>Events</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('club_leader.documents') }}" class="nav-link {% if request.endpoint == 'club_leader.documents' %}active{% endif %}">
-                            <i class="nav-icon fas fa-folder-open"></i>
-                            <p>Documents</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('club_leader.reports') }}" class="nav-link {% if request.endpoint == 'club_leader.reports' %}active{% endif %}">
-                            <i class="nav-icon fas fa-file-alt"></i>
-                            <p>Reports</p>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </aside>
-
-    <!-- Content -->
-    <div class="content-wrapper">
-        {% with messages = get_flashed_messages(with_categories=true) %}
+        <!-- Content -->
+        <div class="content-wrapper">
+            {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        <strong>Alert:</strong> {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="float: right; border:none; background:transparent;"><i class="fas fa-times"></i></button>
-                    </div>
-                {% endfor %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <strong>Alert:</strong> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
+                    style="float: right; border:none; background:transparent;"><i class="fas fa-times"></i></button>
+            </div>
+            {% endfor %}
             {% endif %}
-        {% endwith %}
+            {% endwith %}
 
-        {% block content %}{% endblock %}
+            {% block content %}{% endblock %}
+        </div>
     </div>
-</div>
 
-<!-- Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-{% block extra_js %}{% endblock %}
+    <footer class="main-footer"
+        style="padding: 1rem; background: #fff; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 0.875rem; text-align: center;">
+        <strong>CAMS &copy; 2026.</strong> Designed by <a href="https://nexusaid.github.io/nexusaid-site/"
+            target="_blank" style="font-weight: 600; color: var(--g600); text-decoration: none;">Nexus Systems</a>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+    {% block extra_js %}{% endblock %}
 </body>
+
 </html>

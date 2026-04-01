@@ -1,90 +1,462 @@
 {% extends "base/base.html" %}
-{% block title %}{{ club.name }}{% endblock %}
+{% block title %}{{ club.name }} - CAMS{% endblock %}
 
-{% block page_title %}{{ club.name }}{% endblock %}
+{% block page_title %}Club Details{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('student.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('student.list_clubs') }}">Clubs</a></li>
+<li class="breadcrumb-item active">{{ club.name }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.details-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.club-hero {
+    background: linear-gradient(135deg, var(--p800), var(--p600));
+    border-radius: var(--radius-xl);
+    padding: 3rem 2rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.club-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.05)" stroke-width="2" fill="none"/></svg>') repeat;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.hero-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+}
+
+.hero-text h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hero-badges {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.badge-glass {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-card {
+    background: white;
+    border: 1px solid var(--s200);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--s900);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    color: var(--p500);
+    background: var(--p50);
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.doc-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.doc-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--s50);
+    border: 1px solid var(--s200);
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+}
+
+.doc-item:hover {
+    border-color: var(--p300);
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.doc-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.doc-icon {
+    font-size: 1.5rem;
+    color: var(--s400);
+}
+
+.doc-name {
+    font-weight: 600;
+    color: var(--s800);
+    margin: 0;
+}
+
+.person-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.person-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid var(--s200);
+    border-radius: var(--radius-md);
+}
+
+.person-avatar {
+    width: 48px;
+    height: 48px;
+    background: var(--g100);
+    color: var(--g600);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.person-info h6 {
+    margin: 0 0 0.25rem 0;
+    font-weight: 700;
+    color: var(--s900);
+}
+
+.person-info span {
+    font-size: 0.85rem;
+    color: var(--s500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.status-alert {
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: none;
+}
+
+.status-icon {
+    font-size: 1.5rem;
+}
+
+.action-card {
+    background: linear-gradient(to bottom, white, var(--s50));
+    border: 1px solid var(--s200);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.btn-join {
+    background: linear-gradient(135deg, var(--s800), var(--s900));
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-join:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px -1px rgba(0,0,0,0.2);
+    color: white;
+}
+
+/* Category gradients */
+.bg-gradient-Academic { background: linear-gradient(135deg, #2563EB, #4F46E5); }
+.bg-gradient-Sports { background: linear-gradient(135deg, #FF4B2B, #FF416C); }
+.bg-gradient-Cultural { background: linear-gradient(135deg, #F5AF19, #F12711); }
+.bg-gradient-Social { background: linear-gradient(135deg, #11998E, #38EF7D); }
+.bg-gradient-Religious { background: linear-gradient(135deg, #8E2DE2, #4A00E0); }
+.bg-gradient-Professional { background: linear-gradient(135deg, #232526, #414345); }
+.bg-gradient-default { background: linear-gradient(135deg, #0f172a, #1e293b); }
+
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5>About the Club</h5>
-            </div>
-            <div class="card-body">
-                <p>{{ club.description }}</p>
-                <p><strong>Requirements:</strong> {{ club.requirements }}</p>
-
-                {% if membership %}
-                    <div class="alert alert-info">
-                        Your membership status: <strong>{{ membership.status|capitalize }}</strong>
-                    </div>
-                {% else %}
-                    <form method="POST" action="{{ url_for('student.request_membership', club_id=club.id) }}">
-                        <button type="submit" class="btn btn-success">Request Membership</button>
-                    </form>
+<div class="details-container">
+    
+    <!-- Hero Section -->
+    <div class="club-hero bg-gradient-{{ club.category|replace(' ', '') if club.category else 'default' }}">
+        <div class="hero-content">
+            <div class="hero-icon">
+                {% if club.category == 'Academic' %}<i class="fas fa-book-reader"></i>
+                {% elif club.category == 'Sports' %}<i class="fas fa-futbol"></i>
+                {% elif club.category == 'Cultural' %}<i class="fas fa-drum"></i>
+                {% elif club.category == 'Social' %}<i class="fas fa-users"></i>
+                {% elif club.category == 'Religious' %}<i class="fas fa-praying-hands"></i>
+                {% elif club.category == 'Professional' %}<i class="fas fa-user-tie"></i>
+                {% else %}<i class="fas fa-shield-alt"></i>
                 {% endif %}
             </div>
-        </div>
-
-        <!-- Club Documents -->
-        <div class="card mt-3">
-            <div class="card-header bg-info text-white">
-                <h5>Club Documents</h5>
-            </div>
-            <div class="card-body">
-                {% if documents %}
-                    <ul class="list-group">
-                        {% for doc in documents %}
-                        <li class="list-group-item">
-                            <strong>{{ doc.document_type|capitalize }}</strong>
-                            {% if doc.document_type in ['constitution', 'minutes'] %}
-                                - <a href="{{ url_for('student.view_document', club_id=club.id, doc_id=doc.id) }}">View</a>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <div class="alert alert-warning">
-                        No documents uploaded yet.
-                    </div>
-                {% endif %}
+            <div class="hero-text">
+                <h1 style="color: white; text-shadow: 1px 2px 4px rgba(0,0,0,0.6);">{{ club.name }}</h1>
+                <div class="hero-badges">
+                    <span class="badge-glass">
+                        <i class="fas fa-tag"></i> {{ club.category or 'General' }}
+                    </span>
+                    <span class="badge-glass">
+                        <i class="fas fa-user-friends"></i> {{ club.member_count|default(0) }} Members
+                    </span>
+                    <span class="badge-glass">
+                        <i class="fas fa-calendar-alt"></i> Established {{ club.registration_date.strftime('%Y') if club.registration_date else 'Recently' }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <!-- Club Leaders -->
-        <div class="card mb-3">
-            <div class="card-header bg-success text-white">
-                <h5>Club Leaders</h5>
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="section-card">
+                <h3 class="section-title" style="color: #0f172a;">
+                    <i class="fas fa-info-circle"></i> About the Club
+                </h3>
+                <p class="text-muted" style="color: #334155 !important; font-size: 1.05rem; line-height: 1.7;">
+                    {{ club.description }}
+                </p>
+                
+                {% if club.requirements %}
+                <div class="mt-4 p-4 bg-light rounded shadow-sm border">
+                    <h5 class="fw-bold mb-2"><i class="fas fa-clipboard-list text-primary me-2"></i> Requirements to Join</h5>
+                    <p class="mb-0 text-muted">{{ club.requirements }}</p>
+                </div>
+                {% endif %}
             </div>
-            <div class="card-body">
-                {% if leaders %}
-                    <ul class="list-group">
-                        {% for leader in leaders %}
-                        <li class="list-group-item">
-                            {{ leader.user.full_name }} - {{ leader.role|capitalize }}
-                        </li>
-                        {% endfor %}
-                    </ul>
+
+            <div class="section-card">
+                <h3 class="section-title">
+                    <i class="fas fa-folder-open"></i> Public Documents
+                </h3>
+                {% if (club.has_constitution and club.constitution_file) or (club.has_minutes and club.minutes_file) or (club.has_patron_letter and club.patron_letter_file) or (club.has_rules and club.rules_file) %}
+                    <div class="doc-list">
+                        {% if club.has_constitution and club.constitution_file %}
+                        <div class="doc-item">
+                            <div class="doc-info">
+                                <i class="fas fa-file-pdf doc-icon text-danger"></i>
+                                <p class="doc-name">Constitution</p>
+                            </div>
+                            <a href="{{ url_for('static', filename=club.constitution_file) }}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary">
+                                View <i class="fas fa-external-link-alt ms-1"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        {% if club.has_minutes and club.minutes_file %}
+                        <div class="doc-item">
+                            <div class="doc-info">
+                                <i class="fas fa-file-alt doc-icon text-info"></i>
+                                <p class="doc-name">Meeting Minutes</p>
+                            </div>
+                            <a href="{{ url_for('static', filename=club.minutes_file) }}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary">
+                                View <i class="fas fa-external-link-alt ms-1"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        {% if club.has_rules and club.rules_file %}
+                        <div class="doc-item">
+                            <div class="doc-info">
+                                <i class="fas fa-gavel doc-icon text-danger"></i>
+                                <p class="doc-name">Rules & Regulations</p>
+                            </div>
+                            <a href="{{ url_for('static', filename=club.rules_file) }}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary">
+                                View <i class="fas fa-external-link-alt ms-1"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
                 {% else %}
-                    <p>No leaders assigned yet.</p>
+                    <div class="text-center p-4">
+                        <i class="fas fa-folder-minus text-muted" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                        <p class="text-muted mt-3 mb-0">No public documents available.</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Patron -->
-        <div class="card">
-            <div class="card-header bg-warning text-white">
-                <h5>Patron</h5>
-            </div>
-            <div class="card-body">
-                {% if patron %}
-                    <p>{{ patron.full_name }}</p>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            
+            <!-- Membership Action -->
+            <div class="action-card mb-4">
+                {% if membership %}
+                    
+                    {% if membership.status == 'active' %}
+                    <div class="status-alert bg-success bg-opacity-10 text-success mb-0 d-flex flex-column text-center">
+                        <i class="fas fa-check-circle status-icon mb-2" style="font-size: 2.5rem;"></i>
+                        <div>
+                            <h5 class="fw-bold mb-1">Active Member</h5>
+                            <p class="small mb-0 opacity-75">You are a member of this club.</p>
+                        </div>
+                    </div>
+                    {% elif membership.status == 'pending' %}
+                    <div class="status-alert bg-warning bg-opacity-10 text-warning mb-0 d-flex flex-column text-center">
+                        <i class="fas fa-clock status-icon mb-2" style="font-size: 2.5rem;"></i>
+                        <div>
+                            <h5 class="fw-bold mb-1">Approval Pending</h5>
+                            <p class="small mb-0 opacity-75">Your request is under review.</p>
+                        </div>
+                    </div>
+                    {% elif membership.status in ['rejected', 'removed'] %}
+                    <div class="status-alert bg-danger bg-opacity-10 text-danger mb-4 d-flex flex-column text-center">
+                        <i class="fas fa-times-circle status-icon mb-2" style="font-size: 2.5rem;"></i>
+                        <div>
+                            <h5 class="fw-bold mb-1">{{ membership.status|title }}</h5>
+                            <p class="small mb-0 opacity-75">Your membership was {{ membership.status }}.</p>
+                        </div>
+                    </div>
+                        {% if membership.rejection_count < 3 %}
+                        <form method="POST" action="{{ url_for('student.request_membership', club_id=club.id) }}">
+                            <button type="submit" class="btn-join w-100 justify-content-center">
+                                <i class="fas fa-redo"></i> Reapply ({{ 3 - membership.rejection_count }} left)
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-danger border-0 small">
+                            <i class="fas fa-ban me-1"></i> You have reached the maximum reapplication limit.
+                        </div>
+                        {% endif %}
+                    {% endif %}
+
                 {% else %}
-                    <p>No patron assigned yet.</p>
+                    <i class="fas fa-users mb-3 text-primary" style="font-size: 3rem;"></i>
+                    <h4 class="fw-bold text-dark mb-2">Join This Club</h4>
+                    <p class="text-muted small mb-4">Become a member to participate in events and discussions.</p>
+                    <form method="POST" action="{{ url_for('student.request_membership', club_id=club.id) }}">
+                        <button type="submit" class="btn-join w-100 justify-content-center">
+                            <i class="fas fa-user-plus"></i> Request Membership
+                        </button>
+                    </form>
                 {% endif %}
             </div>
+
+            <!-- Leadership -->
+            <div class="section-card">
+                <h4 class="section-title mb-4" style="font-size: 1.1rem;">
+                    <i class="fas fa-crown text-warning bg-warning bg-opacity-10"></i> Leadership
+                </h4>
+                
+                <div class="person-list">
+                    <!-- Patron First -->
+                    {% if patron %}
+                    <div class="person-item border-primary border-opacity-25 bg-primary bg-opacity-10">
+                        <div class="person-avatar bg-primary text-white">
+                            {{ patron.first_name[0] }}{{ patron.last_name[0] }}
+                        </div>
+                        <div class="person-info">
+                            <h6>{{ patron.full_name }}</h6>
+                            <span class="text-primary">Club Patron</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Other Leaders -->
+                    {% if leaders %}
+                        {% for leader in leaders %}
+                        <div class="person-item">
+                            <div class="person-avatar">
+                                {{ leader.user.first_name[0] }}{{ leader.user.last_name[0] }}
+                            </div>
+                            <div class="person-info">
+                                <h6>{{ leader.user.full_name }}</h6>
+                                <span>{{ leader.role|replace('_', ' ') }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small text-center my-3">No student leaders assigned yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

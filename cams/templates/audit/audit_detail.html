@@ -1,4 +1,4 @@
-{% extends "base/admin_base.html" %}
+{% extends "base/club_leader.html" if current_user.role == "club_leader" else "base/admin_base.html" %}
 {% block title %}{{ report.label }}{% endblock %}
 {% block page_title %}Audit Report{% endblock %}
 {% block breadcrumb %}
@@ -55,13 +55,19 @@
     </div>
     <div class="d-flex flex-column align-items-end gap-2">
       <span class="status-pill pill-{{ report.status.value }}">{{ report.status.value|replace('_',' ')|title }}</span>
+      {% if report.status.value in ('approved', 'rejected') and report.reviewer %}
+      <div class="text-white-50 mt-1" style="font-size: 0.75rem;">
+          <i class="fas fa-user-check me-1"></i> {{ report.status.value|title }} by {{ report.reviewer.full_name }}<br>
+          <i class="far fa-clock me-1"></i> {{ report.reviewed_at.strftime('%b %d, %Y') }}
+      </div>
+      {% endif %}
       {% if report.status.value in ('draft','rejected') %}
-      <a href="{{ url_for('audit.edit_audit', report_id=report.id) }}" class="btn btn-light btn-sm">
+      <a href="{{ url_for('audit.edit_audit', report_id=report.id) }}" class="btn btn-light btn-sm mt-2">
         <i class="fas fa-edit mr-1"></i>{% if report.status.value=='rejected' %}Resubmit{% else %}Edit{% endif %}
       </a>
       {% endif %}
       {% if report.status.value == 'approved' and report.report_file %}
-      <a href="{{ url_for('audit.download_report', report_id=report.id) }}" class="btn btn-light btn-sm">
+      <a href="{{ url_for('audit.download_report', report_id=report.id) }}" class="btn btn-light btn-sm mt-2">
         <i class="fas fa-download mr-1"></i>Download Report
       </a>
       {% endif %}

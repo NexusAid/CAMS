@@ -1,0 +1,83 @@
+{% extends "base/admin_base.html" %}
+
+{% block page_title %}Review Pending Applications{% endblock %}
+{% block breadcrumb %}
+<span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
+<span>Pending Applications</span>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm" style="border-radius:18px;overflow:hidden;">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <h6 class="m-0 text-dark fw-bold"><i class="fas fa-list-check me-2 text-primary"></i> Pending Leadership Applications</h6>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th scope="col" class="py-3 px-4 text-secondary fw-semibold small">Candidate</th>
+                            <th scope="col" class="py-3 px-4 text-secondary fw-semibold small">Club</th>
+                            <th scope="col" class="py-3 px-4 text-secondary fw-semibold small">Applied Position</th>
+                            <th scope="col" class="py-3 px-4 text-secondary fw-semibold small">Applied At</th>
+                            <th scope="col" class="py-3 px-4 text-secondary fw-semibold small text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td class="py-3 px-4">
+                                <div class="d-flex align-items-center">
+                                    {% if app.student.profile_image %}
+                                        <img src="{{ app.student.profile_image }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e2e8f0;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
+                                            {{ app.student.first_name[0] }}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold">{{ app.student.full_name }}</div>
+                                        <div class="text-muted small">{{ app.student.registration_number }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="fw-medium text-dark">{{ app.club.name }}</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="badge bg-primary bg-opacity-10 text-primary py-1 px-2 rounded-2">
+                                    {{ app.position|replace('_', ' ')|title }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-muted small">
+                                {{ app.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </td>
+                            <td class="py-3 px-4 text-end">
+                                <a href="{{ url_for('dashboard.application_review', app_id=app.id) }}" class="btn btn-sm btn-primary py-1 px-3 fw-bold rounded-2">
+                                    Review
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fas fa-clipboard-check fs-2 text-secondary opacity-50 mb-3 d-block"></i>
+                                <span>No pending applications to review right now.</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if applications|length > 0 %}
+            <div class="card-footer bg-white border-top py-3 text-muted small">
+                Showing {{ applications|length }} pending application{{ 's' if applications|length != 1 }}.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

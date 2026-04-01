@@ -65,6 +65,8 @@ def _leader_clubs():
 @audit_bp.route("/")
 @login_required
 def audit_home():
+    # Direct users to the appropriate view based on their role
+    # Deans/Admins see the review queue, Leaders see their club's audit history
     """
     Leader → their clubs' audit history.
     Dean/Admin → all audits pending review.
@@ -92,6 +94,8 @@ def audit_home():
 @audit_bp.route("/submit", methods=["GET", "POST"])
 @leader_or_admin
 def submit_audit():
+    # Provide the form for club leaders to submit new audit reports.
+    # Handles both Drafts and Final Submissions depending on the 'action' passed in form data.
     """Club leader creates and submits an audit report."""
     clubs = _leader_clubs()
     periods = list(AuditPeriod)

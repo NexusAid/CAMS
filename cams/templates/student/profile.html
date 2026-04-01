@@ -1,9 +1,178 @@
 {% extends "base/base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g900:#052e16;--g800:#064e24;--g700:#065f33;
+  --g600:#16a34a;--g500:#22c55e;--g400:#4ade80;
+  --g300:#86efac;--g200:#bbf7d0;--g100:#dcfce7;
+  --s800:#1e293b;--s700:#334155;--s500:#64748b;
+  --s200:#e2e8f0;--s100:#f1f5f9;--s50:#f8fafc;
+}
+
+body { font-family:'Nunito',sans-serif; background:var(--s50); }
+
+.profile-hero {
+  background:linear-gradient(135deg,var(--g900) 0%,var(--g700) 100%);
+  padding:3rem 2rem; border-radius:16px; margin:2rem auto; max-width:900px;
+  display:flex; align-items:center; gap:1.5rem; color:#fff; position:relative; overflow:hidden;
+}
+
+.profile-avatar {
+  width:90px; height:90px; border-radius:24px;
+  background:rgba(255,255,255,.15); border:3px solid rgba(255,255,255,.3);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Sora',sans-serif; font-size:2.5rem; font-weight:800;
+}
+
+.profile-panel {
+  max-width:900px; margin:0 auto 3rem; background:#fff; border-radius:16px;
+  box-shadow:0 4px 20px rgba(0,0,0,.05); overflow:hidden;
+}
+
+.p-header {
+  padding:1.5rem 2rem; border-bottom:1px solid var(--s200);
+  font-family:'Sora',sans-serif; font-weight:700; color:var(--g800);
+}
+
+.p-body { padding:2rem; }
+
+.form-group label {
+  font-weight:700; color:var(--s700); font-size:.9rem; margin-bottom:.5rem;
+}
+
+.form-control {
+  border-radius:10px; border:2px solid var(--s200); padding:.6rem 1rem;
+  font-family:'Nunito',sans-serif; font-weight:600; color:var(--s800);
+}
+
+.form-control:focus {
+  border-color:var(--g500); box-shadow:0 0 0 3px rgba(34,197,94,.1); outline:none;
+}
+
+.btn-primary {
+  background:var(--g600); border:none; border-radius:10px; font-weight:700;
+  padding:.6rem 1.5rem; color:#fff; transition:all .2s;
+}
+
+.btn-primary:hover { background:var(--g700); transform:translateY(-2px); }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>My Profile</h2>
-    <p><strong>Name:</strong> {{ student.name }}</p>
-    <p><strong>Email:</strong> {{ student.email }}</p>
+<div class="container-fluid">
+  <div class="profile-hero shadow-sm">
+    <div class="profile-avatar" style="overflow:hidden;">
+      {% if student.profile_image %}
+        <img src="{{ student.profile_image }}" alt="Profile photo"
+             style="width:100%;height:100%;object-fit:cover;border-radius:22px;">
+      {% else %}
+        {{ student.first_name[0]|upper }}{{ student.last_name[0]|upper if student.last_name else '' }}
+      {% endif %}
+    </div>
+    <div>
+      <h2 style="font-family:'Sora';font-weight:800;margin:0;">{{ student.full_name }}</h2>
+      <p style="margin:.5rem 0 0;opacity:.8;font-weight:600;font-size:1.1rem;">{{ student.registration_number }}</p>
+    </div>
+  </div>
+
+  <div class="profile-panel">
+    <div class="p-header">
+      <i class="fas fa-user-edit me-2"></i> Edit Personal Information
+    </div>
+    <div class="p-body">
+      <form method="POST" action="{{ url_for('student.profile') }}" enctype="multipart/form-data">
+        
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="form-group">
+              <label><i class="fas fa-user me-2 text-success"></i> First Name</label>
+              <input type="text" name="first_name" class="form-control" value="{{ student.first_name }}" required>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="form-group">
+              <label><i class="fas fa-user me-2 text-success"></i> Last Name</label>
+              <input type="text" name="last_name" class="form-control" value="{{ student.last_name }}" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="form-group">
+              <label><i class="fas fa-image me-2 text-info"></i> Profile Photo (Upload)</label>
+              <input type="file" name="profile_image" class="form-control" accept="image/*">
+              <small class="text-muted d-block mt-1">
+                Optional. Upload a clear square photo (JPG or PNG).
+              </small>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="form-group">
+              <label><i class="fas fa-user-circle me-2 text-primary"></i> Or pick a demo avatar</label>
+              <div class="d-flex flex-wrap gap-2">
+                <div class="form-check me-3">
+                  <input class="form-check-input" type="radio" name="demo_avatar" id="avatarGreen" value="green">
+                  <label class="form-check-label" for="avatarGreen">
+                    Green
+                  </label>
+                </div>
+                <div class="form-check me-3">
+                  <input class="form-check-input" type="radio" name="demo_avatar" id="avatarBlue" value="blue">
+                  <label class="form-check-label" for="avatarBlue">
+                    Blue
+                  </label>
+                </div>
+                <div class="form-check me-3">
+                  <input class="form-check-input" type="radio" name="demo_avatar" id="avatarAmber" value="amber">
+                  <label class="form-check-label" for="avatarAmber">
+                    Amber
+                  </label>
+                </div>
+              </div>
+              <small class="text-muted d-block mt-1">
+                If you upload a photo and pick a demo, the uploaded photo will be used.
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="form-group">
+              <label><i class="fas fa-envelope me-2 text-primary"></i> Email Address</label>
+              <input type="email" name="email" class="form-control" value="{{ student.email }}" required>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="form-group">
+              <label><i class="fas fa-graduation-cap me-2 text-warning"></i> Course</label>
+              <input type="text" name="course" class="form-control" value="{{ student.course }}">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="form-group">
+              <label><i class="fas fa-lock me-2 text-danger"></i> New Password</label>
+              <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current">
+              <small class="text-muted d-block mt-1">Only fill this if you want to change your password.</small>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-4">
+        <div class="text-end">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}

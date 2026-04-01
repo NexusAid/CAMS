@@ -1,0 +1,321 @@
+{% extends "base/club_leader.html" if current_user.role == "club_leader" else "base/admin_base.html" %}
+{% block title %}{% if editing %}Edit{% else %}Submit{% endif %} Audit Report{% endblock %}
+{% block page_title %}{% if editing %}Edit Audit{% else %}New Audit Report{% endif %}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('audit.audit_home') }}">Audits</a></li>
+<li class="breadcrumb-item active">{% if editing %}Edit{% else %}Submit{% endif %}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --g800:#064e24;--g700:#065f33;--g600:#16a34a;--g500:#22c55e;
+  --g400:#4ade80;--g100:#dcfce7;--g50:#f0fdf4;
+  --s800:#1e293b;--s700:#334155;--s500:#64748b;--s200:#e2e8f0;
+}
+.form-wrap { max-width: 820px; margin: 0 auto; }
+
+.form-section {
+  background:#fff; border-radius:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,.07);
+  overflow:hidden; margin-bottom:1.5rem;
+}
+.form-section-header {
+  background: linear-gradient(135deg, var(--g800), var(--g600));
+  padding:.9rem 1.5rem; display:flex; align-items:center; gap:.7rem;
+}
+.form-section-header i    { color:rgba(255,255,255,.85); font-size:1rem; }
+.form-section-header span { font-family:'Outfit',sans-serif; font-weight:700;
+  color:#fff; font-size:.95rem; }
+.form-section-body { padding:1.5rem; }
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--g500) !important;
+  box-shadow: 0 0 0 3px rgba(34,197,94,.15) !important;
+}
+.form-label { font-weight:600; font-size:.84rem; color:var(--s700); margin-bottom:.3rem; }
+
+/* Custom checkbox */
+.check-grid { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; }
+.check-item {
+  display:flex; align-items:center; gap:.7rem;
+  padding:.65rem .9rem; border-radius:10px;
+  border:1.5px solid var(--s200); cursor:pointer;
+  transition: border-color .2s, background .2s;
+}
+.check-item:hover { border-color:var(--g400); background:var(--g50); }
+.check-item input[type=checkbox] { display:none; }
+.check-item:has(input:checked) { border-color:var(--g500); background:var(--g50); }
+.check-box {
+  width:20px; height:20px; border-radius:6px;
+  border:2px solid var(--s200); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  transition: all .2s;
+}
+.check-item:has(input:checked) .check-box {
+  background:var(--g600); border-color:var(--g600);
+}
+.check-item:has(input:checked) .check-box::after {
+  content:'✓'; color:#fff; font-size:.75rem; font-weight:900;
+}
+.check-label { font-size:.875rem; font-weight:500; color:var(--s800); }
+
+/* Finance diff indicator */
+.balance-diff { font-size:.78rem; font-weight:600; margin-top:.25rem; }
+.diff-pos { color:var(--g600); }
+.diff-neg { color:#ef4444; }
+
+/* Steps bar */
+.steps-bar { display:flex; gap:0; background:#fff; border-radius:14px;
+  padding:.85rem 1.25rem; box-shadow:0 2px 12px rgba(0,0,0,.07); margin-bottom:1.5rem; }
+.step-s { flex:1; text-align:center; position:relative; }
+.step-s:not(:last-child)::after { content:''; position:absolute; top:.9rem; left:50%;
+  width:100%; height:2px; background:var(--s200); z-index:0; }
+.step-dot-s { width:1.8rem; height:1.8rem; border-radius:50%; background:var(--s200);
+  display:inline-flex; align-items:center; justify-content:center; font-size:.7rem;
+  font-weight:800; color:var(--s500); position:relative; z-index:1; font-family:'Outfit',sans-serif; }
+.step-s.active .step-dot-s { background:var(--g600); color:#fff; box-shadow:0 0 0 4px rgba(34,197,94,.2); }
+.step-lbl { font-size:.65rem; font-weight:700; color:#94a3b8; text-transform:uppercase;
+  letter-spacing:.05em; display:block; margin-top:.3rem; }
+.step-s.active .step-lbl { color:var(--g700); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.anim { animation:fadeUp .35s ease both; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+
+  <!-- Steps bar -->
+  <div class="steps-bar anim">
+    {% set steps = [('1','Club & Period'),('2','Membership'),('3','Events'),('4','Finances'),('5','Compliance'),('6','Narrative')] %}
+    {% for num, label in steps %}
+    <div class="step-s active">
+      <div class="step-dot-s">{{ num }}</div>
+      <span class="step-lbl">{{ label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form method="POST"
+        action="{{ url_for('audit.edit_audit', report_id=report.id) if editing else url_for('audit.submit_audit') }}">
+
+    <!-- ══ 1. Club & Period ═══════════════════════════════ -->
+    <div class="form-section anim">
+      <div class="form-section-header">
+        <i class="fas fa-shield-alt"></i><span>1. Club & Audit Period</span>
+      </div>
+      <div class="form-section-body">
+        <div class="row">
+          <div class="col-md-5 mb-3">
+            <label class="form-label">Club <span class="text-danger">*</span></label>
+            <select name="club_id" class="form-control" {% if editing %}disabled{% endif %} required>
+              <option value="" disabled {% if not editing %}selected{% endif %}>Select club…</option>
+              {% for club in clubs %}
+              <option value="{{ club.id }}"
+                {% if editing and report.club_id == club.id %}selected{% endif %}>
+                {{ club.name }}
+              </option>
+              {% endfor %}
+            </select>
+            {% if editing %}
+            <input type="hidden" name="club_id" value="{{ report.club_id }}">
+            {% endif %}
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Period <span class="text-danger">*</span></label>
+            <select name="period" class="form-control" required>
+              {% for p in periods %}
+              <option value="{{ p.value }}"
+                {% if editing and report.period.value == p.value %}selected{% endif %}>
+                {{ p.value }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Year <span class="text-danger">*</span></label>
+            <select name="year" class="form-control" required>
+              {% for y in years %}
+              <option value="{{ y }}"
+                {% if editing and report.year == y %}selected{% endif %}>
+                {{ y }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 2. Membership ══════════════════════════════════ -->
+    <div class="form-section anim">
+      <div class="form-section-header">
+        <i class="fas fa-users"></i><span>2. Membership Summary</span>
+      </div>
+      <div class="form-section-body">
+        <div class="row">
+          {% set mem_fields = [
+            ('total_members','Total Members','fas fa-users'),
+            ('active_members','Active Members','fas fa-user-check'),
+            ('new_members','New Members This Period','fas fa-user-plus'),
+            ('members_left','Members Who Left','fas fa-user-minus'),
+          ] %}
+          {% for name, label, icon in mem_fields %}
+          <div class="col-md-3 mb-3">
+            <label class="form-label"><i class="{{ icon }} mr-1 text-success"></i>{{ label }}</label>
+            <input type="number" name="{{ name }}" class="form-control" min="0"
+                   value="{{ report[name] if editing else 0 }}" required>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 3. Events ══════════════════════════════════════ -->
+    <div class="form-section anim">
+      <div class="form-section-header">
+        <i class="fas fa-calendar-alt"></i><span>3. Events & Activities</span>
+      </div>
+      <div class="form-section-body">
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Events Held</label>
+            <input type="number" name="events_held" class="form-control" min="0"
+                   value="{{ report.events_held if editing else 0 }}">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Events Planned (Next Period)</label>
+            <input type="number" name="events_planned" class="form-control" min="0"
+                   value="{{ report.events_planned if editing else 0 }}">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Average Attendance Per Event</label>
+            <input type="number" name="average_attendance" class="form-control" min="0" step="0.1"
+                   value="{{ report.average_attendance if editing else 0 }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 4. Finances ════════════════════════════════════ -->
+    <div class="form-section anim">
+      <div class="form-section-header">
+        <i class="fas fa-coins"></i><span>4. Financial Summary (KES)</span>
+      </div>
+      <div class="form-section-body">
+        <div class="row">
+          {% set fin_fields = [
+            ('opening_balance','Opening Balance'),
+            ('total_income','Total Income'),
+            ('total_expenditure','Total Expenditure'),
+            ('closing_balance','Closing Balance'),
+            ('fees_collected','Fees Collected'),
+            ('outstanding_fees','Outstanding Fees'),
+          ] %}
+          {% for name, label in fin_fields %}
+          <div class="col-md-4 mb-3">
+            <label class="form-label">{{ label }}</label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text" style="background:var(--g50);border-color:var(--s200);font-weight:700;color:var(--g700);">KES</span>
+              </div>
+              <input type="number" name="{{ name }}" class="form-control" min="0" step="0.01"
+                     value="{{ report[name] if editing else '0.00' }}">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div id="balanceDiff" class="balance-diff mt-1"></div>
+      </div>
+    </div>
+
+    <!-- ══ 5. Compliance Checklist ════════════════════════ -->
+    <div class="form-section anim">
+      <div class="form-section-header">
+        <i class="fas fa-clipboard-check"></i><span>5. Compliance Checklist</span>
+      </div>
+      <div class="form-section-body">
+        <div class="check-grid">
+          {% set checks = [
+            ('has_constitution',      'Constitution on File'),
+            ('has_patron_letter',     'Patron Letter on File'),
+            ('has_meeting_minutes',   'Meeting Minutes Recorded'),
+            ('elections_held',        'Elections Held This Period'),
+            ('financial_report_filed','Financial Report Filed'),
+          ] %}
+          {% for name, label in checks %}
+          <label class="check-item">
+            <input type="checkbox" name="{{ name }}"
+                   {% if editing and report[name] %}checked{% endif %}>
+            <span class="check-box"></span>
+            <span class="check-label">{{ label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 6. Narrative ═══════════════════════════════════ -->
+    <div class="form-section anim">
+      <div class="form-section-header">
+        <i class="fas fa-align-left"></i><span>6. Narrative Sections</span>
+      </div>
+      <div class="form-section-body">
+        {% set text_fields = [
+          ('achievements','Achievements This Period','Notable milestones, events, or successes…'),
+          ('challenges','Challenges Faced','Obstacles or difficulties encountered…'),
+          ('recommendations','Recommendations','Suggested improvements or actions…'),
+          ('additional_notes','Additional Notes','Any other information…'),
+        ] %}
+        {% for name, label, placeholder in text_fields %}
+        <div class="mb-3">
+          <label class="form-label">{{ label }}</label>
+          <textarea name="{{ name }}" class="form-control" rows="3"
+                    placeholder="{{ placeholder }}">{{ report[name] if editing else '' }}</textarea>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Submit row -->
+    <div class="d-flex justify-content-between align-items-center mt-2 mb-5">
+      <a href="{{ url_for('audit.audit_home') }}" class="btn btn-default">
+        <i class="fas fa-arrow-left mr-1"></i>Cancel
+      </a>
+      <div class="d-flex gap-2">
+        <button type="submit" name="action" value="draft" class="btn btn-outline-success px-4">
+          <i class="fas fa-save mr-1"></i>Save Draft
+        </button>
+        <button type="submit" name="action" value="submit" class="btn btn-primary px-5">
+          <i class="fas fa-paper-plane mr-2"></i>
+          {% if editing %}Resubmit for Review{% else %}Submit for Review{% endif %}
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Live net balance indicator
+function updateBalanceDiff() {
+  const income  = parseFloat(document.querySelector('[name=total_income]').value) || 0;
+  const expend  = parseFloat(document.querySelector('[name=total_expenditure]').value) || 0;
+  const net     = income - expend;
+  const el      = document.getElementById('balanceDiff');
+  const fmt     = n => 'KES ' + Math.abs(n).toLocaleString('en-KE', {minimumFractionDigits:2});
+  if (net >= 0) {
+    el.innerHTML = `<span class="diff-pos"><i class="fas fa-arrow-up mr-1"></i>Net surplus: ${fmt(net)}</span>`;
+  } else {
+    el.innerHTML = `<span class="diff-neg"><i class="fas fa-arrow-down mr-1"></i>Net deficit: ${fmt(net)}</span>`;
+  }
+}
+document.querySelectorAll('[name=total_income],[name=total_expenditure]')
+  .forEach(el => el.addEventListener('input', updateBalanceDiff));
+updateBalanceDiff();
+</script>
+{% endblock %}
