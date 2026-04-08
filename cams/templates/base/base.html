@@ -24,18 +24,18 @@
      DESIGN TOKENS
   ═══════════════════════════════════════════════════════════ */
     :root {
-      /* Green palette */
-      --g950: #021a0d;
-      --g900: #052e16;
-      --g800: #064e24;
-      --g700: #065f33;
-      --g600: #16a34a;
-      --g500: #22c55e;
-      --g400: #4ade80;
-      --g300: #86efac;
-      --g200: #bbf7d0;
-      --g100: #dcfce7;
-      --g50: #f0fdf4;
+      /* Blue palette (replacing green) */
+      --g950: #172554;
+      --g900: #1e3a8a;
+      --g800: #1e40af;
+      --g700: #1d4ed8;
+      --g600: #2563eb;
+      --g500: #3b82f6;
+      --g400: #60a5fa;
+      --g300: #93c5fd;
+      --g200: #bfdbfe;
+      --g100: #dbeafe;
+      --g50: #eff6ff;
 
       /* Slate palette */
       --s950: #0a0f1a;
@@ -55,8 +55,8 @@
       --amber-l: #fef3c7;
       --red: #ef4444;
       --red-l: #fee2e2;
-      --blue: #3b82f6;
-      --blue-l: #dbeafe;
+      --blue: #0d9488;
+      --blue-l: #ccfbf1;
 
       /* Layout */
       --sidebar-w: 256px;
@@ -68,9 +68,9 @@
       --radius-xl: 20px;
 
       /* Sidebar specific */
-      --sidebar-bg: #0d1f14;
-      --sidebar-hover: rgba(34, 197, 94, 0.10);
-      --sidebar-active-bg: rgba(34, 197, 94, 0.15);
+      --sidebar-bg: #0b1120;
+      --sidebar-hover: rgba(59, 130, 246, 0.10);
+      --sidebar-active-bg: rgba(59, 130, 246, 0.15);
       --sidebar-active-border: var(--g500);
       --sidebar-text: rgba(255, 255, 255, 0.65);
       --sidebar-text-hover: rgba(255, 255, 255, 0.95);
@@ -79,7 +79,7 @@
       --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
       --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
       --shadow-lg: 0 10px 36px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
-      --shadow-glow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+      --shadow-glow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -139,7 +139,7 @@
       opacity: 0.4;
     }
 
-    /* Green accent line on left edge */
+    /* Accent line on left edge */
     .sidebar::after {
       content: '';
       position: absolute;
@@ -147,7 +147,7 @@
       right: 0;
       width: 1px;
       height: 100%;
-      background: linear-gradient(180deg, transparent, rgba(34, 197, 94, 0.15) 30%, rgba(34, 197, 94, 0.15) 70%, transparent);
+      background: linear-gradient(180deg, transparent, rgba(59, 130, 246, 0.15) 30%, rgba(59, 130, 246, 0.15) 70%, transparent);
     }
 
     .sidebar.collapsed {
@@ -178,7 +178,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     }
 
     .brand-icon i {
@@ -1024,7 +1024,7 @@
 
     <!-- Brand -->
     <a href="{{ url_for('student.dashboard') }}" class="sidebar-brand">
-      <div class="brand-icon"><i class="fas fa-leaf"></i></div>
+      <div class="brand-icon" style="background: transparent; box-shadow: none;"><img src="{{ url_for('static', filename='img/egerton_logo.png') }}" alt="Egerton Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
       <div class="brand-text">
         <span class="brand-name">CAMS</span>
         <span class="brand-sub">Student Portal</span>
@@ -1189,6 +1189,13 @@
               <i class="fas fa-id-badge"></i> My Clubs
             </a>
           </li>
+          {% if current_user.is_authenticated and current_user.is_club_leader %}
+          <li>
+            <a class="dropdown-item" href="{{ url_for('club_leader.dashboard') }}" style="color: var(--g700);">
+              <i class="fas fa-crown" style="color: var(--amber);"></i> Club Leader Portal
+            </a>
+          </li>
+          {% endif %}
           <li>
             <hr class="dropdown-divider">
           </li>
@@ -1319,6 +1326,11 @@
           try { new bootstrap.Alert(el).close(); } catch (e) { }
         });
       }, 5000);
+
+      /* Move all modals to body to strictly bypass stacking contexts */
+      document.querySelectorAll('.modal').forEach(modal => {
+        document.body.appendChild(modal);
+      });
     })();
   </script>
 

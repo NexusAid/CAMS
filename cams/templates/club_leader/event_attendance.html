@@ -1,82 +1,121 @@
 {% extends "base/club_leader.html" %}
 {% block title %}Update Attendance | CAMS{% endblock %}
+{% block page_title %}Event Attendance{% endblock %}
 
 {% block content %}
-<div class="content-header rounded mb-4">
-    <div class="container-fluid">
-        <div class="row align-items-center">
-            <div class="col-sm-8">
-                <h1 class="m-0" style="font-family:'Outfit', sans-serif; font-weight:700;">
-                    <i class="fas fa-clipboard-check me-2 text-primary"></i> Attendance: {{ event.title }}
-                </h1>
-                <p class="text-muted mt-2 mb-0">
-                    <i class="far fa-clock me-1"></i> {{ event.date.strftime('%B %d, %Y - %I:%M %p') }}
-                </p>
-            </div>
-            <div class="col-sm-4 text-right">
-                <a href="{{ url_for('club_leader.events') }}" class="btn btn-outline-secondary rounded-pill shadow-sm px-4">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Events
-                </a>
-            </div>
-        </div>
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h3 class="fw-bold mb-0 text-dark" style="font-family:'Outfit', sans-serif;">
+            <i class="fas fa-clipboard-check text-amber me-2"></i> Attendance: {{ event.title }}
+        </h3>
+        <p class="text-muted mb-0 mt-2">
+            <span class="badge bg-light text-secondary border me-2"><i class="far fa-clock"></i> {{ event.date.strftime('%B %d, %Y - %I:%M %p') }}</span>
+            <span class="badge bg-success bg-opacity-10 text-success"><i class="fas fa-shield-halved me-1"></i> {{ event.club.name }}</span>
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('club_leader.events') }}" class="btn btn-light border fw-bold rounded-pill shadow-sm px-4">
+            <i class="fas fa-arrow-left me-2"></i> Back to Events
+        </a>
     </div>
 </div>
 
-<div class="container-fluid">
-    <div class="card shadow-sm border-0" style="border-radius:15px; overflow:hidden;">
-        <form method="POST">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="border-0 px-4 py-3" style="border-top-left-radius: 15px;">Member Name</th>
-                                <th class="border-0 py-3">Registration No.</th>
-                                <th class="border-0 py-3">Club Role</th>
-                                <th class="border-0 px-4 py-3 text-center" style="border-top-right-radius: 15px;">Attendance Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for member in members %}
-                            {% set status = attendance_map.get(member.user.id, 'absent') %}
-                            <tr>
-                                <td class="px-4 py-3 font-weight-bold text-dark">
-                                    {{ member.user.name }}
-                                </td>
-                                <td class="py-3 text-muted">
-                                    {{ member.user.registration_number or '<i class="text-black-50">Unknown</i>'|safe }}
-                                </td>
-                                <td class="py-3">
-                                    <span class="badge bg-secondary rounded-pill px-3">{{ member.role.title() }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <select name="attendance_user_{{ member.user.id }}" class="form-control form-select form-control-sm rounded-pill shadow-sm bg-white" style="width: 140px; margin: 0 auto; display: inline-block; cursor: pointer;">
-                                        <option value="attended" {% if status == 'attended' %}selected{% endif %}>🟢 Attended</option>
-                                        <option value="absent" {% if status == 'absent' %}selected{% endif %}>🔴 Absent</option>
-                                        <option value="apology" {% if status == 'apology' %}selected{% endif %}>🟠 Apology</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center py-5 text-muted">
-                                    <i class="fas fa-users-slash fa-2x mb-3" style="opacity:0.5;"></i>
-                                    <p class="mb-0">No active members found for this club.</p>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% if members %}
-            <div class="card-footer bg-light border-top-0 py-4 px-4 text-right" style="border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
-                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm font-weight-bold" style="letter-spacing:0.5px;">
-                    <i class="fas fa-save me-2"></i> Save Attendance
-                </button>
-            </div>
-            {% endif %}
-        </form>
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-white border-bottom p-4">
+        <h5 class="m-0 fw-bold text-dark">
+            <i class="fas fa-users text-muted me-2"></i> Member List
+        </h5>
     </div>
+    <form method="POST">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background-color: var(--s50); border-bottom: 2px solid var(--s200);">
+                        <tr>
+                            <th class="border-0 px-4 py-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase;">Member Name</th>
+                            <th class="border-0 py-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase;">Registration No.</th>
+                            <th class="border-0 py-3 text-muted" style="font-size: 0.85rem; text-transform: uppercase;">Club Role</th>
+                            <th class="border-0 px-4 py-3 text-center text-muted" style="font-size: 0.85rem; text-transform: uppercase;">Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        {% set status = attendance_map.get(member.user.id, 'absent') %}
+                        <tr>
+                            <td class="px-4 py-3 fw-bold text-dark">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width:36px; height:36px; border: 1px solid var(--s200);">
+                                        <span class="fw-bold text-secondary" style="font-size: 14px;">{{ member.user.first_name[0] }}{{ member.user.last_name[0] }}</span>
+                                    </div>
+                                    <span>{{ member.user.name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3 text-muted font-monospace">
+                                {{ member.user.registration_number or '<span class="text-black-50">Unknown</span>'|safe }}
+                            </td>
+                            <td class="py-3">
+                                {% if member.role in ['president', 'vice_president', 'secretary', 'treasurer'] %}
+                                    <span class="badge" style="background-color: var(--amber-l); color: var(--amber-d); padding: 5px 10px; border-radius: 20px;">
+                                        <i class="fas fa-crown me-1" style="font-size: 9px;"></i> {{ member.role|replace('_', ' ')|title }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-light text-secondary border" style="padding: 5px 10px; border-radius: 20px;">
+                                        {{ member.role|capitalize }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <select name="attendance_user_{{ member.user.id }}" class="form-select form-select-sm rounded-pill border {% if status == 'attended' %}bg-success text-white border-success{% elif status == 'apology' %}bg-warning border-warning text-dark{% else %}bg-light border-secondary text-secondary{% endif %}" style="width: 140px; margin: 0 auto; display: inline-block; cursor: pointer; font-weight: 600;" onchange="updateSelectColor(this)">
+                                    <option value="attended" {% if status == 'attended' %}selected{% endif %}>🟢 Attended</option>
+                                    <option value="absent" {% if status == 'absent' %}selected{% endif %}>🔴 Absent</option>
+                                    <option value="apology" {% if status == 'apology' %}selected{% endif %}>🟠 Apology</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 text-secondary" style="width: 70px; height: 70px; opacity:0.5;">
+                                    <i class="fas fa-users-slash fs-2"></i>
+                                </div>
+                                <h6 class="fw-bold text-dark">No Members Found</h6>
+                                <p class="text-muted mb-0">No active members are registered in this club to track attendance.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if members %}
+        <div class="card-footer bg-white border-top p-4 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" style="background-color: var(--amber-d); border: none;">
+                <i class="fas fa-save me-2"></i> Save Attendance
+            </button>
+        </div>
+        {% endif %}
+    </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateSelectColor(selectElement) {
+    const val = selectElement.value;
+    selectElement.className = "form-select form-select-sm rounded-pill border";
+    selectElement.style.width = "140px";
+    selectElement.style.margin = "0 auto";
+    selectElement.style.display = "inline-block";
+    selectElement.style.cursor = "pointer";
+    selectElement.style.fontWeight = "600";
+    
+    if (val === 'attended') {
+        selectElement.classList.add('bg-success', 'text-white', 'border-success');
+    } else if (val === 'apology') {
+        selectElement.classList.add('bg-warning', 'border-warning', 'text-dark');
+    } else {
+        selectElement.classList.add('bg-light', 'border-secondary', 'text-secondary');
+    }
+}
+</script>
 {% endblock %}

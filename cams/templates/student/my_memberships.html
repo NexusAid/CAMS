@@ -1,29 +1,151 @@
 {% extends "base/base.html" %}
-{% block title %}My Memberships{% endblock %}
-
+{% block title %}My Memberships — CAMS{% endblock %}
 {% block page_title %}My Club Memberships{% endblock %}
 
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+body { font-family: 'Nunito', sans-serif; background: var(--s50); }
+
+.page-header {
+  background: linear-gradient(135deg, var(--g900), var(--g700));
+  border-radius: 20px; padding: 2.5rem; color: white;
+  margin-bottom: 2rem; position: relative; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(6, 78, 36, 0.15);
+}
+.page-header::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(74, 222, 128, 0.2), transparent 50%);
+}
+.page-header h2 { font-family: 'Sora', sans-serif; font-weight: 800; margin: 0 0 0.5rem; position: relative; z-index: 1; }
+.page-header p { color: rgba(255,255,255,0.8); margin: 0; position: relative; z-index: 1; font-size: 1.05rem; }
+
+.membership-card {
+  background: white; border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  border: 1px solid var(--s200); padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  height: 100%; display: flex; flex-direction: column;
+}
+.membership-card:hover {
+  transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border-color: var(--g400);
+}
+
+.mc-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.mc-icon {
+  width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--g100), var(--g50));
+  color: var(--g700); display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; border: 1.5px solid var(--g200);
+}
+.mc-title-wrap { flex: 1; min-width: 0; }
+.mc-title { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.15rem; color: var(--s900); margin: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.mc-category { font-size: 0.8rem; color: var(--s500); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.mc-status-row {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+}
+.mc-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.3rem 0.8rem; border-radius: 99px;
+  font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.status-active   { background: var(--g100); color: var(--g800); }
+.status-pending  { background: #fef3c7; color: #92400e; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+.status-removed  { background: var(--s200); color: var(--s700); }
+
+.role-badge { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+.mc-action {
+  margin-top: auto; padding-top: 1.25rem; border-top: 1px dashed var(--s200);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mc-btn {
+  background: var(--s50); color: var(--s800); border: 2px solid var(--s200);
+  padding: 0.5rem 1.2rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem;
+  text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;
+  width: 100%; justify-content: center;
+}
+.mc-btn:hover { background: var(--g600); color: white; border-color: var(--g600); }
+
+.empty-state {
+  background: white; border-radius: 20px; padding: 4rem 2rem;
+  text-align: center; border: 2px dashed var(--s200);
+  margin-top: 2rem;
+}
+.empty-icon { font-size: 4rem; color: var(--s300); margin-bottom: 1.5rem; }
+.empty-title { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--s800); margin-bottom: 0.5rem; }
+.empty-text { color: var(--s500); font-size: 1rem; margin-bottom: 2rem; max-width: 400px; margin-inline: auto; }
+.btn-primary-custom {
+  background: linear-gradient(135deg, var(--g700), var(--g500)); color: white;
+  padding: 0.8rem 2rem; border-radius: 14px; font-weight: 700; border: none;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform .2s;
+}
+.btn-primary-custom:hover { transform: translateY(-2px); color: white; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    {% for membership in memberships %}
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5>{{ membership.club.name }}</h5>
-            </div>
-            <div class="card-body">
-                <p>Status: <strong>{{ membership.status|capitalize }}</strong></p>
-                <p>Role: <strong>{{ membership.role|capitalize }}</strong></p>
-                <a href="{{ url_for('student.club_details', club_id=membership.club.id) }}" class="btn btn-info btn-sm">
-                    View Club
-                </a>
-            </div>
+<div class="container-fluid pb-5 px-lg-4">
+
+  <div class="page-header">
+    <h2>My Club Memberships</h2>
+    <p>Manage the clubs you're involved in, check approval statuses, and track your active roles.</p>
+  </div>
+
+  <div class="row g-4">
+    {% for m in memberships %}
+    <div class="col-md-6 col-lg-4">
+      <div class="membership-card">
+        
+        <div class="mc-header">
+          <div class="mc-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="mc-title-wrap">
+            <h4 class="mc-title" title="{{ m.club.name }}">{{ m.club.name }}</h4>
+            <div class="mc-category">{{ m.club.category or 'General Club' }}</div>
+          </div>
         </div>
+
+        <div class="mc-status-row">
+          <span class="mc-badge status-{{ m.status }}">
+            {% if m.status == 'active' %}<i class="fas fa-check-circle"></i>
+            {% elif m.status == 'pending' %}<i class="fas fa-clock"></i>
+            {% elif m.status == 'rejected' %}<i class="fas fa-times-circle"></i>
+            {% else %}<i class="fas fa-ban"></i>{% endif %}
+            {{ m.status|capitalize }}
+          </span>
+          <span class="mc-badge role-badge">
+            <i class="fas fa-user-tag"></i> Role: {{ m.role|replace('_',' ')|capitalize }}
+          </span>
+        </div>
+
+        <div class="mc-action">
+          <a href="{{ url_for('student.club_details', club_id=m.club.id) }}" class="mc-btn">
+            View Club Detals <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+      </div>
     </div>
     {% else %}
     <div class="col-12">
-        <div class="alert alert-info">You are not a member of any club yet.</div>
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-door-open"></i></div>
+        <h3 class="empty-title">You haven't joined any clubs yet</h3>
+        <p class="empty-text">Browse our directory of clubs and societies to find your community and start your extracurricular journey.</p>
+        <a href="{{ url_for('student.list_clubs') }}" class="btn-primary-custom">
+          <i class="fas fa-search me-2"></i> Explore Clubs
+        </a>
+      </div>
     </div>
     {% endfor %}
+  </div>
+
 </div>
 {% endblock %}

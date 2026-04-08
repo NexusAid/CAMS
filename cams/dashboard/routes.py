@@ -176,6 +176,8 @@ def clubs_list():
     return render_template("clubs/list.html", clubs=clubs)
 
 
+from cams.auth.routes import generate_activation_token
+
 # =====================================================
 # ADMIN – APPROVE CLUB
 # =====================================================
@@ -216,7 +218,35 @@ CAMS Administration
 """
         )
 
-    flash("Club approved successfully.", "success")
+    # Deliver activation links to all pending interim leaders
+    pending_leaders = ClubMembership.query.filter(
+        ClubMembership.club_id == club.id,
+        ClubMembership.status == "pending",
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"])
+    ).all()
+
+    for leader_member in pending_leaders:
+        token = generate_activation_token(leader_member.id)
+        activation_link = url_for('club_leader.activate_role', token=token, _external=True)
+        send_email(
+            leader_member.user.email,
+            "CAMS - Accept Leadership Role",
+            f"""
+Hello {leader_member.user.first_name},
+
+The club '{club.name}' has been officially approved!
+
+You were nominated for the role of {leader_member.role.replace('_', ' ').title()}. 
+Please click the link below to accept your leadership position. Once accepted, you can manage the club via the Club Leader portal using your existing Student login credentials.
+
+{activation_link}
+
+Welcome aboard!
+CAMS Administration
+"""
+        )
+
+    flash("Club approved successfully. Activation instructions have been sent to interim leaders.", "success")
     return redirect(url_for("dashboard.pending_clubs"))
 
 
@@ -295,7 +325,7 @@ def edit_club(club_id):
     is_leader = ClubMembership.query.filter(
         ClubMembership.club_id == club_id,
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"])
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"])
     ).first()
 
     if not current_user.is_admin and not is_leader:
@@ -770,3 +800,82 @@ def delete_announcement(id):
     db.session.commit()
     flash("Announcement deleted.", "success")
     return redirect(url_for("dashboard.announcements"))
+
+# -------------------------------------------------
+# SYSTEM REPORTS
+# -------------------------------------------------
+@dashboard.route("/admin/reports", methods=["GET"])
+@login_required
+@admin_required
+def system_reports():
+    from datetime import datetime, timedelta
+    
+    # Get date filters from request
+    end_date_str = request.args.get("end_date")
+    start_date_str = request.args.get("start_date")
+    
+    if end_date_str:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+    else:
+        end_date = datetime.utcnow()
+        
+    if start_date_str:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+    else:
+        start_date = end_date - timedelta(days=30)
+    
+    # Make sure end_date includes the entire day
+    end_date = end_date.replace(hour=23, minute=59, second=59)
+
+    # 1. Fetch Clubs (All statuses as requested)
+    clubs = Club.query.filter(
+        Club.registration_date >= start_date,
+        Club.registration_date <= end_date
+    ).order_by(Club.registration_date.asc()).all()
+
+    # 2. Fetch Members (active members or all members? Let's just do all for timeline, but filter by join_date)
+    memberships = ClubMembership.query.filter(
+        ClubMembership.join_date >= start_date,
+        ClubMembership.join_date <= end_date
+    ).order_by(ClubMembership.join_date.asc()).all()
+
+    # Prepare timeline data (Group by Date)
+    from collections import defaultdict
+    club_timeline = defaultdict(int)
+    member_timeline = defaultdict(int)
+
+    for c in clubs:
+        if c.registration_date:
+            date_str = c.registration_date.strftime('%Y-%m-%d')
+            club_timeline[date_str] += 1
+
+    for m in memberships:
+        if m.join_date:
+            date_str = m.join_date.strftime('%Y-%m-%d')
+            member_timeline[date_str] += 1
+
+    # Generate complete list of dates between start and end
+    delta = (end_date.date() - start_date.date()).days
+    all_dates = [(start_date.date() + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(delta + 1)]
+
+    # Format data for ChartJS
+    chart_labels = all_dates
+    chart_clubs_data = [club_timeline.get(d, 0) for d in all_dates]
+    chart_members_data = [member_timeline.get(d, 0) for d in all_dates]
+
+    stats = {
+        "total_clubs_period": len(clubs),
+        "total_members_period": len(memberships),
+        "start_date": start_date.strftime('%Y-%m-%d'),
+        "end_date": end_date.strftime('%Y-%m-%d')
+    }
+
+    return render_template(
+        "admin/reports.html",
+        stats=stats,
+        clubs=clubs,
+        memberships=memberships,
+        chart_labels=chart_labels,
+        chart_clubs_data=chart_clubs_data,
+        chart_members_data=chart_members_data
+    )

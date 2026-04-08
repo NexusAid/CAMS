@@ -1,0 +1,37 @@
+{% extends "base/auth_base.html" %}
+
+{% block title %}Activate Leadership Role - CAMS{% endblock %}
+
+{% block auth_content %}
+<h2 class="auth-form-title">Leadership Activation</h2>
+<div class="auth-form-subtitle">Accept your new position in the club.</div>
+
+<div class="card bg-transparent border shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+            <div class="flex-shrink-0">
+                <i class="fas fa-crown fa-2x text-warning"></i>
+            </div>
+            <div class="flex-grow-1 ms-3 text-start">
+                <h5 class="mb-1 fw-bold" style="color: var(--g900);">{{ membership.club.name }}</h5>
+                <p class="mb-0 text-muted" style="font-size: 0.9rem;">
+                    Role: <span class="badge text-bg-primary">{{ membership.role.replace('_', ' ').title() }}</span>
+                </p>
+            </div>
+        </div>
+        <p class="text-muted small text-start mb-0">
+            By accepting, you confirm that you will discharge the duties of your office and manage the club via the Club Leader portal.
+        </p>
+    </div>
+</div>
+
+<form method="POST" action="">
+    <button type="submit" class="btn-auth"><i class="fas fa-check-circle me-2"></i> Accept Role</button>
+</form>
+
+<div class="auth-links">
+    <a href="{{ url_for('home') }}" class="d-inline-flex align-items-center mt-4">
+        <i class="fas fa-arrow-left me-2"></i> Back to Portal
+    </a>
+</div>
+{% endblock %}

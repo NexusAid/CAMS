@@ -20,7 +20,7 @@ def club_leader_required():
 
     leadership = ClubMembership.query.filter(
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).first()
 
@@ -29,6 +29,34 @@ def club_leader_required():
         return redirect(url_for("main.index"))
 
     return None
+
+# -------------------------------------------------
+# ACTIVATE LEADERSHIP ROLE
+# -------------------------------------------------
+from cams.auth.routes import verify_activation_token, generate_reset_token, verify_reset_token
+from cams.utils.email_service import send_email
+
+@club_leader.route("/activate/<token>", methods=["GET", "POST"])
+def activate_role(token):
+    membership_id = verify_activation_token(token)
+    
+    if not membership_id:
+        flash("The activation link is invalid or has expired.", "danger")
+        return redirect(url_for("club_leader.login"))
+        
+    membership = ClubMembership.query.get(membership_id)
+    
+    if not membership or membership.status != "pending":
+        flash("This leadership role has already been activated or is no longer valid.", "warning")
+        return redirect(url_for("club_leader.login"))
+        
+    if request.method == "POST":
+        membership.status = "active"
+        db.session.commit()
+        flash("Your leadership role has been successfully activated! You can now log into the Club Leader portal.", "success")
+        return redirect(url_for("club_leader.login"))
+        
+    return render_template("club_leader/activate.html", membership=membership)
 
 
 # -------------------------------------------------
@@ -53,7 +81,7 @@ def login():
 
         leader_membership = ClubMembership.query.filter(
             ClubMembership.user_id == user.id,
-            ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+            ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
             ClubMembership.status == "active"
         ).first()
 
@@ -69,6 +97,90 @@ def login():
 
 
 # -------------------------------------------------
+# FORGOT PASSWORD
+# -------------------------------------------------
+@club_leader.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+
+    if current_user.is_authenticated:
+        return redirect(url_for("club_leader.dashboard"))
+
+    if request.method == "POST":
+
+        email = request.form.get("email")
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            flash("If the email is registered and associated with a club leader account, a password reset link has been sent.", "info")
+            return redirect(url_for("club_leader.login"))
+
+        leader_membership = ClubMembership.query.filter(
+            ClubMembership.user_id == user.id,
+            ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
+            ClubMembership.status == "active"
+        ).first()
+
+        if not leader_membership:
+            flash("If the email is registered and associated with a club leader account, a password reset link has been sent.", "info")
+            return redirect(url_for("club_leader.login"))
+
+        token = generate_reset_token(email)
+
+        reset_link = url_for("club_leader.reset_password", token=token, _external=True)
+
+        subject = "CAMS Club Leader - Reset Your Password"
+
+        body = f"Hello {user.first_name},\n\nYou requested to reset your password for your Club Leader account.\n\nClick the link below to reset it:\n\n{reset_link}\n\nThis link will expire in 1 hour.\n\nIf you did not request this, please ignore this email.\n\nCAMS System"
+
+        try:
+            send_email(email, subject, body)
+        except Exception:
+            pass
+
+        flash("If the email is registered and associated with a club leader account, a password reset link has been sent.", "success")
+
+        return redirect(url_for("club_leader.login"))
+
+    return render_template("club_leader/forgot_password.html")
+
+
+# -------------------------------------------------
+# RESET PASSWORD
+# -------------------------------------------------
+@club_leader.route("/reset_password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+
+    if current_user.is_authenticated:
+        return redirect(url_for("club_leader.dashboard"))
+
+    email = verify_reset_token(token)
+
+    if not email:
+        flash("Invalid or expired reset link", "danger")
+        return redirect(url_for("club_leader.forgot_password"))
+
+    if request.method == "POST":
+
+        password = request.form.get("password")
+
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            if user.check_password_reuse(password):
+                flash("You cannot reuse a previous password.", "danger")
+                return redirect(url_for("club_leader.reset_password", token=token))
+
+            user.set_password(password)
+            db.session.commit()
+
+            flash("Password updated successfully. Please login.", "success")
+            return redirect(url_for("club_leader.login"))
+            
+    return render_template("club_leader/reset_password.html", token=token)
+
+
+# -------------------------------------------------
 # DASHBOARD
 # -------------------------------------------------
 @club_leader.route("/dashboard")
@@ -77,7 +189,7 @@ def dashboard():
 
     leaderships = ClubMembership.query.filter(
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).all()
 
@@ -117,7 +229,7 @@ def approve_member(id):
     is_leader = ClubMembership.query.filter(
         ClubMembership.club_id == membership.club_id,
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).first()
 
@@ -158,7 +270,7 @@ def reject_member(id):
     is_leader = ClubMembership.query.filter(
         ClubMembership.club_id == membership.club_id,
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).first()
 
@@ -204,7 +316,7 @@ def remove_member(id):
     is_leader = ClubMembership.query.filter(
         ClubMembership.club_id == membership.club_id,
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).first()
 
@@ -245,7 +357,7 @@ def members():
 
     leaderships = ClubMembership.query.filter(
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).all()
 
@@ -275,7 +387,7 @@ def events():
 
     leaderships = ClubMembership.query.filter(
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).all()
 
@@ -317,7 +429,7 @@ def event_attendance(event_id):
     is_leader = ClubMembership.query.filter(
         ClubMembership.club_id == event.club_id,
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).first()
     if not is_leader:
@@ -382,7 +494,7 @@ def create_event():
 
     leaderships = ClubMembership.query.filter(
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).all()
 
@@ -455,12 +567,91 @@ def create_event():
 @club_leader.route("/reports")
 @login_required
 def reports():
-
+    from cams.models import Club, ClubMembership, Event, Attendance
+    
     denied = club_leader_required()
     if denied:
         return denied
 
-    return render_template("club_leader/reports.html")
+    leaderships = ClubMembership.query.filter(
+        ClubMembership.user_id == current_user.id,
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).all()
+
+    if not leaderships:
+        flash("You do not have any active leadership roles.", "warning")
+        return redirect(url_for("club_leader.dashboard"))
+
+    selected_club_id = request.args.get('club_id', type=int)
+    if not selected_club_id:
+        selected_club_id = leaderships[0].club_id
+
+    if not any(lead.club_id == selected_club_id for lead in leaderships):
+        flash("Unauthorized club access.", "danger")
+        return redirect(url_for('club_leader.reports'))
+    
+    club = Club.query.get_or_404(selected_club_id)
+
+    # Membership stats
+    members = ClubMembership.query.filter_by(club_id=club.id).all()
+    active_members = sum(1 for m in members if m.status == "active")
+    pending_members = sum(1 for m in members if m.status == "pending")
+    rejected_members = sum(1 for m in members if m.status == "rejected")
+    inactive_members = sum(1 for m in members if m.status == "inactive")
+
+    # Event stats
+    now = datetime.utcnow()
+    events = Event.query.filter_by(club_id=club.id).all()
+    total_events = len(events)
+    upcoming_events = [e for e in events if (e.end_date or e.date) >= now]
+    past_events = [e for e in events if (e.end_date or e.date) < now]
+    
+    # Sort past events by date descending to get recent 5
+    recent_past_events = sorted(past_events, key=lambda x: x.date, reverse=True)[:5]
+    
+    event_stats = []
+    total_attended = 0
+    total_attendance_records = 0
+
+    for ev in recent_past_events:
+        records = Attendance.query.filter_by(event_id=ev.id).all()
+        attended = sum(1 for r in records if r.status == "attended")
+        absent = sum(1 for r in records if r.status == "absent")
+        apology = sum(1 for r in records if r.status == "apology")
+        total_for_ev = len(records)
+        rate = (attended / total_for_ev * 100) if total_for_ev > 0 else 0
+        
+        event_stats.append({
+            'event': ev,
+            'attended': attended,
+            'absent': absent,
+            'apology': apology,
+            'rate': rate,
+            'total': total_for_ev
+        })
+        
+        total_attended += attended
+        total_attendance_records += total_for_ev
+
+    overall_attendance_rate = (total_attended / total_attendance_records * 100) if total_attendance_records > 0 else 0
+
+    return render_template(
+        "club_leader/reports.html",
+        leaderships=leaderships,
+        selected_club=club,
+        stats={
+            'active_members': active_members,
+            'pending_members': pending_members,
+            'rejected_members': rejected_members,
+            'inactive_members': inactive_members,
+            'total_events': total_events,
+            'upcoming_events': len(upcoming_events),
+            'past_events': len(past_events),
+            'overall_attendance_rate': overall_attendance_rate
+        },
+        recent_event_stats=event_stats
+    )
 
 # -------------------------------------------------
 # DOCUMENTS
@@ -479,7 +670,7 @@ def documents():
 
     leaderships = ClubMembership.query.filter(
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).all()
 
@@ -498,8 +689,14 @@ def documents():
     club = Club.query.get_or_404(selected_club_id)
 
     if request.method == "POST":
+        # Update Description if provided
+        new_desc = request.form.get("description")
+        if new_desc is not None:
+            club.description = new_desc
+
         upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'documents')
         os.makedirs(upload_dir, exist_ok=True)
+
         
         for doc_type in ['constitution', 'minutes', 'patron_letter', 'rules']:
             if doc_type in request.files:
@@ -522,7 +719,7 @@ def documents():
                         club.has_rules = True
                         
         db.session.commit()
-        flash("Documents uploaded successfully.", "success")
+        flash("Club profile and documents updated successfully.", "success")
         return redirect(url_for('club_leader.documents', club_id=club.id))
 
     return render_template("club_leader/documents.html", leaderships=leaderships, selected_club=club)
@@ -583,7 +780,7 @@ def surveys():
     
     leaderships = ClubMembership.query.filter(
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).all()
     club_ids = [lead.club_id for lead in leaderships]
@@ -623,7 +820,7 @@ def view_survey(id):
     is_leader = ClubMembership.query.filter(
         ClubMembership.club_id == survey.club_id,
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).first()
     
@@ -645,7 +842,7 @@ def toggle_survey(id):
     is_leader = ClubMembership.query.filter(
         ClubMembership.club_id == survey.club_id,
         ClubMembership.user_id == current_user.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).first()
     

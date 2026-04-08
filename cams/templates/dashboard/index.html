@@ -7,24 +7,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
   /* ── TOKENS ─────────────────────────────────────────────── */
-  :root {
-    --g900: #052e16; --g800: #064e24; --g700: #065f33;
-    --g600: #16a34a; --g500: #22c55e; --g400: #4ade80;
-    --g300: #86efac; --g100: #dcfce7; --g50:  #f0fdf4;
 
-    --s900: #0f172a; --s800: #1e293b; --s700: #334155;
-    --s500: #64748b; --s300: #cbd5e1; --s200: #e2e8f0;
-    --s100: #f1f5f9; --s50:  #f8fafc;
-
-    --amber: #f59e0b; --amber-bg: #fef3c7;
-    --red:   #ef4444; --red-bg:   #fee2e2;
-    --blue:  #3b82f6; --blue-bg:  #dbeafe;
-    --teal:  #14b8a6; --teal-bg:  #ccfbf1;
-
-    --radius: 14px;
-    --shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
-    --shadow-hover: 0 8px 28px rgba(0,0,0,.11), 0 2px 8px rgba(0,0,0,.06);
-  }
 
   body { background: #f0f4f0; font-family: 'DM Sans', sans-serif; }
 
@@ -692,8 +675,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const PALETTE = [
-  '#065f33','#16a34a','#22c55e','#4ade80','#86efac',
-  '#14b8a6','#0d9488','#3b82f6','#f59e0b','#ef4444',
+  '#312e81','#3730a3','#4338ca','#4f46e5','#6366f1',
+  '#818cf8','#a5b4fc','#c7d2fe','#e0e7ff','#3b82f6',
 ];
 
 // Members Line Chart
@@ -705,10 +688,10 @@ new Chart(document.getElementById('membersChart').getContext('2d'), {
       label: 'New Members',
       data: {{ monthly_members | tojson }},
       fill: true,
-      backgroundColor: 'rgba(34,197,94,.07)',
-      borderColor: '#16a34a',
+      backgroundColor: 'rgba(99,102,241,.07)',
+      borderColor: '#4f46e5',
       borderWidth: 2.5,
-      pointBackgroundColor: '#16a34a',
+      pointBackgroundColor: '#4f46e5',
       pointBorderColor: '#fff',
       pointBorderWidth: 2,
       pointRadius: 5,

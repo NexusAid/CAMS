@@ -1,153 +1,219 @@
 {% extends "base/club_leader.html" %}
 {% block title %}Events | CAMS{% endblock %}
+{% block page_title %}Event Management{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    .nav-pills .nav-link.active {
-        background-color: var(--g800) !important;
-        color: #fff !important;
-    }
     .nav-pills .nav-link {
-        color: var(--g800);
+        color: var(--s600);
         font-weight: 600;
+        border-radius: 50px;
+        padding: 8px 20px;
+        transition: all 0.2s;
+    }
+    .nav-pills .nav-link:hover {
+        background-color: var(--s100);
+        color: var(--s800);
+    }
+    .nav-pills .nav-link.active {
+        background-color: var(--amber) !important;
+        color: #fff !important;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .event-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid var(--s200);
+    }
+    .event-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--amber-d);
+    }
+    .event-img-wrapper {
+        height: 180px;
+        overflow: hidden;
+        position: relative;
+        background-color: var(--s100);
+    }
+    .event-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+    .event-card:hover .event-img {
+        transform: scale(1.05);
+    }
+    
+    .past-event {
+        opacity: 0.9;
+    }
+    .past-event .event-img {
+        filter: grayscale(80%) sepia(10%);
     }
 </style>
+{% endblock %}
 
-<div class="content-header rounded mb-4">
-    <div class="container-fluid">
-        <div class="row align-items-center">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-calendar-alt me-2"></i> Club Events
-                </h1>
-            </div>
-            <div class="col-sm-6 text-right">
-                <a href="{{ url_for('club_leader.create_event') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                    <i class="fas fa-plus"></i> Create New Event
-                </a>
-            </div>
-        </div>
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-calendar-alt text-amber me-2"></i> Club Events</h3>
+        <p class="text-muted mb-0 mt-1">Manage upcoming schedules and track past event attendance</p>
+    </div>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('club_leader.create_event') }}" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" style="background-color: var(--amber-d); border: none;">
+            <i class="fas fa-plus me-2"></i> Create New Event
+        </a>
     </div>
 </div>
 
-<div class="container-fluid">
-    <div class="col-12">
-        <ul class="nav nav-pills mb-4 shadow-sm bg-white p-2 rounded-pill d-inline-flex" id="eventsTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active rounded-pill px-4" id="upcoming-tab" data-bs-toggle="pill" data-bs-target="#upcoming" type="button" role="tab">
-                    <i class="fas fa-calendar-plus me-2"></i>Upcoming Events
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-pill px-4" id="past-tab" data-bs-toggle="pill" data-bs-target="#past" type="button" role="tab">
-                    <i class="fas fa-history me-2"></i>Past Events
-                </button>
-            </li>
-        </ul>
+<div class="mb-5">
+    <ul class="nav nav-pills mb-4 d-inline-flex bg-white p-1 rounded-pill shadow-sm" id="eventsTab" role="tablist" style="border: 1px solid var(--s200);">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="upcoming-tab" data-bs-toggle="pill" data-bs-target="#upcoming" type="button" role="tab">
+                <i class="fas fa-calendar-day me-2"></i> Upcoming
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="past-tab" data-bs-toggle="pill" data-bs-target="#past" type="button" role="tab">
+                <i class="fas fa-clock-rotate-left me-2"></i> Past Events
+            </button>
+        </li>
+    </ul>
 
-        <div class="tab-content" id="eventsTabContent">
-            <!-- UPCOMING EVENTS -->
-            <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
-                <div class="row">
-                    {% for event in upcoming_events %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100 shadow-sm border-0" style="border-radius:15px; overflow:hidden;">
-                            {% if event.image_path %}
-                            <div style="height:180px; overflow:hidden;">
-                                <img src="{{ url_for('static', filename=event.image_path) }}" alt="{{ event.title }}" style="width:100%; height:100%; object-fit:cover;">
+    <div class="tab-content" id="eventsTabContent">
+        <!-- UPCOMING EVENTS -->
+        <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
+            <div class="row g-4">
+                {% for event in upcoming_events %}
+                <div class="col-xl-4 col-md-6">
+                    <div class="card event-card h-100 bg-white rounded-4 overflow-hidden">
+                        {% if event.image_path %}
+                        <div class="event-img-wrapper">
+                            <img src="{{ url_for('static', filename=event.image_path) }}" alt="{{ event.title }}" class="event-img">
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill fw-bold">
+                                    {{ event.date.strftime('%b %d') }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="mb-3">
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold" style="font-size: 0.75rem;">
+                                    <i class="fas fa-shield-halved me-1"></i> {{ event.club.name }}
+                                </span>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-3">{{ event.title }}</h5>
+                            
+                            <div class="d-flex align-items-center mb-2 text-muted small">
+                                <div class="bg-light rounded p-2 me-3 text-center" style="width: 32px; flex-shrink: 0;">
+                                    <i class="far fa-clock text-primary"></i>
+                                </div>
+                                <span class="fw-medium">
+                                    {{ event.date.strftime('%I:%M %p') }}
+                                    {% if event.end_date %} - {{ event.end_date.strftime('%I:%M %p') }}{% endif %}
+                                </span>
+                            </div>
+                            
+                            {% if event.location %}
+                            <div class="d-flex align-items-center mb-3 text-muted small">
+                                <div class="bg-light rounded p-2 me-3 text-center" style="width: 32px; flex-shrink: 0;">
+                                    <i class="fas fa-location-dot text-danger"></i>
+                                </div>
+                                <span class="fw-medium text-truncate">{{ event.location }}</span>
                             </div>
                             {% endif %}
-                            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-                                <span class="badge" style="background-color:#dcfce7; color:#16a34a; font-weight:600; padding:6px 12px; border-radius:20px; font-size:12px;">
-                                    <i class="fas fa-shield-alt me-1"></i> {{ event.club.name }}
-                                </span>
-                                <h5 class="card-title font-weight-bold mt-3 mb-0" style="font-family:'Outfit', sans-serif;">{{ event.title }}</h5>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-muted small mb-2">
-                                    <i class="far fa-clock me-1"></i> {{ event.date.strftime('%d %b %Y, %I:%M %p') }} 
-                                    {% if event.end_date %}
-                                        - {{ event.end_date.strftime('%I:%M %p') }}
-                                    {% endif %}
-                                </p>
-                                {% if event.location %}
-                                <p class="text-muted small mb-3">
-                                    <i class="fas fa-map-marker-alt me-1"></i> {{ event.location }}
-                                </p>
-                                {% endif %}
-                                <p class="card-text text-secondary" style="font-size:14px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
-                                    {{ event.description }}
-                                </p>
-                            </div>
-                            <div class="card-footer bg-white border-top-0 pb-4">
-                                <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill font-weight-bold" disabled>
-                                    <i class="fas fa-clock me-1"></i> Starts {{ event.date.strftime('%b %d') }}
+                            
+                            <p class="text-muted small mt-2 mb-4" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ event.description }}
+                            </p>
+                            
+                            <div class="mt-auto">
+                                <button class="btn btn-light border w-100 rounded-pill fw-bold text-muted disabled">
+                                    Waiting for Date
                                 </button>
                             </div>
                         </div>
                     </div>
-                    {% else %}
-                    <div class="col-12">
-                        <div class="text-center p-5 bg-white rounded shadow-sm" style="border-radius:15px !important;">
-                            <i class="far fa-calendar-times text-secondary mb-3" style="font-size:3rem; opacity:0.5;"></i>
-                            <h5 class="font-weight-bold text-secondary">No Upcoming Events</h5>
-                            <p class="text-muted">You haven't scheduled any future events for your clubs yet.</p>
-                            <a href="{{ url_for('club_leader.create_event') }}" class="btn btn-primary rounded-pill mt-2 px-4 shadow-sm">
-                                <i class="fas fa-plus"></i> Create Event Now
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 text-center p-5">
+                        <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="far fa-calendar-xmark text-secondary fs-1 opacity-50"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">No Upcoming Events</h4>
+                        <p class="text-muted mb-4">You haven't scheduled any future events for your clubs yet.</p>
+                        <a href="{{ url_for('club_leader.create_event') }}" class="btn btn-primary rounded-pill px-4 fw-bold mx-auto" style="background-color: var(--amber-d); border: none;">
+                            <i class="fas fa-plus me-2"></i> Plan an Event
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
+        </div>
 
-            <!-- PAST EVENTS -->
-            <div class="tab-pane fade" id="past" role="tabpanel">
-                <div class="row">
-                    {% for event in past_events %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100 shadow-sm border-0" style="border-radius:15px; overflow:hidden; opacity: 0.95;">
-                            {% if event.image_path %}
-                            <div style="height:180px; overflow:hidden; filter: grayscale(40%);">
-                                <img src="{{ url_for('static', filename=event.image_path) }}" alt="{{ event.title }}" style="width:100%; height:100%; object-fit:cover;">
+        <!-- PAST EVENTS -->
+        <div class="tab-pane fade" id="past" role="tabpanel">
+            <div class="row g-4">
+                {% for event in past_events %}
+                <div class="col-xl-4 col-md-6">
+                    <div class="card event-card past-event h-100 bg-white rounded-4 overflow-hidden bg-white">
+                        {% if event.image_path %}
+                        <div class="event-img-wrapper">
+                            <img src="{{ url_for('static', filename=event.image_path) }}" alt="{{ event.title }}" class="event-img">
+                            <div class="position-absolute top-0 end-0 m-3 overlay-badge">
+                                <span class="badge bg-dark text-white shadow-sm px-3 py-2 rounded-pill fw-bold">
+                                    {{ event.date.strftime('%b %Y') }}
+                                </span>
                             </div>
-                            {% endif %}
-                            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-                                <span class="badge" style="background-color:#f1f5f9; color:#64748b; font-weight:600; padding:6px 12px; border-radius:20px; font-size:12px;">
+                        </div>
+                        {% endif %}
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="mb-3">
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2 fw-bold" style="font-size: 0.75rem;">
                                     <i class="fas fa-history me-1"></i> {{ event.club.name }}
                                 </span>
-                                <h5 class="card-title font-weight-bold mt-3 mb-0" style="font-family:'Outfit', sans-serif;">{{ event.title }}</h5>
                             </div>
-                            <div class="card-body">
-                                <p class="text-muted small mb-2">
-                                    <i class="far fa-clock me-1"></i> {{ event.date.strftime('%d %b %Y') }}
-                                </p>
-                                {% if event.location %}
-                                <p class="text-muted small mb-3">
-                                    <i class="fas fa-map-marker-alt me-1"></i> {{ event.location }}
-                                </p>
-                                {% endif %}
-                                <p class="card-text text-secondary" style="font-size:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                                    {{ event.description }}
-                                </p>
+                            <h5 class="fw-bold text-dark mb-3">{{ event.title }}</h5>
+                            
+                            <div class="d-flex align-items-center mb-2 text-muted small">
+                                <div class="bg-light rounded p-2 me-3 text-center" style="width: 32px; flex-shrink: 0;">
+                                    <i class="far fa-clock"></i>
+                                </div>
+                                <span class="fw-medium">{{ event.date.strftime('%d %b %Y') }}</span>
                             </div>
-                            <div class="card-footer bg-light border-top-0 pb-4 pt-3">
-                                <a href="{{ url_for('club_leader.event_attendance', event_id=event.id) }}" class="btn btn-sm btn-primary w-100 rounded-pill font-weight-bold shadow-sm">
-                                    <i class="fas fa-clipboard-check me-1"></i> Manage Attendance
+                            
+                            {% if event.location %}
+                            <div class="d-flex align-items-center mb-3 text-muted small">
+                                <div class="bg-light rounded p-2 me-3 text-center" style="width: 32px; flex-shrink: 0;">
+                                    <i class="fas fa-location-dot"></i>
+                                </div>
+                                <span class="fw-medium text-truncate">{{ event.location }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mt-auto pt-3 border-top">
+                                <a href="{{ url_for('club_leader.event_attendance', event_id=event.id) }}" class="btn btn-outline-primary w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2">
+                                    <i class="fas fa-clipboard-check"></i> Manage Attendance
                                 </a>
                             </div>
                         </div>
                     </div>
-                    {% else %}
-                    <div class="col-12">
-                        <div class="text-center p-5 bg-white rounded shadow-sm" style="border-radius:15px !important;">
-                            <i class="fas fa-history text-secondary mb-3" style="font-size:3rem; opacity:0.3;"></i>
-                            <h5 class="font-weight-bold text-secondary">No Past Events</h5>
-                            <p class="text-muted">Your clubs have no history of past events.</p>
-                        </div>
-                    </div>
-                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 text-center p-5">
+                        <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-history text-secondary fs-1 opacity-50"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">No Past Events</h4>
+                        <p class="text-muted">Your clubs have no history of past events recorded in the system.</p>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>

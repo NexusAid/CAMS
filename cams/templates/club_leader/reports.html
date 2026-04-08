@@ -1,12 +1,288 @@
 {% extends "base/club_leader.html" %}
 {% block title %}Reports | CAMS{% endblock %}
+{% block page_title %}Analytics & Reports{% endblock %}
 
 {% block content %}
-<h3 class="mb-3">
-    <i class="fas fa-chart-bar me-2"></i> Reports
-</h3>
-
-<div class="alert alert-secondary">
-    Reports and analytics will appear here.
+<!-- Header & Actions -->
+<div class="row mb-4 align-items-center d-print-none">
+    <div class="col-md-6">
+        <h3 class="fw-bold mb-0 text-dark" style="font-family: 'Outfit', sans-serif;"><i class="fas fa-chart-pie text-amber me-2"></i> Club Analytics</h3>
+        <p class="text-muted mb-0 mt-1">Review club performance, membership growth, and engagement statistics</p>
+    </div>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <!-- Optional Club Selector -->
+        {% if leaderships|length > 1 %}
+        <form action="{{ url_for('club_leader.reports') }}" method="GET" class="d-inline-block me-2 border bg-white rounded-pill pe-3 p-1">
+            <select name="club_id" class="form-select form-select-sm border-0 bg-transparent fw-bold text-dark d-inline-block w-auto shadow-none" onchange="this.form.submit()">
+                {% for lead in leaderships %}
+                <option value="{{ lead.club_id }}" {% if selected_club.id == lead.club_id %}selected{% endif %}>
+                    {{ lead.club.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+        <button onclick="window.print()" class="btn btn-dark shadow-sm rounded-pill px-4 fw-bold" style="font-family: 'Outfit', sans-serif;">
+            <i class="fas fa-print me-2"></i> Print Report
+        </button>
+    </div>
 </div>
+
+<!-- Print-only Title -->
+<div class="d-none d-print-block mb-4 border-bottom pb-3">
+    <h2 class="fw-bold text-dark font-outfit">{{ selected_club.name }}</h2>
+    <p class="text-muted">Analytics & Performance Report - Generated automatically</p>
+</div>
+
+<!-- Members KPIs -->
+<h5 class="fw-bold text-secondary mb-3 mt-4 text-uppercase fw-bolder tracking-wider" style="letter-spacing: 1px; font-size: 0.85rem;">Membership Statistics</h5>
+<div class="row g-4 mb-5">
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden relative group transition-all" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+            <div class="card-body p-4 position-relative">
+                <p class="mb-1 fw-bold opacity-75 small text-uppercase" style="letter-spacing: 1px;">Active Members</p>
+                <h2 class="mb-0 fw-bold" style="font-family: 'Outfit', sans-serif; font-size: 2.5rem;">{{ stats.active_members }}</h2>
+                <i class="fas fa-users position-absolute opacity-25" style="right: -10px; bottom: -10px; font-size: 5rem;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-4 transition-all hover-lift">
+            <p class="text-muted mb-1 fw-bold small text-uppercase" style="letter-spacing: 1px;">Pending Join Requests</p>
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                    <i class="fas fa-user-clock fs-5"></i>
+                </div>
+                <h3 class="mb-0 fw-bold text-dark fs-1" style="font-family: 'Outfit', sans-serif;">{{ stats.pending_members }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-4 transition-all hover-lift">
+            <p class="text-muted mb-1 fw-bold small text-uppercase" style="letter-spacing: 1px;">Inactive Members</p>
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-secondary bg-opacity-10 text-secondary d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                    <i class="fas fa-user-slash fs-5"></i>
+                </div>
+                <h3 class="mb-0 fw-bold text-dark fs-1" style="font-family: 'Outfit', sans-serif;">{{ stats.inactive_members }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-4 transition-all hover-lift">
+            <p class="text-muted mb-1 fw-bold small text-uppercase" style="letter-spacing: 1px;">Rejected Requests</p>
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                    <i class="fas fa-user-times fs-5"></i>
+                </div>
+                <h3 class="mb-0 fw-bold text-dark fs-1" style="font-family: 'Outfit', sans-serif;">{{ stats.rejected_members }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-5 d-print-none">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-dark mb-4 px-1 border-start border-3 border-success ps-3" style="font-family: 'Outfit', sans-serif;">Membership Breakdown</h6>
+                <div style="position: relative; height: 260px; width: 100%; display: flex; justify-content: center;">
+                    <canvas id="membersChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-dark mb-4 px-1 border-start border-3 border-primary ps-3" style="font-family: 'Outfit', sans-serif;">Attendance Trends (Recent Events)</h6>
+                {% if recent_event_stats %}
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="eventsChart"></canvas>
+                </div>
+                {% else %}
+                <div class="text-center p-5 text-muted h-100 d-flex flex-column justify-content-center align-items-center">
+                    <i class="fas fa-chart-bar fs-2 opacity-25 mb-3"></i>
+                    <p class="mb-0">No event data to display yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Events KPIs -->
+<h5 class="fw-bold text-secondary mb-3 text-uppercase fw-bolder tracking-wider" style="letter-spacing: 1px; font-size: 0.85rem;">Event Performance</h5>
+<div class="row g-4 mb-4">
+    <!-- Events Summary -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+            <div class="card-body p-4 d-flex flex-column">
+                <h6 class="fw-bold text-dark mb-4 px-1 border-start border-3 border-primary ps-3" style="font-family: 'Outfit', sans-serif;">Event Totals</h6>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3">
+                    <span class="text-muted fw-bold"><i class="fas fa-calendar-alt text-primary me-2"></i> Upcoming Events</span>
+                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ stats.upcoming_events }}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded-3 mb-4">
+                    <span class="text-muted fw-bold"><i class="fas fa-history text-secondary me-2"></i> Past Events</span>
+                    <span class="badge bg-secondary rounded-pill px-3 py-2">{{ stats.past_events }}</span>
+                </div>
+
+                <div class="p-4 bg-primary bg-opacity-10 rounded-4 text-center mt-auto border border-primary border-opacity-25">
+                    <p class="text-primary fw-bold text-uppercase small mb-1">Average Attendance Rate</p>
+                    <h2 class="text-primary mb-0 fw-bold" style="font-family: 'Outfit', sans-serif;">{{ "%.1f"|format(stats.overall_attendance_rate) }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Event Stats -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-dark mb-4 px-1 border-start border-3 border-danger ps-3" style="font-family: 'Outfit', sans-serif;">Recent Event Attendance</h6>
+                
+                {% if recent_event_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase">
+                                <tr>
+                                    <th class="py-3 rounded-start-3 ps-4">Event Name</th>
+                                    <th class="py-3 text-center">Date</th>
+                                    <th class="py-3 text-center">Attendance %</th>
+                                    <th class="py-3 text-center rounded-end-3">Breakdown</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for estats in recent_event_stats %}
+                                <tr class="border-bottom">
+                                    <td class="py-3 ps-4 fw-bold text-dark">{{ estats.event.title }}</td>
+                                    <td class="py-3 text-muted text-center small">{{ estats.event.date.strftime('%b %d, %Y') }}</td>
+                                    <td class="py-3 text-center">
+                                        <span class="badge {% if estats.rate >= 75 %}bg-success{% elif estats.rate >= 50 %}bg-warning{% else %}bg-danger{% endif %} rounded-pill px-3 py-2">
+                                            {{ "%.0f"|format(estats.rate) }}%
+                                        </span>
+                                    </td>
+                                    <td class="py-3 text-center">
+                                        <span class="text-success fw-bold me-2" title="Attended"><i class="fas fa-check-circle"></i> {{ estats.attended }}</span>
+                                        <span class="text-danger fw-bold me-2" title="Absent"><i class="fas fa-times-circle"></i> {{ estats.absent }}</span>
+                                        <span class="text-warning fw-bold" title="Apology"><i class="fas fa-envelope"></i> {{ estats.apology }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center p-5 text-muted">
+                        <i class="fas fa-search fs-1 opacity-25 mb-3"></i>
+                        <h5 class="fw-bold text-dark" style="font-family: 'Outfit', sans-serif;">No Past Events</h5>
+                        <p>Attendance records will appear here once you hold an event and mark its attendance.</p>
+                        <a href="{{ url_for('club_leader.create_event') }}" class="btn btn-outline-primary rounded-pill mt-2">Create an Event</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Clean printing */
+    @media print {
+        body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .sidebar, .main-header, .main-sidebar, nav, .d-print-none { display: none !important; }
+        .content-wrapper { margin-left: 0 !important; padding: 0 !important; background: white !important; }
+        .card { box-shadow: none !important; border: 1px solid #e9ecef !important; }
+        .hover-lift { transform: none !important; }
+    }
+    .hover-lift:hover { transform: translateY(-5px); transition: transform 0.3s ease; }
+    .transition-all { transition: all 0.3s ease; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // --- Member Doughnut Chart ---
+        const memberStats = [
+            {{ stats.active_members }}, 
+            {{ stats.pending_members }}, 
+            {{ stats.inactive_members }}, 
+            {{ stats.rejected_members }}
+        ];
+        
+        // Only draw chart if there's at least one member
+        if (memberStats.reduce((a,b) => a + b, 0) > 0) {
+            const ctxMembers = document.getElementById('membersChart').getContext('2d');
+            new Chart(ctxMembers, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active', 'Pending', 'Inactive', 'Rejected'],
+                    datasets: [{
+                        data: memberStats,
+                        backgroundColor: ['#10b981', '#f59e0b', '#64748b', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                    }
+                }
+            });
+        }
+
+        // --- Events Bar Chart ---
+        {% if recent_event_stats %}
+        const eventLabels = [
+            {% for estats in recent_event_stats|reverse %}
+                "{{ estats.event.title[:15] ~ '...' if estats.event.title|length > 15 else estats.event.title }}",
+            {% endfor %}
+        ];
+        const eventRates = [
+            {% for estats in recent_event_stats|reverse %} {{ "%.1f"|format(estats.rate) }}, {% endfor %}
+        ];
+        
+        const ctxEvents = document.getElementById('eventsChart').getContext('2d');
+        new Chart(ctxEvents, {
+            type: 'bar',
+            data: {
+                labels: eventLabels,
+                datasets: [{
+                    label: 'Attendance Rate (%)',
+                    data: eventRates,
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    hoverBackgroundColor: 'rgba(59, 130, 246, 1)',
+                    borderRadius: 6,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100,
+                        grid: { borderDash: [4, 4] },
+                        ticks: { stepSize: 20 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
 {% endblock %}

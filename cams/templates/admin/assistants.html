@@ -1,170 +1,242 @@
 {% extends "base/admin_base.html" %}
 {% block title %}Manage Assistant Admins{% endblock %}
 
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+
+
+  body { background: var(--s50); font-family: 'DM Sans', sans-serif; }
+
+  .page-header {
+    margin-bottom: 2rem;
+    padding: 1.5rem 0 1rem;
+    border-bottom: 1px solid var(--s200);
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem; font-weight: 800;
+    color: var(--s900); margin: 0;
+  }
+  
+  .btn-modern {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: .95rem;
+    padding: .7rem 1.5rem; border-radius: 99px; outline: none; border: none;
+    cursor: pointer; transition: all .2s; text-decoration: none;
+  }
+  .btn-primary-m {
+    background: linear-gradient(135deg, var(--g700), var(--g500)); color: #fff;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, .25);
+  }
+  .btn-primary-m:hover {
+    transform: translateY(-2px); box-shadow: 0 6px 16px rgba(22, 163, 74, .35); color: #fff;
+  }
+
+  .data-card {
+    background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow);
+    border: 1px solid var(--s200); animation: slideUp .4s ease both; overflow: hidden;
+  }
+  .d-header {
+    padding: 1.5rem 2rem; border-bottom: 1px solid var(--s100);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .d-header h3 { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--s900); margin: 0;}
+
+  .modern-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+  .modern-table th {
+    font-size: .75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--s500); background: var(--s50);
+    padding: 1rem 2rem; text-align: left; border-bottom: 1px solid var(--s200);
+  }
+  .modern-table td {
+    padding: 1.25rem 2rem; font-size: .95rem; color: var(--s800); font-weight: 500;
+    border-bottom: 1px solid var(--s100); vertical-align: middle;
+  }
+  .modern-table tbody tr:hover { background: var(--s50); }
+
+  .user-badge {
+    width: 40px; height: 40px; border-radius: 12px; background: var(--blue-bg);
+    color: var(--blue); display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; margin-right: 1rem;
+  }
+
+  .btn-action-sm {
+    padding: .4rem .8rem; border-radius: 99px; font-size: .8rem; font-weight: 700; border: none;
+    transition: all .2s; outline: none; margin-left: .5rem;
+  }
+  .btn-warning-sm { background: var(--amber-bg); color: #92400e; }
+  .btn-warning-sm:hover { background: #fde68a; }
+  .btn-danger-sm { background: var(--red-bg); color: #991b1b; }
+  .btn-danger-sm:hover { background: #fecaca; }
+
+  /* Modals */
+  .modal-content { border-radius: var(--radius-lg); border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+  .modal-header { border-bottom: 1px solid var(--s100); padding: 1.25rem 1.5rem; }
+  .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; }
+  .modal-body { padding: 1.5rem; }
+  .modal-footer { border-top: 1px solid var(--s100); padding: 1rem 1.5rem; }
+
+  .form-label { font-size: .85rem; font-weight: 700; color: var(--s700); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .5rem; display: block;}
+  .form-control {
+    width: 100%; border: 1px solid var(--s300); border-radius: var(--radius-md);
+    padding: .75rem 1rem; font-family: 'DM Sans', sans-serif;
+    font-size: .95rem; color: var(--s900); background: #fff;
+    transition: all .2s; outline: none; margin-bottom: 1rem;
+  }
+  .form-control:focus { border-color: var(--g500); box-shadow: 0 0 0 4px rgba(34, 197, 94, .1); }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">Assistant Admins</h1>
-            </div>
+<div class="container-fluid px-4 pb-5">
+    
+    <div class="page-header">
+        <h1>Assistant <span>Admins</span></h1>
+        <button class="btn-modern btn-primary-m" data-bs-toggle="modal" data-bs-target="#createAssistantModal">
+            <i class="fas fa-plus"></i> New Assistant
+        </button>
+    </div>
+
+    <div class="data-card">
+        <div class="d-header">
+            <h3><i class="fas fa-users-cog me-2" style="color:var(--g600)"></i> Active Assistants</h3>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in assistants %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-badge"><i class="fas fa-user-shield"></i></div>
+                                <div>
+                                    <div style="font-weight: 700; color: var(--s900);">{{ admin.full_name }}</div>
+                                    <div style="font-size: .75rem; color: var(--s500);">ID: {{ admin.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ admin.email }}</td>
+                        <td style="text-align: right;">
+                            <button class="btn-action-sm btn-warning-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ admin.id }}" title="Reset Password">
+                                <i class="fas fa-key"></i> Reset Password
+                            </button>
+                            <button class="btn-action-sm btn-danger-sm" data-bs-toggle="modal" data-bs-target="#deleteAssistantModal{{ admin.id }}" title="Delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 4rem 1rem;">
+                            <i class="fas fa-user-shield" style="font-size: 3rem; color: var(--s300); margin-bottom: 1rem;"></i>
+                            <div style="font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.2rem; color: var(--s700);">No Assistants Registered</div>
+                            <div style="font-size: .9rem; color: var(--s500);">There are no assistant admins currently in the system.</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<section class="content">
-    <div class="container-fluid">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white border-0 pt-4 pb-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="card-title fw-bold">Active Assistants</h3>
-                    <button class="btn btn-primary text-white px-4" data-bs-toggle="modal" data-bs-target="#createAssistantModal">
-                        <i class="fas fa-plus me-2"></i> New Assistant
-                    </button>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="border-0 px-4 py-3">Name</th>
-                                <th class="border-0 py-3">Email</th>
-                                <th class="border-0 py-3 text-end px-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for admin in assistants %}
-                            <tr>
-                                <td class="px-4 py-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                            <i class="fas fa-user-shield"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-bold">{{ admin.full_name }}</div>
-                                            <small class="text-muted">ID: {{ admin.id }}</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="py-3">{{ admin.email }}</td>
-                                <td class="py-3 px-4 text-end">
-                                    <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ admin.id }}" title="Reset Password">
-                                        <i class="fas fa-key"></i> Reset Password
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAssistantModal{{ admin.id }}" title="Delete">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="3" class="text-center py-5 text-muted">
-                                    <div class="mb-3"><i class="fas fa-user-shield fa-3x text-light"></i></div>
-                                    <p class="mb-0">No Assistant Admins registered yet.</p>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Assistant Modals (Rendered outside the table to prevent backdrop overlay issues) -->
+<!-- Modals -->
 {% for admin in assistants %}
-<!-- Reset Password Modal -->
 <div class="modal fade" id="resetPasswordModal{{ admin.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-light border-0">
-                <h5 class="modal-title fw-bold">Reset Password</h5>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reset Password</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('dashboard.reset_assistant_password', id=admin.id) }}" method="POST">
-                <div class="modal-body p-4">
-                    <p>Manually reset the password for <strong>{{ admin.full_name }}</strong>. The new password will be emailed to them.</p>
-                    <div class="mb-3">
-                        <label class="form-label text-muted">New Password</label>
+                <div class="modal-body">
+                    <p style="color: var(--s600); font-size: .95rem; margin-bottom: 1.5rem;">Manually reset the password for <strong>{{ admin.full_name }}</strong>. The new password will be emailed to them.</p>
+                    <div>
+                        <label class="form-label">New Password</label>
                         <input type="password" name="new_password" class="form-control" required minlength="6">
                     </div>
                 </div>
-                <div class="modal-footer border-0 bg-light">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary text-white">Reset & Send</button>
+                <div class="modal-footer" style="background: var(--s50);">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold">Reset & Send</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Delete Modal -->
 <div class="modal fade" id="deleteAssistantModal{{ admin.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-danger text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i> Confirm Deletion</h5>
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i> Confirm Deletion</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4 text-center">
-                <div class="text-danger mb-3" style="font-size: 3rem;">
-                    <i class="fas fa-trash-alt"></i>
-                </div>
-                <h4>Delete Assistant Admin?</h4>
-                <p class="text-muted mb-0">Are you sure you want to permanently delete <strong>{{ admin.full_name }}</strong>? This action cannot be undone.</p>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-trash-alt text-danger mb-3" style="font-size: 3rem;"></i>
+                <h4 style="font-family: 'Syne'; font-weight: 700;">Delete Assistant?</h4>
+                <p style="color: var(--s600); font-size: .95rem; margin: 0;">Are you sure you want to permanently delete <strong>{{ admin.full_name }}</strong>? This action cannot be undone.</p>
             </div>
-            <div class="modal-footer border-0 justify-content-center pb-4">
-                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+            <div class="modal-footer justify-content-center" style="background: var(--s50);">
+                <button type="button" class="btn btn-light fw-bold px-4" data-bs-dismiss="modal">Cancel</button>
                 <form action="{{ url_for('dashboard.delete_assistant', id=admin.id) }}" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-danger px-4 text-white">Yes, Delete</button>
+                    <button type="submit" class="btn btn-danger fw-bold px-4">Yes, Delete</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 {% endfor %}
-        </div>
-    </div>
-</section>
 
-<!-- Create Assistant Modal -->
 <div class="modal fade" id="createAssistantModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-light border-0">
-                <h5 class="modal-title fw-bold">Create Assistant Admin</h5>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Assistant Admin</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('dashboard.create_assistant') }}" method="POST">
-                <div class="modal-body p-4">
-                    <p class="text-muted small mb-4">The new assistant will receive an email with their assigned credentials. They are not allowed to reset their own passwords.</p>
+                <div class="modal-body">
+                    <p style="font-size: .85rem; color: var(--s500); margin-bottom: 1.5rem;">The new assistant will receive an email with their assigned credentials. They cannot reset their own passwords.</p>
                     
-                    <div class="row g-3 mb-3">
+                    <div class="row g-3 mb-2">
                         <div class="col-md-6">
-                            <label class="form-label text-muted">First Name</label>
+                            <label class="form-label">First Name</label>
                             <input type="text" name="first_name" class="form-control" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Last Name</label>
+                            <label class="form-label">Last Name</label>
                             <input type="text" name="last_name" class="form-control" required>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label text-muted">Email Address</label>
+                    <div>
+                        <label class="form-label">Email Address</label>
                         <input type="email" name="email" class="form-control" required>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label text-muted">Initial Password</label>
+                    <div>
+                        <label class="form-label">Initial Password</label>
                         <input type="password" name="password" class="form-control" required minlength="6">
                     </div>
                 </div>
-                <div class="modal-footer border-0 bg-light">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary text-white">Create Assistant</button>
+                <div class="modal-footer" style="background: var(--s50);">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold">Create Assistant</button>
                 </div>
             </form>
         </div>

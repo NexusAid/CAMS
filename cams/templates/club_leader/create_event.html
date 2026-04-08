@@ -1,94 +1,87 @@
 {% extends "base/club_leader.html" %}
 {% block title %}Create Event | CAMS{% endblock %}
+{% block page_title %}Create New Event{% endblock %}
 
 {% block content %}
-<div class="content-header rounded mb-4">
-    <div class="container-fluid">
-        <div class="row align-items-center">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-plus-circle me-2"></i> Create New Event
-                </h1>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ url_for('club_leader.events') }}">Events</a></li>
-                    <li class="breadcrumb-item active">Create</li>
-                </ol>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('club_leader.events') }}" class="btn btn-light border btn-sm me-3 text-muted rounded-circle" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h3 class="fw-bold mb-0 text-dark">Host an Event</h3>
+                <p class="text-muted mb-0 mt-1">Fill out the details below to schedule a new activity</p>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card card-primary card-outline shadow-sm" style="border-radius:15px; border:none;">
-                <div class="card-header bg-white" style="border-radius:15px 15px 0 0;">
-                    <h5 class="m-0 font-weight-bold text-dark">
-                        <i class="fas fa-edit me-2" style="color:var(--g600);"></i> Event Details
-                    </h5>
-                </div>
-                
-                <form method="POST" action="{{ url_for('club_leader.create_event') }}" enctype="multipart/form-data">
-                    <div class="card-body p-4">
-                        
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold text-secondary">Select Club <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text bg-white"><i class="fas fa-shield-alt text-muted"></i></span>
-                                </div>
-                                <select class="form-control custom-select" name="club_id" required style="border-left:0;">
-                                    <option value="" disabled selected>Choose your club...</option>
-                                    {% for lead in leaderships %}
-                                        <option value="{{ lead.club_id }}">{{ lead.club.name }} ({{ lead.role|capitalize }})</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold text-secondary">Event Title <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control px-3 py-2" name="title" placeholder="e.g. Annual Tech Symposium" required style="border-radius:8px;">
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold text-secondary">Start Date and Time <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control px-3 py-2" name="date" required style="border-radius:8px;">
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold text-secondary">End Date and Time <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control px-3 py-2" name="end_date" required style="border-radius:8px;">
-                            <small class="form-text text-muted">When does this event officially conclude?</small>
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold text-secondary">Location</label>
-                            <input type="text" class="form-control px-3 py-2" name="location" placeholder="e.g. Main Auditorium, Hall B" style="border-radius:8px;">
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold text-secondary">Event Photo</label>
-                            <input type="file" class="form-control-file" name="image" accept="image/*">
-                            <small class="form-text text-muted">Optional. Upload a banner image for this event (JPEG, PNG).</small>
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold text-secondary">Event Description</label>
-                            <textarea class="form-control p-3" name="description" rows="5" placeholder="What is this event about?" style="border-radius:8px;"></textarea>
-                        </div>
-
-                    </div>
-                    <div class="card-footer bg-light text-right py-3" style="border-radius:0 0 15px 15px;">
-                        <a href="{{ url_for('club_leader.events') }}" class="btn btn-default rounded-pill px-4 mr-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
-                            <i class="fas fa-save me-1"></i> Create Event
-                        </button>
-                    </div>
-                </form>
+        <div class="card border-0 shadow-sm" style="border-radius: var(--radius-xl); overflow: hidden;">
+            <div class="card-header bg-white border-bottom p-4">
+                <h5 class="m-0 fw-bold text-dark">
+                    <i class="fas fa-pen-to-square text-amber me-2"></i> Event Details
+                </h5>
             </div>
+            
+            <form method="POST" action="{{ url_for('club_leader.create_event') }}" enctype="multipart/form-data">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Select Club <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-shield-halved text-muted"></i></span>
+                            <select class="form-select bg-light border-start-0" name="club_id" required>
+                                <option value="" disabled selected>Choose your club...</option>
+                                {% for lead in leaderships %}
+                                    <option value="{{ lead.club_id }}">{{ lead.club.name }} ({{ lead.role|replace('_',' ')|title }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Event Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control px-3 py-2 bg-light border" name="title" placeholder="e.g. Annual Tech Symposium" required>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark">Start Date & Time <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control px-3 py-2 bg-light border" name="date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark">End Date & Time <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control px-3 py-2 bg-light border" name="end_date" required>
+                            <div class="form-text text-muted mt-1" style="font-size: 0.8rem;">When does this event officially conclude?</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Location</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-location-dot text-muted"></i></span>
+                            <input type="text" class="form-control px-3 py-2 bg-light border-start-0" name="location" placeholder="e.g. Main Auditorium, Hall B">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Event Photo</label>
+                        <input type="file" class="form-control bg-light px-3 py-2" name="image" accept="image/*">
+                        <div class="form-text text-muted mt-2" style="font-size: 0.8rem;">Optional. Upload a banner image for this event (JPEG, PNG). Recommended ratio 16:9.</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold text-dark">Description</label>
+                        <textarea class="form-control bg-light p-3" name="description" rows="5" placeholder="What is this event about, and who should attend?" style="resize: none;"></textarea>
+                    </div>
+
+                </div>
+                <div class="card-footer bg-white border-top p-4 d-flex justify-content-end gap-3">
+                    <a href="{{ url_for('club_leader.events') }}" class="btn btn-light border fw-bold px-4 rounded-pill">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-bold px-5 rounded-pill shadow-sm" style="background-color: var(--amber-d); border: none;">
+                        <i class="fas fa-save me-2"></i> Publish Event
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -1,110 +1,181 @@
 {% extends "base/admin_base.html" %}
 {% block title %}Admin Tasks{% endblock %}
 
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+
+
+  body { background: var(--s50); font-family: 'DM Sans', sans-serif; }
+
+  .page-header {
+    margin-bottom: 2rem;
+    padding: 1.5rem 0 1rem;
+    border-bottom: 1px solid var(--s200);
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem; font-weight: 800;
+    color: var(--s900); margin: 0;
+  }
+  
+  .btn-modern {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: .95rem;
+    padding: .7rem 1.5rem; border-radius: 99px; outline: none; border: none;
+    cursor: pointer; transition: all .2s; text-decoration: none;
+  }
+  .btn-primary-m {
+    background: linear-gradient(135deg, var(--g700), var(--g500)); color: #fff;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, .25);
+  }
+  .btn-primary-m:hover {
+    transform: translateY(-2px); box-shadow: 0 6px 16px rgba(22, 163, 74, .35); color: #fff;
+  }
+
+  .column-card {
+    background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow);
+    border: 1px solid var(--s200); min-height: 500px; padding: 1.5rem;
+    animation: slideUp .4s ease both;
+  }
+  
+  .task-card {
+    background: var(--s50); border-radius: var(--radius-md); border: 1px solid var(--s200);
+    padding: 1rem; margin-bottom: 1rem; transition: transform .2s, box-shadow .2s;
+  }
+  .task-card:hover {
+    transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  }
+  
+  .col-title {
+    font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 700;
+    margin-bottom: 1.5rem; display: flex; align-items: center; gap: .5rem;
+  }
+
+  /* Badge styling */
+  .badge { padding: .3rem .7rem; border-radius: 99px; font-weight: 700; font-size: .7rem; letter-spacing: .03em; }
+  .b-pending { background: var(--amber-bg); color: #92400e; }
+  .b-progress { background: var(--blue-bg); color: #1d4ed8; }
+  .b-completed { background: var(--g100); color: var(--g800); }
+
+  /* Modals */
+  .modal-content { border-radius: var(--radius-lg); border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+  .modal-header { border-bottom: 1px solid var(--s100); padding: 1.25rem 1.5rem; }
+  .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; }
+  .modal-body { padding: 1.5rem; }
+  .modal-footer { border-top: 1px solid var(--s100); padding: 1rem 1.5rem; }
+
+  .form-label { font-size: .85rem; font-weight: 700; color: var(--s700); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .5rem; display: block;}
+  .form-control, .form-select {
+    width: 100%; border: 1px solid var(--s300); border-radius: var(--radius-md);
+    padding: .75rem 1rem; font-family: 'DM Sans', sans-serif;
+    font-size: .95rem; color: var(--s900); background: #fff;
+    transition: all .2s; outline: none; margin-bottom: 1rem;
+  }
+  .form-control:focus, .form-select:focus { border-color: var(--g500); box-shadow: 0 0 0 4px rgba(34, 197, 94, .1); }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  .d-1 { animation-delay: .05s; } .d-2 { animation-delay: .1s; } .d-3 { animation-delay: .15s; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">Task Management</h1>
+<div class="container-fluid px-4 pb-5">
+    
+    <div class="page-header">
+        <h1>Task <span>Management</span></h1>
+        {% if current_user.role == 'dean' %}
+        <button class="btn-modern btn-primary-m" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+            <i class="fas fa-plus"></i> Assign New Task
+        </button>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
+        <!-- Pending Tasks -->
+        <div class="col-md-4">
+            <div class="column-card d-1">
+                <div class="col-title" style="color: #b45309;">
+                    <i class="fas fa-hourglass-start"></i> Pending Review
+                </div>
+                <div>
+                    {% for task in tasks if task.status == 'pending' %}
+                        {% include 'admin/partials/_task_card.html' %}
+                    {% else %}
+                        <p style="text-align: center; color: var(--s400); font-size: .9rem; margin-top: 2rem;">No pending tasks.</p>
+                    {% endfor %}
+                </div>
             </div>
-            {% if current_user.role == 'dean' %}
-            <div class="col-sm-6 text-end">
-                <button class="btn btn-primary text-white" data-bs-toggle="modal" data-bs-target="#createTaskModal">
-                    <i class="fas fa-plus me-2"></i> Assign New Task
-                </button>
+        </div>
+
+        <!-- In Progress Tasks -->
+        <div class="col-md-4">
+            <div class="column-card d-2">
+                <div class="col-title" style="color: #1d4ed8;">
+                    <i class="fas fa-spinner fa-spin"></i> In Progress
+                </div>
+                <div>
+                    {% for task in tasks if task.status == 'in_progress' %}
+                        {% include 'admin/partials/_task_card.html' %}
+                    {% else %}
+                        <p style="text-align: center; color: var(--s400); font-size: .9rem; margin-top: 2rem;">No tasks in progress.</p>
+                    {% endfor %}
+                </div>
             </div>
-            {% endif %}
+        </div>
+
+        <!-- Completed Tasks -->
+        <div class="col-md-4">
+            <div class="column-card d-3">
+                <div class="col-title" style="color: var(--g700);">
+                    <i class="fas fa-check-circle"></i> Completed
+                </div>
+                <div>
+                    {% for task in tasks if task.status == 'completed' %}
+                        {% include 'admin/partials/_task_card.html' %}
+                    {% else %}
+                        <p style="text-align: center; color: var(--s400); font-size: .9rem; margin-top: 2rem;">No completed tasks.</p>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<section class="content">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Pending Tasks -->
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm border-0 bg-light bg-opacity-50">
-                    <div class="card-header border-0 bg-white pt-4">
-                        <h5 class="fw-bold mb-0 text-warning"><i class="fas fa-hourglass-start me-2"></i> Pending</h5>
-                    </div>
-                    <div class="card-body p-3">
-                        {% for task in tasks if task.status == 'pending' %}
-                            {% include 'admin/partials/_task_card.html' %}
-                        {% else %}
-                            <p class="text-muted text-center py-3">No pending tasks.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- In Progress Tasks -->
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm border-0 bg-light bg-opacity-50">
-                    <div class="card-header border-0 bg-white pt-4">
-                        <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-spinner fa-spin me-2"></i> In Progress</h5>
-                    </div>
-                    <div class="card-body p-3">
-                        {% for task in tasks if task.status == 'in_progress' %}
-                            {% include 'admin/partials/_task_card.html' %}
-                        {% else %}
-                            <p class="text-muted text-center py-3">No tasks in progress.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Completed Tasks -->
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm border-0 bg-light bg-opacity-50">
-                    <div class="card-header border-0 bg-white pt-4">
-                        <h5 class="fw-bold mb-0 text-success"><i class="fas fa-check-circle me-2"></i> Completed</h5>
-                    </div>
-                    <div class="card-body p-3">
-                        {% for task in tasks if task.status == 'completed' %}
-                            {% include 'admin/partials/_task_card.html' %}
-                        {% else %}
-                            <p class="text-muted text-center py-3">No completed tasks.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- Create Task Modal (Dean Only) -->
 {% if current_user.role == 'dean' %}
 <div class="modal fade" id="createTaskModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-light border-0">
-                <h5 class="modal-title fw-bold">Assign New Task</h5>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign New Task</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('dashboard.create_task') }}" method="POST">
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label text-muted">Task Title</label>
-                        <input type="text" name="title" class="form-control" required>
+                <div class="modal-body">
+                    <div>
+                        <label class="form-label">Task Title</label>
+                        <input type="text" name="title" class="form-control" required placeholder="Give it a brief title...">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted">Description</label>
-                        <textarea name="description" class="form-control" rows="3" required></textarea>
+                    <div>
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" required placeholder="Describe what needs to be done..."></textarea>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted">Assign To</label>
+                    <div>
+                        <label class="form-label">Assign To</label>
                         <select name="assigned_to_id" class="form-select" required>
-                            <option value="">Select an Assistant Admin...</option>
+                            <option value="" disabled selected>Select an Assistant Admin...</option>
                             {% for assistant in assistants %}
                             <option value="{{ assistant.id }}">{{ assistant.full_name }} ({{ assistant.email }})</option>
                             {% endfor %}
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer border-0 bg-light">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary text-white">Assign Task</button>
+                <div class="modal-footer" style="background: var(--s50);">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold">Assign Task</button>
                 </div>
             </form>
         </div>

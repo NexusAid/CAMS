@@ -430,7 +430,7 @@ def club_details(club_id):
     # Fetch club leaders (approved memberships with leadership roles)
     leaders = ClubMembership.query.filter(
         ClubMembership.club_id == club_id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).all()
 
@@ -507,12 +507,13 @@ def handle_club_documents(files, club):
     upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "club_documents")
     os.makedirs(upload_dir, exist_ok=True)
 
-    required_docs = ["constitution", "minutes", "patron_letter"]
+    required_docs = ["constitution", "minutes", "patron_letter", "members_list"]
     uploaded = []
     doc_field_map = {
         "constitution": ("has_constitution", "constitution_file"),
         "minutes": ("has_minutes", "minutes_file"),
         "patron_letter": ("has_patron_letter", "patron_letter_file"),
+        "members_list": ("has_members_list", "members_list_file"),
     }
 
     for doc_type in required_docs:
@@ -698,7 +699,6 @@ CAMS System"""
         flash("Club registration submitted successfully. It is now pending approval by the Dean.", "success")
         return redirect(url_for("student.list_clubs"))
 
-    staff_members = User.query.filter(User.role.in_(["admin", "club_officer"])).all()
     # Always show the full category list in the form (not only what's already in DB),
     # plus any extra categories that might exist in older data.
     default_categories = [
@@ -717,7 +717,7 @@ CAMS System"""
     db_categories = [c[0] for c in db.session.query(Club.category).distinct().all() if c[0]]
     categories = sorted({*default_categories, *db_categories})
 
-    return render_template("student/clubs/register.html", staff_members=staff_members, categories=categories)
+    return render_template("student/clubs/register.html", categories=categories)
 
 
 # =====================================================
@@ -1117,3 +1117,4 @@ def _notify_new_application(application):
             is_read           = False,
         )
         db.session.add(notif)
+

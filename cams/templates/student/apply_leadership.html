@@ -9,16 +9,7 @@
 {% block extra_css %}
 <style>
 /* ── TOKENS (mirror base) ─────────────────────────────── */
-:root {
-  --g900:#052e16;--g800:#064e24;--g700:#065f33;
-  --g600:#16a34a;--g500:#22c55e;--g400:#4ade80;
-  --g300:#86efac;--g200:#bbf7d0;--g100:#dcfce7;--g50:#f0fdf4;
-  --s800:#1e293b;--s700:#334155;--s600:#475569;
-  --s500:#64748b;--s300:#cbd5e1;--s200:#e2e8f0;--s100:#f1f5f9;--s50:#f8fafc;
-  --amber:#f59e0b;--amber-l:#fef3c7;
-  --red:#ef4444;--red-l:#fee2e2;
-  --violet:#7c3aed;--violet-l:#ede9fe;
-}
+
 
 /* ── PAGE WRAP ────────────────────────────────────────── */
 .lp-wrap { max-width: 860px; margin: 0 auto; }
@@ -36,8 +27,8 @@
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 55% 90% at 85% 10%, rgba(74,222,128,.15) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 60% at 5% 85%,  rgba(6,95,51,.5)    0%, transparent 70%);
+    radial-gradient(ellipse 55% 90% at 85% 10%, rgba(56,189,248,.15) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 60% at 5% 85%,  rgba(3,105,161,.5)    0%, transparent 70%);
 }
 .lp-hero-icon {
   width: 62px; height: 62px; border-radius: 18px; flex-shrink: 0;
@@ -91,7 +82,7 @@
 }
 .club-card.selected {
   border-color: var(--g500);
-  box-shadow: 0 0 0 3px rgba(34,197,94,.18);
+  box-shadow: 0 0 0 3px rgba(14,165,233,.18);
 }
 
 .club-card-top {
@@ -186,7 +177,7 @@
   border-color: var(--g500);
   background: var(--g50);
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(34,197,94,.15);
+  box-shadow: 0 4px 14px rgba(14,165,233,.15);
 }
 .role-option input:checked + .role-label i { color: var(--g600); }
 .role-option input:checked + .role-label .role-name { color: var(--g700); }
@@ -201,7 +192,7 @@
 }
 .form-control:focus, .form-select:focus {
   border-color: var(--g500);
-  box-shadow: 0 0 0 3px rgba(34,197,94,.15);
+  box-shadow: 0 0 0 3px rgba(14,165,233,.15);
   outline: none;
 }
 .form-label {
@@ -255,13 +246,13 @@
   color: #fff; font-family: 'Outfit', sans-serif;
   font-weight: 800; font-size: .9rem;
   border: none; cursor: pointer;
-  box-shadow: 0 4px 16px rgba(34,197,94,.3);
+  box-shadow: 0 4px 16px rgba(14,165,233,.3);
   transition: all .2s; text-decoration: none;
 }
 .btn-apply:hover {
   background: linear-gradient(135deg, var(--g800), var(--g600));
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(34,197,94,.4);
+  box-shadow: 0 6px 20px rgba(14,165,233,.4);
   color: #fff;
 }
 .btn-apply:disabled {

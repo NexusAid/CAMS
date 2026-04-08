@@ -1,0 +1,360 @@
+{% extends "base/admin_base.html" %}
+
+{% block title %}System Reports - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── TOKENS ─────────────────────────────────────────────── */
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+  /* General Page Styling */
+  .dash-header {
+    padding: 1.5rem 0 1rem;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: .5rem;
+  }
+  .dash-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.65rem; font-weight: 800;
+    color: var(--s900); margin: 0; line-height: 1.1;
+  }
+  .dash-header h1 span { color: var(--g700); }
+  
+  .filter-card {
+    background: #fff;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--g600);
+  }
+
+  .stat-card {
+    background: #fff;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    position: relative; overflow: hidden;
+  }
+  .stat-card.c-blue { border-bottom: 4px solid var(--blue); }
+  .stat-card.c-green { border-bottom: 4px solid var(--g600); }
+
+  .s-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .stat-card.c-blue .s-icon { background: var(--blue-l); color: var(--blue); }
+  .stat-card.c-green .s-icon { background: var(--g100); color: var(--g700); }
+  
+  .s-label { font-size: 0.85rem; font-weight: 700; color: var(--s500); text-transform: uppercase; }
+  .s-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--s900); line-height: 1.1; margin-top: 0.3rem; }
+
+  .chart-card {
+    background: #fff; border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm); padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .table-card {
+    background: #fff; border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm); padding: 1.5rem; overflow: hidden;
+  }
+
+  .table-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem;
+    margin-bottom: 1rem; color: var(--s800);
+  }
+
+  .cams-table th {
+    background: var(--s50); color: var(--s600);
+    font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+    padding: 12px 15px; border-bottom: 1px solid var(--s200);
+  }
+  .cams-table td {
+    padding: 12px 15px; vertical-align: middle;
+    font-size: 0.9rem; border-bottom: 1px solid var(--s100);
+    color: var(--s800);
+  }
+
+  /* Status Badges */
+  .badge-status {
+    padding: 0.3rem 0.6rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;
+  }
+  .bg-active { background: var(--g100); color: var(--g800); }
+  .bg-pending { background: var(--amber-l); color: #92400e; }
+  .bg-deregistered { background: var(--red-l); color: #991b1b; }
+
+  /* Logo for Print (Hidden in normal view) */
+  .print-header { display: none; }
+
+  /* Print Styles */
+  @media print {
+    body { background: #fff; margin: 0; padding: 0; }
+    .sidebar, .topbar, .filter-card, .btn, .topbar-toggle {
+      display: none !important;
+    }
+    .main-wrapper { margin: 0 !important; padding: 0 !important; }
+    .main-content { padding: 0 !important; }
+
+    /* Show Print Header */
+    .print-header {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding-bottom: 20px; margin-bottom: 30px;
+      border-bottom: 2px solid var(--s900);
+    }
+    
+    .print-logo-container {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .print-logo-icon {
+      width: 50px; height: 50px;
+      background: var(--g800); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 12px; font-size: 24px;
+    }
+    .print-logo-text {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 28px;
+    }
+
+    .print-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+    .print-period { font-size: 14px; color: #555; }
+
+    /* Adjust cards for print */
+    .stat-card, .chart-card, .table-card {
+      box-shadow: none; border: 1px solid #ddd;
+      page-break-inside: avoid;
+    }
+    .dash-header { display: none; }
+    
+    /* Ensure charts load */
+    canvas { max-width: 100% !important; height: auto !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  
+  <!-- Print Header -->
+  <div class="print-header">
+    <div class="print-logo-container">
+      <div class="print-logo-icon"><i class="fas fa-shield-alt"></i></div>
+      <div class="print-logo-text">CAMS REPORTING</div>
+    </div>
+    <div class="print-title">System Activity Report</div>
+    <div class="print-period">Period: {{ stats.start_date }} to {{ stats.end_date }}</div>
+  </div>
+
+  <div class="dash-header">
+    <h1>System <span>Reports</span></h1>
+    <div>
+      <button onclick="window.print()" class="btn btn-primary shadow-sm"><i class="fas fa-print me-2"></i>Print Report</button>
+    </div>
+  </div>
+
+  <!-- Filter Card -->
+  <div class="filter-card">
+    <form method="GET" action="{{ url_for('dashboard.system_reports') }}" class="row align-items-end g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-bold text-muted small text-uppercase">Start Date</label>
+        <input type="date" class="form-control" name="start_date" value="{{ stats.start_date }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold text-muted small text-uppercase">End Date</label>
+        <input type="date" class="form-control" name="end_date" value="{{ stats.end_date }}">
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-dark w-100"><i class="fas fa-filter me-2"></i>Apply Filters</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="stat-card c-blue">
+        <div class="s-icon"><i class="fas fa-users"></i></div>
+        <div>
+          <div class="s-label">Clubs Registered</div>
+          <div class="s-value">{{ stats.total_clubs_period }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="stat-card c-green">
+        <div class="s-icon"><i class="fas fa-user-plus"></i></div>
+        <div>
+          <div class="s-label">Members Joined</div>
+          <div class="s-value">{{ stats.total_members_period }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline Charts -->
+  <div class="chart-card">
+    <div class="table-title"><i class="fas fa-chart-line me-2 text-primary"></i>Registration Timeline</div>
+    <div style="height: 300px; width: 100%;">
+      <canvas id="timelineChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Details Tables -->
+  <div class="row g-4">
+    <!-- Clubs Table -->
+    <div class="col-xl-6">
+      <div class="table-card h-100">
+        <div class="table-title">Clubs Registered in Period</div>
+        <div class="table-responsive">
+          <table class="table cams-table">
+            <thead>
+              <tr>
+                <th>Club Name</th>
+                <th>Category</th>
+                <th>Reg. Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for club in clubs %}
+              <tr>
+                <td class="fw-bold">{{ club.name }}</td>
+                <td>{{ club.category or 'N/A' }}</td>
+                <td>{{ club.registration_date.strftime('%Y-%m-%d') if club.registration_date else 'N/A' }}</td>
+                <td>
+                  <span class="badge-status
+                    {% if club.status == 'active' %} bg-active
+                    {% elif club.status == 'deregistered' %} bg-deregistered
+                    {% else %} bg-pending {% endif %}">
+                    {{ club.status|title }}
+                  </span>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="text-center text-muted py-3">No clubs registered in this period.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members Table -->
+    <div class="col-xl-6">
+      <div class="table-card h-100">
+        <div class="table-title">Recent Members in Period</div>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          <table class="table cams-table">
+            <thead>
+              <tr>
+                <th>Member Name</th>
+                <th>Club</th>
+                <th>Join Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in memberships %}
+              <tr>
+                <td>{{ member.user.full_name }}</td>
+                <td>{{ member.club.name }}</td>
+                <td>{{ member.join_date.strftime('%Y-%m-%d') if member.join_date else 'N/A' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" class="text-center text-muted py-3">No members joined in this period.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('timelineChart').getContext('2d');
+    
+    // Gradient for members
+    let gradientMembers = ctx.createLinearGradient(0, 0, 0, 300);
+    gradientMembers.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+    gradientMembers.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+    // Gradient for clubs
+    let gradientClubs = ctx.createLinearGradient(0, 0, 0, 300);
+    gradientClubs.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+    gradientClubs.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ chart_labels | tojson }},
+        datasets: [
+          {
+            label: 'New Clubs',
+            data: {{ chart_clubs_data | tojson }},
+            borderColor: '#3b82f6',
+            backgroundColor: gradientClubs,
+            borderWidth: 2,
+            pointBackgroundColor: '#3b82f6',
+            pointRadius: 4,
+            fill: true,
+            tension: 0.3
+          },
+          {
+            label: 'New Members',
+            data: {{ chart_members_data | tojson }},
+            borderColor: '#10b981',
+            backgroundColor: gradientMembers,
+            borderWidth: 2,
+            pointBackgroundColor: '#10b981',
+            pointRadius: 4,
+            fill: true,
+            tension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { font: { family: 'DM Sans', weight: 'bold' } }
+          },
+          tooltip: {
+            mode: 'index', intersect: false,
+            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+            titleFont: { size: 13, family: 'DM Sans' },
+            bodyFont: { size: 13, family: 'DM Sans' },
+            padding: 10, cornerRadius: 8
+          }
+        },
+        scales: {
+          x: { 
+            grid: { display: false },
+            ticks: { font: { family: 'DM Sans' }, maxTicksLimit: 15 }
+          },
+          y: { 
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { font: { family: 'DM Sans' }, stepSize: 1 }
+          }
+        }
+      }
+    });
+
+    // Handle print functionality to re-render charts accurately
+    window.addEventListener('beforeprint', () => {
+      for (let id in Chart.instances) {
+        Chart.instances[id].resize();
+      }
+    });
+  });
+</script>
+{% endblock %}

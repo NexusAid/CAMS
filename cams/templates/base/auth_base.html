@@ -4,363 +4,421 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CAMS Portal{% endblock %}</title>
-    <!-- Bootstrap -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-green: #10b981;
-            --dark-green: #064e24;
-            --text-color: #ffffff;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
+            /* Premium Dark Theme */
+            --bg-dark: #070b14;
+            --surface-color: #0c1220;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #2563eb;
+            --accent-glow: #0ea5e9;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(255, 255, 255, 0.02);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         body {
-            background-color: #ffffff;
-            color: var(--text-dark);
-            font-family: 'Inter', sans-serif;
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             margin: 0;
             overflow-x: hidden;
-            display: flex;
+            -webkit-font-smoothing: antialiased;
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Syne', sans-serif;
+            margin-bottom: 0;
         }
 
-        .split-container {
+        /* ── SPLIT LAYOUT ── */
+        .split-layout {
             display: flex;
-            width: 100%;
             min-height: 100vh;
+            width: 100vw;
         }
 
-        /* Left Side: Logo & Description (Green) */
-        .left-panel {
-            flex: 1;
+        /* ── LEFT PANE (VISUAL) ── */
+        .visual-pane {
+            flex: 1 1 45%;
+            position: relative;
+            background-color: #000;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 3rem;
-            position: relative;
-            background: var(--dark-green);
-            color: white;
-            overflow: hidden;
+            justify-content: space-between;
+            padding: 4rem;
         }
 
-        /* Photo Backgrounds */
-        .hero-slides {
-            position: absolute; inset: 0; z-index: 0;
-            width: 100%; height: 100%;
-        }
-        .hero-slide {
-            position: absolute; inset: 0;
+        /* Dark, elegant fluid abstract image */
+        .visual-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
-            opacity: 0;
-            transition: opacity 1.4s ease-in-out;
-        }
-        .hero-slide.active {
-            opacity: 1;
-            animation: kenburns 7s ease-out forwards;
-        }
-        @keyframes kenburns {
-            from { transform: scale(1.06); }
-            to   { transform: scale(1.0); }
+            opacity: 0.6;
+            transition: transform 10s linear;
         }
 
-        /* Green overlay on top of photos */
-        .hero-overlay {
-            position: absolute; inset: 0; z-index: 1;
+        .visual-pane:hover .visual-bg {
+            transform: scale(1.05);
+        }
+
+        /* Smooth gradient fade into the right pane */
+        .visual-overlay {
+            position: absolute;
+            inset: 0;
             background: linear-gradient(
-                135deg,
-                rgba(6,78,59,0.85) 0%,
-                rgba(4,120,87,0.75) 50%,
-                rgba(16,185,129,0.70) 100%
+                90deg, 
+                transparent 50%, 
+                var(--bg-dark) 100%
+            ), 
+            linear-gradient(
+                0deg, 
+                rgba(7, 11, 20, 0.8) 0%, 
+                transparent 100%
             );
         }
 
-        .hero-grid {
-            position: absolute; inset: 0; z-index: 2;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-            background-size: 60px 60px;
-        }
-        
-        .left-content {
+        .brand-floating {
             position: relative;
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-
-        /* Right Side: Form (White) */
-        .right-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            position: relative;
-            background-color: #ffffff;
-        }
-
-        @media (max-width: 768px) {
-            .split-container {
-                flex-direction: column;
-            }
-            .left-panel {
-                flex: none;
-                padding: 4rem 2rem;
-            }
-            .right-panel {
-                padding-top: 3rem;
-            }
-        }
-
-        .brand-logo {
+            z-index: 10;
             display: flex;
             align-items: center;
-            gap: 1.2rem;
+            gap: 1rem;
+            color: white;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
             text-decoration: none;
         }
 
-        .brand-icon {
-            width: 55px;
-            height: 55px;
-            background: white;
-            border-radius: 12px 0 12px 12px;
+        .brand-floating i {
+            font-size: 1.8rem;
+            color: var(--accent-glow);
+        }
+
+        .hero-quote {
+            position: relative;
+            z-index: 10;
+            max-width: 480px;
+        }
+
+        .hero-quote h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-quote p {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        /* ── RIGHT PANE (FORM) ── */
+        .form-pane {
+            flex: 1 1 55%;
+            background-color: var(--bg-dark);
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            color: var(--primary-green);
-            font-size: 26px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            align-items: center;
+            position: relative;
+            z-index: 5;
+            padding: 3rem;
         }
 
-        .brand-text {
-            font-size: 34px;
-            font-weight: 600;
-            color: white;
-            letter-spacing: -0.5px;
-            margin: 0;
-            font-family: 'Outfit', sans-serif;
-        }
-        
-        .system-description {
-            max-width: 420px;
-            text-align: center;
-            color: rgba(255,255,255,0.85); /* Lightened text on green */
-            font-size: 15px;
-            line-height: 1.7;
-            margin-top: 1.5rem;
+        /* Ambient class glow in the form area */
+        .ambient-glow {
+            position: absolute;
+            top: 20%;
+            right: 0%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.05) 0%, transparent 70%);
+            filter: blur(60px);
+            pointer-events: none;
+            z-index: 0;
+            border-radius: 50%;
         }
 
-        /* Form elements */
-        .auth-form-container {
+        .form-container {
             width: 100%;
-            max-width: 380px;
-            text-align: center;
+            max-width: 480px;
+            position: relative;
+            z-index: 10;
         }
 
+        /* ── TYPOGRAPHY IN FORM ── */
         .auth-form-title {
-            font-size: 30px;
-            font-weight: 600;
+            font-size: 2.5rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
-            font-family: 'Outfit', sans-serif;
-            color: var(--text-dark);
+            color: var(--text-main);
+            letter-spacing: -0.5px;
         }
 
         .auth-form-subtitle {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 2.5rem;
-            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--text-dim);
+            margin-bottom: 3rem;
+            font-weight: 400;
         }
 
+        /* ── INPUT FIELDS ── */
         .form-control {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 14px 18px;
-            font-size: 14px;
-            margin-bottom: 1.25rem;
-            color: var(--text-dark);
-            box-shadow: none;
-            transition: all 0.2s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-green);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
-            background-color: #ffffff;
+            background-color: var(--input-bg) !important;
+            border: 1px solid var(--border-light) !important;
+            border-radius: 16px;
+            padding: 1.2rem 1.4rem;
+            font-size: 1rem;
+            color: white !important;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
         }
 
         .form-control::placeholder {
-            color: #94a3b8;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        .btn-auth {
-            background-color: var(--primary-green);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 14px;
-            width: 100%;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
-            margin-top: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-auth:hover {
-            background-color: var(--dark-green);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-        }
-
-        .auth-links {
-            margin-top: 1.5rem;
-            font-size: 12px;
-            text-transform: uppercase;
+            color: #475569;
+            font-weight: 500;
             letter-spacing: 0.5px;
         }
 
-        .auth-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s;
-            display: inline-block;
-            margin-top: 0.5rem;
+        .form-control:hover {
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            background-color: rgba(255, 255, 255, 0.04) !important;
         }
 
-        .auth-links a:hover {
-            color: var(--primary-green);
-            text-decoration: underline;
+        .form-control:focus {
+            background-color: transparent !important;
+            border-color: var(--accent-glow) !important;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1) !important;
+            outline: none;
         }
 
-        /* Flash messages */
-        .alert {
-            font-size: 13px;
-            border-radius: 6px;
-            border: none;
-            text-align: left;
-            margin-bottom: 1.5rem;
-            padding: 12px 18px;
-        }
-        
-        .alert-danger {
-            background-color: #fef2f2;
-            color: #991b1b;
-            border-left: 4px solid #ef4444;
-        }
-        
-        .alert-success {
-            background-color: #ecfdf5;
-            color: #065f46;
-            border-left: 4px solid #10b981;
+        /* Reset autofill styles to dark mode */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #0c1220 inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
         }
 
-        /* Grid support for register form */
+        /* Fix for row grids in registration */
         .form-row {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
         }
         .form-col {
             flex: 1;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-auth {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem;
+            width: 100%;
+            font-size: 1.05rem;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 1rem;
+            transition: var(--transition);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-auth::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg);
+            transition: 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+        }
+        
+        .btn-auth:hover::after {
+            left: 200%;
+        }
+
+        /* ── LINKS ── */
+        .auth-links {
+            margin-top: 2.5rem;
+            text-align: center;
+        }
+
+        .auth-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: inline-block;
+            padding-bottom: 2px;
+            border-bottom: 1px solid transparent;
+        }
+
+        .auth-links a:hover {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .back-home-wrap {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ── ALERTS ── */
+        .alert {
+            font-size: 0.95rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            padding: 1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            color: white;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert-danger {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .alert-success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.5;
+            padding-top: 1.2rem;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 992px) {
+            .split-layout {
+                flex-direction: column;
+            }
+            .visual-pane {
+                flex: none;
+                height: 35vh;
+                min-height: 250px;
+                padding: 2rem;
+                justify-content: center;
+            }
+            .visual-overlay {
+                background: linear-gradient(
+                    180deg, 
+                    transparent 0%, 
+                    var(--bg-dark) 100%
+                );
+            }
+            .hero-quote h2 {
+                font-size: 2.2rem;
+                margin-bottom: 0.5rem;
+            }
+            .hero-quote p, .brand-floating {
+                display: none; /* Hide on small screens for forms to be visible */
+            }
+            .form-pane {
+                flex: 1;
+                padding: 2rem;
+                justify-content: flex-start;
+                padding-top: 0;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
         }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
 
-<div class="split-container">
-    <div class="left-panel">
-        <!-- Photo slides -->
-        <div class="hero-slides" id="heroSlides">
-            <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1800&q=80&auto=format&fit=crop')"></div>
-            <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1562774053-701939374585?w=1800&q=80&auto=format&fit=crop')"></div>
-            <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?w=1800&q=80&auto=format&fit=crop')"></div>
-            <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=1800&q=80&auto=format&fit=crop')"></div>
-            <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1800&q=80&auto=format&fit=crop')"></div>
-            <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1800&q=80&auto=format&fit=crop')"></div>
-        </div>
-        <div class="hero-overlay"></div>
-        <div class="hero-grid"></div>
-
-        <div class="left-content">
-            <a href="{{ url_for('home') }}" class="brand-logo mb-4">
-                <div class="brand-icon">
-                    <i class="fas fa-users-cog"></i>
-                </div>
-                <h1 class="brand-text">CAMS Portal</h1>
-            </a>
-            <p class="system-description">
-                The Club Activity Management System simplifies the administration and organization of student clubs. It empowers students, leaders, and deans to manage memberships, elections, events, and audits effectively from a single platform.
-            </p>
+<div class="split-layout">
+    
+    <!-- LEFT PANE: VISUAL HERO -->
+    <div class="visual-pane">
+        <div class="visual-bg"></div>
+        <div class="visual-overlay"></div>
+        
+        <a href="{{ url_for('home') }}" class="brand-floating">
+            <i class="fas fa-layer-group"></i> CAMS Registry
+        </a>
+        
+        <div class="hero-quote">
+            <h2>Empowering future leaders, today.</h2>
+            <p>Access the complete administrative interface, student election portals, and document management systems securely.</p>
         </div>
     </div>
 
-    <div class="right-panel">
-        <div class="auth-form-container">
+    <!-- RIGHT PANE: FORM -->
+    <div class="form-pane">
+        <div class="ambient-glow"></div>
+        
+        <div class="form-container">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
                             {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 1rem;"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
 
+            <!-- Inject specific form (login/register) here -->
             {% block auth_content %}{% endblock %}
+
+            <div class="back-home-wrap">
+                <a href="{{ url_for('home') }}" class="auth-links" style="margin-top: 0;">
+                    <i class="fas fa-arrow-left me-2"></i> Return to Portal
+                </a>
+            </div>
         </div>
     </div>
+
 </div>
 
+<!-- Bootstrap Bundle with Popper -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Hero photo carousel
-    (function () {
-        const slides = document.querySelectorAll('.hero-slide');
-        if (!slides.length) return;
-        let current = 0, timer;
-
-        function goTo(n) {
-            slides[current].classList.remove('active');
-            current = (n + slides.length) % slides.length;
-            slides[current].classList.add('active');
-            resetTimer();
-        }
-
-        function resetTimer() {
-            clearInterval(timer);
-            timer = setInterval(() => goTo(current + 1), 6000);
-        }
-
-        resetTimer();
-    })();
-</script>
 </body>
 </html>

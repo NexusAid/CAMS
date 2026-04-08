@@ -14,23 +14,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
-  :root {
-    --g900: #052e16; --g800: #064e24; --g700: #065f33;
-    --g600: #16a34a; --g500: #22c55e; --g400: #4ade80;
-    --g300: #86efac; --g100: #dcfce7; --g50:  #f0fdf4;
 
-    --s900: #0f172a; --s800: #1e293b; --s700: #334155;
-    --s500: #64748b; --s300: #cbd5e1; --s200: #e2e8f0;
-    --s100: #f1f5f9; --s50:  #f8fafc;
-
-    --amber: #f59e0b; --amber-bg: #fef3c7;
-    --red:   #ef4444; --red-bg:   #fee2e2;
-    --blue:  #3b82f6; --blue-bg:  #dbeafe;
-
-    --radius-lg: 16px;
-    --radius-md: 12px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  }
 
   body { font-family: 'DM Sans', sans-serif; background: #f0f4f0; }
 
@@ -248,6 +232,20 @@
             <a href="{{ url_for('static', filename=club.patron_letter_file) }}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary">View</a>
             {% endif %}
           </div>
+          <div class="doc-item">
+            <div class="doc-info">
+              <i class="fas fa-file-excel doc-icon text-success"></i>
+              <div>
+                <p class="doc-name">Members List</p>
+                <div style="font-size: .8rem; color: {{ 'var(--g600)' if club.has_members_list else '#991b1b' }}; font-weight: 700;">
+                  {% if club.has_members_list %}<i class="fas fa-check"></i> Uploaded{% else %}<i class="fas fa-times"></i> Missing{% endif %}
+                </div>
+              </div>
+            </div>
+            {% if club.has_members_list and club.members_list_file %}
+            <a href="{{ url_for('static', filename=club.members_list_file) }}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary">View</a>
+            {% endif %}
+          </div>
 
         </div>
       </div>
@@ -275,9 +273,6 @@
           </button>
 
         {% elif club.status == 'active' or club.status == 'warning' %}
-           <a href="{{ url_for('dashboard.edit_club', club_id=club.id) }}" class="btn-modern btn-warning-m" style="margin-bottom: .8rem;">
-             <i class="fas fa-pen"></i> Edit Club Info
-           </a>
            <button type="button" class="btn-modern btn-danger-m" data-bs-toggle="modal" data-bs-target="#deregisterModal">
              <i class="fas fa-ban"></i> Deregister Club
            </button>

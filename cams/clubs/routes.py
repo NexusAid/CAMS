@@ -109,7 +109,7 @@ def join_club(club_id):
     # Notify leaders
     leaderships = ClubMembership.query.filter(
         ClubMembership.club_id == club.id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active"
     ).all()
     

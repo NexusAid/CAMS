@@ -2,129 +2,180 @@
 
 {% block title %}Email Broadcast - CAMS Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+
+
+  body { background: var(--s50); font-family: 'DM Sans', sans-serif; }
+
+  /* Page Header */
+  .page-header {
+    margin-bottom: 2rem;
+    padding: 1.5rem 0 1rem;
+    border-bottom: 1px solid var(--s200);
+  }
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem; font-weight: 800;
+    color: var(--s900); margin: 0;
+  }
+
+  /* Form Card */
+  .broadcast-card {
+    background: #fff; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow); border: 1px solid var(--s200);
+    overflow: hidden; max-width: 800px; margin: 0 auto;
+    animation: slideUp .4s ease both;
+  }
+  .b-header {
+    background: linear-gradient(135deg, var(--g800), var(--g600));
+    padding: 1.5rem 2rem; color: #fff;
+    display: flex; align-items: center; gap: .8rem;
+  }
+  .b-header i { font-size: 1.4rem; color: var(--g100); }
+  .b-header h2 {
+    font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 700; margin: 0;
+  }
+
+  .b-body { padding: 2rem; }
+
+  /* Inputs */
+  .form-label {
+    font-size: .85rem; font-weight: 700; color: var(--s700);
+    text-transform: uppercase; letter-spacing: .05em; margin-bottom: .5rem;
+    display: block;
+  }
+  .form-control, .form-select {
+    width: 100%; border: 1px solid var(--s300); border-radius: var(--radius-md);
+    padding: .75rem 1rem; font-family: 'DM Sans', sans-serif;
+    font-size: .95rem; color: var(--s900); background: #fff;
+    transition: all .2s; outline: none; margin-bottom: 1.5rem;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--g500); box-shadow: 0 0 0 4px rgba(34, 197, 94, .1);
+  }
+  textarea.form-control { resize: vertical; min-height: 150px; }
+
+  .help-text { font-size: .8rem; color: var(--s500); margin-top: -.8rem; margin-bottom: 1.5rem; display: block; }
+
+  /* Footer & actions */
+  .b-footer {
+    background: var(--s50); padding: 1.25rem 2rem;
+    border-top: 1px solid var(--s200);
+    display: flex; justify-content: flex-end; gap: 1rem;
+  }
+  .btn-modern {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: .95rem;
+    padding: .7rem 1.5rem; border-radius: 99px; outline: none; border: none;
+    cursor: pointer; transition: all .2s; text-decoration: none;
+  }
+  .btn-light-m { background: #fff; color: var(--s700); border: 1px solid var(--s300); }
+  .btn-light-m:hover { background: var(--s100); color: var(--s900); }
+  .btn-primary-m {
+    background: linear-gradient(135deg, var(--g700), var(--g500)); color: #fff;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, .25);
+  }
+  .btn-primary-m:hover {
+    transform: translateY(-2px); box-shadow: 0 6px 16px rgba(22, 163, 74, .35);
+  }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="content-wrapper">
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-6">
-                    <h1 class="m-0">Email Broadcast System</h1>
-                </div>
-            </div>
-        </div>
+<div class="container-fluid px-4 pb-5">
+  
+  <div class="page-header">
+    <h1>Communication <span>Center</span></h1>
+  </div>
+
+  <div class="broadcast-card">
+    <div class="b-header">
+      <i class="fas fa-paper-plane"></i>
+      <h2>Email Broadcast</h2>
     </div>
-
-    <section class="content mt-4">
-        <div class="container-fluid">
-            <!-- Messages -->
-            <div class="row mb-3">
-                <div class="col-md-8 mx-auto">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm">
-                                    {{ message }}
-                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-                </div>
-            </div>
-
-            <!-- Email Form Card -->
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card card-primary card-outline shadow-sm">
-                        <div class="card-header bg-white">
-                            <h3 class="card-title text-success font-weight-bold">
-                                <i class="fas fa-paper-plane mr-2"></i> Compose Broadcast
-                            </h3>
-                        </div>
-                        
-                        <form action="{{ url_for('dashboard.email_broadcast') }}" method="POST">
-                            <div class="card-body">
-                                <!-- Target Audience Selection -->
-                                <div class="form-group mb-4">
-                                    <label for="target" class="font-weight-bold text-dark">Target Audience</label>
-                                    <select class="form-control border-success" id="target" name="target" required onchange="toggleFields()">
-                                        <option value="" disabled selected>Select Recipient Group...</option>
-                                        <option value="all_users">All System Users</option>
-                                        <option value="all_students">All Students</option>
-                                        <option value="club_members">Specific Club Members</option>
-                                        <option value="specific_user">Specific Email Address</option>
-                                    </select>
-                                </div>
-
-                                <!-- Dynamic Club Selection -->
-                                <div class="form-group mb-4" id="club_field" style="display: none;">
-                                    <label for="club_id" class="font-weight-bold text-dark">Select Club</label>
-                                    <select class="form-control" id="club_id" name="club_id">
-                                        <option value="" disabled selected>Choose a club...</option>
-                                        {% for club in clubs %}
-                                            <option value="{{ club.id }}">{{ club.name }} ({{ club.category }})</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
-                                <!-- Dynamic Specific Email -->
-                                <div class="form-group mb-4" id="email_field" style="display: none;">
-                                    <label for="specific_email" class="font-weight-bold text-dark">Recipient Email</label>
-                                    <input type="email" class="form-control" id="specific_email" name="specific_email" placeholder="example@student.university.edu">
-                                </div>
-
-                                <!-- Subject -->
-                                <div class="form-group mb-4">
-                                    <label for="subject" class="font-weight-bold text-dark">Subject</label>
-                                    <input type="text" class="form-control" id="subject" name="subject" required placeholder="Enter email subject">
-                                </div>
-
-                                <!-- Message Body -->
-                                <div class="form-group">
-                                    <label for="message" class="font-weight-bold text-dark">Message content</label>
-                                    <textarea class="form-control" id="message" name="message" rows="8" required placeholder="Type your message here..."></textarea>
-                                    <small class="form-text text-muted">This message will be sent to the selected audience. Emails will map via the configured system SMTP server.</small>
-                                </div>
-                            </div>
-
-                            <div class="card-footer bg-light text-right">
-                                <button type="reset" class="btn btn-default mr-2"><i class="fas fa-undo"></i> Reset</button>
-                                <button type="submit" class="btn btn-success"><i class="fas fa-share"></i> Send Broadcast</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+    
+    <form action="{{ url_for('dashboard.email_broadcast') }}" method="POST">
+      <div class="b-body">
+        
+        <div>
+          <label for="target" class="form-label">Target Audience</label>
+          <select class="form-select" id="target" name="target" required onchange="toggleFields()">
+            <option value="" disabled selected>Select Recipient Group...</option>
+            <option value="all_users">All System Users</option>
+            <option value="all_students">All Students</option>
+            <option value="club_members">Specific Club Members</option>
+            <option value="specific_user">Specific Email Address</option>
+          </select>
         </div>
-    </section>
+
+        <div id="club_field" style="display: none;">
+          <label for="club_id" class="form-label">Select Club</label>
+          <select class="form-select" id="club_id" name="club_id">
+            <option value="" disabled selected>Choose a club...</option>
+            {% for club in clubs %}
+              <option value="{{ club.id }}">{{ club.name }} ({{ club.category }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div id="email_field" style="display: none;">
+          <label for="specific_email" class="form-label">Recipient Email</label>
+          <input type="email" class="form-control" id="specific_email" name="specific_email" placeholder="e.g. student@university.edu">
+        </div>
+
+        <div>
+          <label for="subject" class="form-label">Email Subject</label>
+          <input type="text" class="form-control" id="subject" name="subject" required placeholder="Enter the subject line...">
+        </div>
+
+        <div>
+           <label for="message" class="form-label">Message Content</label>
+           <textarea class="form-control" id="message" name="message" required placeholder="Type your full message here..."></textarea>
+           <span class="help-text">This message will be instantly queued to all selected recipients via the SMTP server.</span>
+        </div>
+
+      </div>
+      
+      <div class="b-footer">
+        <button type="reset" class="btn-modern btn-light-m"><i class="fas fa-undo"></i> Reset</button>
+        <button type="submit" class="btn-modern btn-primary-m"><i class="fas fa-paper-plane"></i> Send Broadcast</button>
+      </div>
+    </form>
+  </div>
+
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
 <script>
-    function toggleFields() {
-        const target = document.getElementById('target').value;
-        const clubField = document.getElementById('club_field');
-        const emailField = document.getElementById('email_field');
-        const clubSelect = document.getElementById('club_id');
-        const emailInput = document.getElementById('specific_email');
+  function toggleFields() {
+    const target = document.getElementById('target').value;
+    const clubField = document.getElementById('club_field');
+    const emailField = document.getElementById('email_field');
+    const clubSelect = document.getElementById('club_id');
+    const emailInput = document.getElementById('specific_email');
 
-        // Hide both by default
-        clubField.style.display = 'none';
-        emailField.style.display = 'none';
-        clubSelect.required = false;
-        emailInput.required = false;
-
-        // Show conditionally
-        if (target === 'club_members') {
-            clubField.style.display = 'block';
-            clubSelect.required = true;
-        } else if (target === 'specific_user') {
-            emailField.style.display = 'block';
-            emailInput.required = true;
-        }
+    // Reset visibility
+    clubField.style.display = 'none';
+    emailField.style.display = 'none';
+    clubSelect.required = false;
+    emailInput.required = false;
+    
+    // Smooth reveal
+    if (target === 'club_members') {
+      clubField.style.display = 'block';
+      clubField.style.animation = 'slideUp 0.3s ease';
+      clubSelect.required = true;
+    } else if (target === 'specific_user') {
+      emailField.style.display = 'block';
+      emailField.style.animation = 'slideUp 0.3s ease';
+      emailInput.required = true;
     }
+  }
 </script>
 {% endblock %}

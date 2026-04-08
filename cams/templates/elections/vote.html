@@ -3,95 +3,111 @@
 {% block page_title %}Voting Booth{% endblock %}
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{{ url_for('elections.election_list') }}">Elections</a></li>
-<li class="breadcrumb-item"><a href="{{ url_for('elections.election_detail', election_id=election.id) }}">{{ election.title }}</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('elections.election_detail', election_id=election.id) }}">{{ election.title[:15] }}...</a></li>
 <li class="breadcrumb-item active">Vote</li>
 {% endblock %}
 
 {% block extra_css %}
 <style>
+/* Dynamic Adaptive Coloring */
+{% if current_user.role == 'club_leader' %}
+  :root {
+    --theme-dark: var(--amber-d, #d97706);
+    --theme-accent: var(--amber, #f59e0b);
+    --theme-light: var(--amber-l, #fef3c7);
+  }
+{% else %}
+  :root {
+    --theme-dark: var(--g800, #064e24);
+    --theme-accent: var(--g600, #16a34a);
+    --theme-light: var(--g100, #dcfce7);
+  }
+{% endif %}
+
 .vote-wrap { max-width: 760px; margin: 0 auto; }
 
 .vote-banner {
-    background: linear-gradient(135deg, var(--g800), var(--g600));
-    border-radius: 16px; padding: 1.5rem 2rem; color: white;
-    margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+    background: linear-gradient(135deg, var(--theme-dark), var(--theme-accent));
+    border-radius: var(--radius-xl, 18px); padding: 1.75rem 2rem; color: #fff;
+    margin-bottom: 2rem; display: flex; align-items: center; gap: 1.5rem;
+    box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,0.08));
 }
-.vote-banner i { font-size: 2.5rem; opacity: .8; }
-.vote-banner h5 { font-family:'Outfit',sans-serif; font-weight:800; margin:0; font-size:1.1rem; }
-.vote-banner p  { color:rgba(255,255,255,.8); margin:0; font-size:.875rem; }
+.vote-banner i { font-size: 2.8rem; opacity: .9; }
+.vote-banner h4 { font-family:'Outfit',sans-serif; font-weight:800; margin:0; font-size:1.4rem; }
+.vote-banner p  { color:rgba(255,255,255,.85); margin:0; font-size:.95rem; }
 
 /* Countdown timer */
 .vote-timer {
     display: flex; gap: .6rem; justify-content: flex-end; align-items: center;
-    font-size: .78rem; color: rgba(255,255,255,.8);
+    color: rgba(255,255,255,.9);
 }
 .timer-unit {
-    background: rgba(255,255,255,.15); border-radius: 8px;
-    padding: .3rem .6rem; text-align: center; min-width: 48px;
+    background: rgba(255,255,255,.2); border-radius: 8px;
+    padding: .4rem .7rem; text-align: center; min-width: 54px;
 }
-.timer-unit .num { font-family:'Outfit',sans-serif; font-weight:800; font-size:1.1rem; color:white; display:block; }
-.timer-unit .lbl { font-size:.55rem; text-transform:uppercase; letter-spacing:.07em; }
+.timer-unit .num { font-family:'Outfit',sans-serif; font-weight:800; font-size:1.2rem; color:white; display:block; }
+.timer-unit .lbl { font-size:.6rem; text-transform:uppercase; letter-spacing:.07em; font-weight:700;}
 
-.position-section {
-    background: white; border-radius: 16px;
-    box-shadow: 0 2px 14px rgba(0,0,0,.08);
-    overflow: hidden; margin-bottom: 1.5rem;
+.pos-section {
+    background: #fff; border-radius: var(--radius-lg, 16px);
+    box-shadow: var(--shadow-sm, 0 2px 14px rgba(0,0,0,.04));
+    overflow: hidden; margin-bottom: 1.5rem; border: 1px solid var(--s200, #e2e8f0);
 }
-.position-header {
-    background: var(--g50); padding: 1rem 1.5rem;
-    border-bottom: 2px solid var(--g100);
-    display: flex; align-items: center; gap: .6rem;
+.pos-header {
+    background: var(--s50, #f8fafc); padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--s200, #e2e8f0);
+    display: flex; align-items: center; gap: .7rem;
 }
-.position-header h6 { font-family:'Outfit',sans-serif; font-weight:800; color:var(--g800); margin:0; }
-.position-num {
-    width: 28px; height: 28px; border-radius: 8px;
-    background: var(--g600); color: white;
+.pos-header h6 { font-family:'Outfit',sans-serif; font-weight:700; color:var(--s900, #0f172a); margin:0; font-size:1.1rem;}
+.pos-num {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--theme-dark); color: white;
     display: inline-flex; align-items: center; justify-content: center;
-    font-family:'Outfit',sans-serif; font-weight:800; font-size:.85rem; flex-shrink:0;
+    font-family:'Outfit',sans-serif; font-weight:800; font-size:.9rem; flex-shrink:0;
 }
-.position-body { padding: 1.25rem 1.5rem; }
+.pos-body { padding: 1.5rem; }
 
 /* Candidate ballot option */
 .ballot-option {
     display: flex; align-items: center; gap: 1rem;
     padding: 1rem 1.25rem; border-radius: 12px;
-    border: 2px solid var(--slate200); margin-bottom: .75rem;
-    cursor: pointer; transition: all .22s; background: white;
+    border: 2px solid var(--s200, #e2e8f0); margin-bottom: .75rem;
+    cursor: pointer; transition: all .2s; background: #fff;
     user-select: none;
 }
-.ballot-option:hover { border-color: var(--g400); background: var(--g50); }
+.ballot-option:hover { border-color: var(--theme-accent); background: var(--s50, #f8fafc); }
 .ballot-option input[type=radio] { display: none; }
 .ballot-option:has(input:checked) {
-    border-color: var(--g600);
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    box-shadow: 0 0 0 3px rgba(34,197,94,.12);
+    border-color: var(--theme-accent);
+    background: var(--theme-light);
+    box-shadow: 0 0 0 3px rgba(255,255,255,.5);
 }
 
 .ballot-radio {
-    width: 22px; height: 22px; border-radius: 50%;
-    border: 2px solid var(--slate300); flex-shrink: 0;
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid var(--s300, #cbd5e1); flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    transition: all .2s;
+    transition: all .2s; background: #fff;
 }
 .ballot-option:has(input:checked) .ballot-radio {
-    border-color: var(--g600); background: var(--g600);
+    border-color: var(--theme-accent); background: var(--theme-accent);
 }
 .ballot-option:has(input:checked) .ballot-radio::after {
-    content: ''; width: 9px; height: 9px;
-    border-radius: 50%; background: white;
+    content: ''; width: 10px; height: 10px;
+    border-radius: 50%; background: #fff;
 }
 
 .ballot-avatar {
-    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
-    background: linear-gradient(135deg, var(--g700), var(--g400));
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--theme-dark), var(--theme-accent));
     display: flex; align-items: center; justify-content: center;
     color: white; font-weight: 800; font-size: 1.1rem;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Outfit', sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.ballot-name     { font-weight: 700; color: var(--slate800); font-size: .95rem; }
+.ballot-name     { font-weight: 700; color: var(--s800, #1e293b); font-size: 1rem; line-height:1.2;}
 .ballot-manifesto {
-    font-size: .78rem; color: #94a3b8; margin-top: .2rem;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 400px;
+    font-size: .85rem; color: var(--s500, #64748b); margin-top: .2rem;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 450px;
 }
 
 /* Confirm overlay */
@@ -102,7 +118,7 @@
 }
 .confirm-overlay.show { display: flex; }
 .confirm-box {
-    background: white; border-radius: 20px; padding: 2.5rem; max-width: 440px; width: 90%;
+    background: #fff; border-radius: 20px; padding: 2.5rem; max-width: 440px; width: 90%;
     text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.25);
     animation: popIn .25s ease;
 }
@@ -110,25 +126,28 @@
     from { opacity:0; transform:scale(.9); }
     to   { opacity:1; transform:scale(1); }
 }
-.confirm-box .big-icon { font-size: 3rem; color: var(--g500); margin-bottom: 1rem; }
-.confirm-box h5 { font-family:'Outfit',sans-serif; font-weight:800; margin-bottom:.5rem; }
-.confirm-box p  { color:#64748b; font-size:.875rem; margin-bottom:1.5rem; }
+.confirm-box .big-icon { font-size: 3.5rem; color: var(--theme-accent); margin-bottom: 1rem; }
+.confirm-box h5 { font-family:'Outfit',sans-serif; font-weight:800; margin-bottom:.5rem; color:var(--s900); }
+.confirm-box p  { color:var(--s500); font-size:.9rem; margin-bottom:1.5rem; }
+
+.btn-theme { background: var(--theme-dark); color: white; border: none; }
+.btn-theme:hover { background: var(--theme-accent); color: white; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="vote-wrap">
+<div class="vote-wrap pb-5">
 
     <!-- Banner with countdown -->
     <div class="vote-banner">
         <i class="fas fa-vote-yea"></i>
         <div class="flex-grow-1">
-            <h5>{{ election.title }}</h5>
-            <p>{{ election.club.name }} · Your vote is anonymous and cannot be changed once submitted.</p>
+            <h4>{{ election.title }}</h4>
+            <p>{{ election.club.name }} · Your vote is completely anonymous.</p>
         </div>
         {% if election.voting_end %}
-        <div>
-            <div style="font-size:.72rem;color:rgba(255,255,255,.7);text-align:center;margin-bottom:.4rem;">
+        <div class="d-none d-md-block">
+            <div style="font-size:.72rem;color:rgba(255,255,255,.7);text-align:center;margin-bottom:.4rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">
                 Voting closes in
             </div>
             <div class="vote-timer">
@@ -146,40 +165,35 @@
         {% endif %}
 
         {% for pos, candidates in positions_with_candidates %}
-        <div class="position-section">
-            <div class="position-header">
-                <span class="position-num">{{ loop.index }}</span>
+        <div class="pos-section">
+            <div class="pos-header">
+                <span class="pos-num">{{ loop.index }}</span>
                 <div>
                     <h6>{{ pos.title }}</h6>
                     {% if pos.description %}
-                    <span style="font-size:.78rem;color:#94a3b8;">{{ pos.description }}</span>
+                    <span style="font-size:.8rem;color:var(--s500);">{{ pos.description }}</span>
                     {% endif %}
                 </div>
-                <span class="ml-auto" style="font-size:.75rem;color:#94a3b8;">
+                <span class="ms-auto badge bg-light text-dark border" style="font-size:.75rem;">
                     {{ candidates|length }} candidate{{ 's' if candidates|length != 1 }}
                 </span>
             </div>
-            <div class="position-body">
+            <div class="pos-body">
                 {% for candidate in candidates %}
                 <label class="ballot-option">
-                    <input type="radio" name="position_{{ pos.id }}"
-                           value="{{ candidate.id }}" required>
+                    <input type="radio" name="position_{{ pos.id }}" value="{{ candidate.id }}" required>
                     <div class="ballot-radio"></div>
-                    {% if candidate.photo_url %}
-                        <img src="{{ candidate.photo_url }}" class="ballot-avatar" style="object-fit: cover; border: 2px solid var(--slate200);">
-                    {% elif candidate.student.profile_image %}
-                        <img src="{{ candidate.student.profile_image }}" class="ballot-avatar" style="object-fit: cover; border: 2px solid var(--slate200);">
+                    {% if candidate.photo_url or candidate.student.profile_image %}
+                        <img src="{{ candidate.photo_url or candidate.student.profile_image }}" class="ballot-avatar" style="object-fit: cover; border: 2px solid var(--s200);">
                     {% else %}
                         <div class="ballot-avatar">{{ candidate.student.name[0]|upper }}</div>
                     {% endif %}
-                    <div class="flex-grow-1">
-                        <div class="ballot-name">{{ candidate.student.name }}</div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="ballot-name text-truncate">{{ candidate.student.name }}</div>
                         {% if candidate.motivation %}
-                        <div class="ballot-manifesto">
-                            "{{ candidate.motivation[:90] }}{% if candidate.motivation|length > 90 %}…{% endif %}"
-                        </div>
+                        <div class="ballot-manifesto text-truncate">"{{ candidate.motivation }}"</div>
                         {% else %}
-                        <div class="ballot-manifesto">No motivation provided.</div>
+                        <div class="ballot-manifesto fst-italic">No manifesto provided.</div>
                         {% endif %}
                     </div>
                 </label>
@@ -189,13 +203,13 @@
         {% endfor %}
 
         <!-- Submit -->
-        <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+        <div class="d-flex justify-content-between align-items-center mt-4">
             <a href="{{ url_for('elections.election_detail', election_id=election.id) }}"
-               class="btn btn-default">
-                <i class="fas fa-arrow-left mr-1"></i> Back
+               class="btn btn-light fw-bold rounded-pill px-4 border shadow-sm">
+                Cancel
             </a>
-            <button type="button" class="btn btn-primary px-5" onclick="showConfirm()">
-                <i class="fas fa-check-circle mr-2"></i>Submit My Votes
+            <button type="button" class="btn btn-theme px-5 fw-bold rounded-pill shadow-sm py-2" onclick="showConfirm()">
+                <i class="fas fa-check-circle me-2"></i>Cast My Vote
             </button>
         </div>
     </form>
@@ -205,16 +219,15 @@
 <!-- Confirmation modal -->
 <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-box">
-        <div class="big-icon"><i class="fas fa-shield-alt"></i></div>
+        <div class="big-icon"><i class="fas fa-fingerprint"></i></div>
         <h5>Confirm Your Votes</h5>
-        <p>You are about to submit your votes for <strong>{{ election.title }}</strong>.
-           This action cannot be undone. Are you sure?</p>
-        <div class="d-flex gap-3 justify-content-center">
-            <button type="button" class="btn btn-default px-4" onclick="hideConfirm()">
-                Cancel
+        <p>You are about to submit your votes for <strong>{{ election.title }}</strong>.<br>This action is completely anonymous and cannot be undone.</p>
+        <div class="d-flex gap-3 justify-content-center mt-4">
+            <button type="button" class="btn btn-light fw-bold rounded-pill px-4 border shadow-sm" onclick="hideConfirm()">
+                Wait, Go Back
             </button>
-            <button type="button" class="btn btn-primary px-5" onclick="submitVotes()">
-                <i class="fas fa-vote-yea mr-2"></i>Yes, Submit
+            <button type="button" class="btn btn-theme fw-bold rounded-pill px-5 shadow-sm" onclick="submitVotes()">
+                <i class="fas fa-paper-plane me-2"></i>Yes, Submit
             </button>
         </div>
     </div>
@@ -253,7 +266,7 @@ function showConfirm() {
     const allSelected = names.every(n => form.querySelector(`input[name="${n}"]:checked`));
 
     if (!allSelected) {
-        alert('Please make a selection for every position before submitting.');
+        alert('Please make a selection for every position before submitting your ballot.');
         return;
     }
     document.getElementById('confirmOverlay').classList.add('show');

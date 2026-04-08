@@ -63,6 +63,10 @@ class User(UserMixin, db.Model):
     def is_admin(self):
         return self.role == "admin"
 
+    @property
+    def is_club_leader(self):
+        return any(m.role in ["president", "vice_president", "secretary", "treasurer"] and m.status == "active" for m in self.memberships)
+
     def set_password(self, password):
         # Save current password to history before changing
         if self.password_hash:
@@ -146,6 +150,9 @@ class Club(db.Model):
 
     has_patron_letter = db.Column(db.Boolean, default=False)
     patron_letter_file = db.Column(db.String(255))
+
+    has_members_list = db.Column(db.Boolean, default=False)
+    members_list_file = db.Column(db.String(255))
 
     has_rules = db.Column(db.Boolean, default=False)
     rules_file = db.Column(db.String(255))

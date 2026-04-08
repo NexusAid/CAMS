@@ -1,111 +1,87 @@
 {% extends 'base/club_leader.html' %}
-
-{% block title %}Notifications - CAMS{% endblock %}
-{% block page_title %}Notifications{% endblock %}
+{% block title %}Notifications | CAMS{% endblock %}
+{% block page_title %}Notification Center{% endblock %}
 
 {% block extra_css %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
-
 .notifications-wrapper {
     max-width: 900px;
     margin: 0 auto;
-    padding: 2rem 1rem;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
 
 .notif-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid #f1f5f9;
-}
-
-.notif-header h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 2.25rem;
-    font-weight: 800;
-    color: #1e293b;
-    margin: 0;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-}
-
-.notif-header p {
-    color: #64748b;
-    font-size: 1rem;
-    margin-top: 0.35rem;
-    font-weight: 500;
+    align-items: flex-end;
+    margin-bottom: 2rem;
 }
 
 .btn-mark-all {
-    background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
-    color: white;
+    background: var(--s200);
+    color: var(--s700);
     border: none;
-    padding: 0.65rem 1.5rem;
+    padding: 10px 20px;
     border-radius: 50px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+    transition: all 0.2s;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
 }
 
 .btn-mark-all:hover {
+    background: var(--amber-l);
+    color: var(--amber-d);
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(13, 148, 136, 0.35);
-    color: white;
+    box-shadow: var(--shadow-sm);
 }
 
 .notif-card {
     background: white;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     padding: 1.5rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
     position: relative;
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--s200);
+    transition: all 0.2s;
     display: flex;
     gap: 1.25rem;
     align-items: flex-start;
 }
 
 .notif-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 32px -12px rgba(0,0,0,0.12);
-    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--s300);
 }
 
 .notif-card.unread {
-    background: linear-gradient(to right, #ffffff, #f0fdfa);
-    border-left: 4px solid #0d9488;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    background: #fffdf5; /* subtle amber tint */
+    border-left: 4px solid var(--amber);
 }
 
 .notif-icon-circle {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     transition: background 0.3s;
 }
 
 .notif-card.unread .notif-icon-circle {
-    background: #ccfbf1;
-    color: #0f766e;
+    background: var(--amber-l);
+    color: var(--amber-d);
 }
 
 .notif-card.read .notif-icon-circle {
-    background: #f1f5f9;
-    color: #94a3b8;
+    background: var(--s100);
+    color: var(--s400);
 }
 
 .notif-content {
@@ -116,27 +92,20 @@
     font-family: 'Outfit', sans-serif;
     font-size: 1.15rem;
     font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 0.3rem;
+    color: var(--s900);
+    margin-bottom: 0.2rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
-.notif-title a {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.notif-title a:hover {
-    color: #0d9488;
-}
+.notif-title a { color: inherit; text-decoration: none; transition: color 0.2s; }
+.notif-title a:hover { color: var(--amber-d); }
 
 .unread-badge {
-    background: #fef08a;
-    color: #854d0e;
-    font-size: 0.7rem;
+    background: var(--red);
+    color: white;
+    font-size: 0.65rem;
     padding: 0.2rem 0.6rem;
     border-radius: 50px;
     font-weight: 800;
@@ -146,7 +115,7 @@
 
 .notif-time {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--s500);
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -155,22 +124,16 @@
 }
 
 .notif-message {
-    color: #475569;
+    color: var(--s600);
     font-size: 0.95rem;
-    line-height: 1.6;
+    line-height: 1.5;
     margin: 0;
-}
-
-.notif-action {
-    display: flex;
-    align-items: center;
-    margin-top: 0.25rem;
 }
 
 .btn-mark-read {
     background: white;
-    border: 1px solid #e2e8f0;
-    color: #94a3b8;
+    border: 1px solid var(--s200);
+    color: var(--s400);
     width: 36px;
     height: 36px;
     display: flex;
@@ -183,61 +146,39 @@
 }
 
 .btn-mark-read:hover {
-    color: #0d9488;
-    background: #f0fdfa;
-    border-color: #99f6e4;
+    color: var(--amber-d);
+    background: var(--amber-l);
+    border-color: var(--amber);
     transform: scale(1.1);
-}
-
-.empty-state {
-    text-align: center;
-    padding: 5rem 2rem;
-    background: #f8fafc;
-    border-radius: 20px;
-    border: 2px dashed #cbd5e1;
-}
-
-.empty-state-icon {
-    font-size: 4rem;
-    color: #cbd5e1;
-    margin-bottom: 1.25rem;
-}
-
-.empty-state h4 {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 800;
-    color: #334155;
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="notifications-wrapper">
+<div class="notifications-wrapper d-flex flex-column" style="min-height: 70vh;">
     <!-- Header -->
-    <div class="notif-header">
+    <div class="notif-header flex-wrap gap-3">
         <div>
-            <h2>Notification Center</h2>
-            <p>Stay updated with club alerts and actions</p>
+            <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-bell text-amber me-2"></i> Notification Center</h3>
+            <p class="text-muted mb-0 mt-1">Stay updated with club alerts and actions</p>
         </div>
         {% if notifications %}
-        <form action="{{ url_for('club_leader.mark_all_read') }}" method="POST" style="margin: 0;">
+        <form action="{{ url_for('club_leader.mark_all_read') }}" method="POST" class="m-0">
             <button type="submit" class="btn-mark-all">
-                <i class="fas fa-check-double"></i> Mark All as Read
+                <i class="fas fa-check-double"></i> Mark All Read
             </button>
         </form>
         {% endif %}
     </div>
 
     <!-- Notifications List -->
-    <div class="notif-list">
+    <div class="notif-list flex-grow-1">
         {% for notif in notifications %}
         <div class="notif-card {% if not notif.is_read %}unread{% else %}read{% endif %}">
             
             <div class="notif-icon-circle">
                 {% if notif.type == 'event' %}
-                    <i class="fas fa-calendar-alt"></i>
+                    <i class="fas fa-calendar-day"></i>
                 {% elif notif.type == 'election' %}
                     <i class="fas fa-vote-yea"></i>
                 {% elif notif.type == 'system' %}
@@ -260,14 +201,14 @@
                     {% endif %}
                 </div>
                 <div class="notif-time">
-                    <i class="far fa-clock"></i> {{ notif.created_date.strftime('%B %d, %Y at %H:%M') }}
+                    <i class="far fa-clock"></i> {{ notif.created_date.strftime('%d %B %Y at %H:%M') }}
                 </div>
                 <p class="notif-message">{{ notif.message }}</p>
             </div>
 
             {% if not notif.is_read %}
-            <div class="notif-action">
-                <form action="{{ url_for('club_leader.mark_read', id=notif.id) }}" method="POST" style="margin:0;">
+            <div>
+                <form action="{{ url_for('club_leader.mark_read', id=notif.id) }}" method="POST" class="m-0">
                     <button type="submit" class="btn-mark-read" title="Mark as read">
                         <i class="fas fa-check"></i>
                     </button>
@@ -278,11 +219,11 @@
         </div>
         {% else %}
         <!-- Empty State -->
-        <div class="empty-state">
-            <div class="empty-state-icon">
-                <i class="fas fa-inbox"></i>
+        <div class="card border-0 shadow-sm rounded-4 text-center mt-4 h-100 d-flex flex-column align-items-center justify-content-center p-5">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                <i class="fas fa-inbox text-secondary fs-1 opacity-50"></i>
             </div>
-            <h4>No notifications</h4>
+            <h4 class="fw-bold text-dark font-outfit">No notifications</h4>
             <p class="text-muted">You're completely caught up! We'll alert you when something happens.</p>
         </div>
         {% endfor %}

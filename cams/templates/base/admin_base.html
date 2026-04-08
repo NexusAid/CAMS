@@ -24,18 +24,18 @@
      DESIGN TOKENS
   ═══════════════════════════════════════════════════════════ */
     :root {
-      /* Green palette */
-      --g950: #021a0d;
-      --g900: #052e16;
-      --g800: #064e24;
-      --g700: #065f33;
-      --g600: #16a34a;
-      --g500: #22c55e;
-      --g400: #4ade80;
-      --g300: #86efac;
-      --g200: #bbf7d0;
-      --g100: #dcfce7;
-      --g50: #f0fdf4;
+      /* Indigo palette (replacing green) */
+      --g950: #1e1b4b;
+      --g900: #312e81;
+      --g800: #3730a3;
+      --g700: #4338ca;
+      --g600: #4f46e5;
+      --g500: #6366f1;
+      --g400: #818cf8;
+      --g300: #a5b4fc;
+      --g200: #c7d2fe;
+      --g100: #e0e7ff;
+      --g50: #eef2ff;
 
       /* Slate palette */
       --s950: #0a0f1a;
@@ -68,9 +68,9 @@
       --radius-xl: 20px;
 
       /* Sidebar specific */
-      --sidebar-bg: #0d1f14;
-      --sidebar-hover: rgba(34, 197, 94, 0.10);
-      --sidebar-active-bg: rgba(34, 197, 94, 0.15);
+      --sidebar-bg: #0c0a20;
+      --sidebar-hover: rgba(99, 102, 241, 0.10);
+      --sidebar-active-bg: rgba(99, 102, 241, 0.15);
       --sidebar-active-border: var(--g500);
       --sidebar-text: rgba(255, 255, 255, 0.65);
       --sidebar-text-hover: rgba(255, 255, 255, 0.95);
@@ -79,7 +79,7 @@
       --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
       --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
       --shadow-lg: 0 10px 36px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
-      --shadow-glow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+      --shadow-glow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -147,7 +147,7 @@
       right: 0;
       width: 1px;
       height: 100%;
-      background: linear-gradient(180deg, transparent, rgba(34, 197, 94, 0.15) 30%, rgba(34, 197, 94, 0.15) 70%, transparent);
+      background: linear-gradient(180deg, transparent, rgba(99, 102, 241, 0.15) 30%, rgba(99, 102, 241, 0.15) 70%, transparent);
     }
 
     .sidebar.collapsed {
@@ -178,7 +178,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
     }
 
     .brand-icon i {
@@ -1022,7 +1022,7 @@
 
     <!-- Brand -->
     <a href="{{ url_for('dashboard.dashboard_home') }}" class="sidebar-brand">
-      <div class="brand-icon"><i class="fas fa-users-cog"></i></div>
+      <div class="brand-icon" style="background: transparent; box-shadow: none;"><img src="{{ url_for('static', filename='img/egerton_logo.png') }}" alt="Egerton Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
       <div class="brand-text">
         <span class="brand-name">CAMS</span>
         <span class="brand-sub">Admin Portal</span>
@@ -1084,15 +1084,18 @@
         {% endif %}
 
         <li class="nav-section-label">System</li>
+        
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard.system_reports') }}"
+            class="nav-link {% if request.endpoint == 'dashboard.system_reports' %}active{% endif %}"
+            data-tooltip="Reports">
+            <span class="nav-icon"><i class="fas fa-file-invoice"></i></span>
+            <span class="nav-label">System Reports</span>
+          </a>
+        </li>
 
         <li class="nav-item">
           <a href="{{ url_for('dashboard.email_broadcast') }}"
-            class="nav-link {% if request.endpoint == 'dashboard.email_broadcast' %}active{% endif %}"
-            data-tooltip="Emails">
-            <span class="nav-icon"><i class="fas fa-envelope-open-text"></i></span>
-            <span class="nav-label">Email Broadcast</span>
-          </a>
-        </li>
 
         {% if current_user.role == 'admin' %}
         <li class="nav-item">
@@ -1332,6 +1335,11 @@
           try { new bootstrap.Alert(el).close(); } catch (e) { }
         });
       }, 5000);
+
+      /* Move all modals to body to strictly bypass stacking contexts */
+      document.querySelectorAll('.modal').forEach(modal => {
+        document.body.appendChild(modal);
+      });
     })();
   </script>
 

@@ -7,72 +7,98 @@
 
 {% block extra_css %}
 <style>
-:root {
-  --g800:#064e24;--g700:#065f33;--g600:#16a34a;--g500:#22c55e;
-  --g400:#4ade80;--g300:#86efac;--g100:#dcfce7;--g50:#f0fdf4;
-  --s800:#1e293b;--s700:#334155;--s500:#64748b;--s200:#e2e8f0;--s50:#f8fafc;
-}
+/* Dynamic Adaptive Coloring */
+{% if current_user.role == 'club_leader' %}
+  :root {
+    --theme-dark: var(--amber-d, #d97706);
+    --theme-accent: var(--amber, #f59e0b);
+    --theme-light: var(--amber-l, #fef3c7);
+  }
+{% else %}
+  :root {
+    --theme-dark: var(--g800, #064e24);
+    --theme-accent: var(--g600, #16a34a);
+    --theme-light: var(--g100, #dcfce7);
+  }
+{% endif %}
+
 .page-hero {
-  background: linear-gradient(135deg, var(--g800), var(--g600));
-  border-radius: 18px; padding: 1.75rem 2rem; color: #fff;
-  margin-bottom: 1.75rem; display: flex; align-items: center; gap: 1.5rem;
+  background: linear-gradient(135deg, var(--theme-dark), var(--theme-accent));
+  border-radius: var(--radius-xl, 18px); 
+  padding: 1.75rem 2rem; 
+  color: #fff;
+  margin-bottom: 1.75rem; 
+  display: flex; 
+  align-items: center; 
+  gap: 1.5rem;
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,0.08));
 }
-.page-hero i { font-size: 2.8rem; opacity: .8; }
-.page-hero h4 { font-family:'Outfit',sans-serif; font-weight:800; margin:0; font-size:1.2rem; }
-.page-hero p  { color:rgba(255,255,255,.75); margin:0; font-size:.875rem; }
+.page-hero i { font-size: 2.8rem; opacity: .9; }
+.page-hero h4 { font-family:'Outfit',sans-serif; font-weight:800; margin:0; font-size:1.5rem; }
+.page-hero p  { color:rgba(255,255,255,.85); margin:0; font-size:.95rem; }
 
 .status-pill {
   display:inline-flex; align-items:center; gap:.3rem;
   padding:.22rem .7rem; border-radius:99px;
   font-size:.68rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
 }
-.pill-draft     { background:#f1f5f9; color:#64748b; }
+.pill-draft     { background:var(--s100, #f1f5f9); color:var(--s600, #475569); }
 .pill-submitted { background:#dbeafe; color:#1d4ed8; }
 .pill-under_review { background:#fef3c7; color:#92400e; }
-.pill-approved  { background:var(--g100); color:var(--g700); }
+.pill-approved  { background:var(--theme-light); color:var(--theme-dark); }
 .pill-rejected  { background:#fee2e2; color:#991b1b; }
 
 .audit-card {
-  background:#fff; border-radius:14px;
-  box-shadow:0 2px 12px rgba(0,0,0,.07);
+  background:#fff; border-radius:var(--radius-lg, 14px);
+  box-shadow:var(--shadow-sm, 0 2px 12px rgba(0,0,0,.07));
   overflow:hidden; transition:transform .2s, box-shadow .2s;
-  border-left: 4px solid var(--g400);
+  border-left: 4px solid var(--theme-accent);
+  border-top: 1px solid var(--s200, #e2e8f0);
+  border-right: 1px solid var(--s200, #e2e8f0);
+  border-bottom: 1px solid var(--s200, #e2e8f0);
 }
-.audit-card:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(16,185,129,.12); }
+.audit-card:hover { 
+  transform:translateY(-3px); 
+  box-shadow:var(--shadow-md, 0 8px 24px rgba(0,0,0,.08)); 
+}
 .audit-card.rejected { border-left-color: #ef4444; }
-.audit-card.approved { border-left-color: var(--g500); }
 .audit-card.submitted, .audit-card.under_review { border-left-color: #3b82f6; }
 
 .audit-card-header {
-  background: var(--g50); padding: .85rem 1.25rem;
-  border-bottom: 1.5px solid var(--g100);
-  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem;
+  background: var(--s50, #f8fafc); padding: 1.25rem;
+  border-bottom: 1px solid var(--s100, #f1f5f9);
+  display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:.5rem;
 }
-.audit-card-body   { padding: 1rem 1.25rem; }
-.audit-card-footer { padding: .75rem 1.25rem; border-top:1.5px solid var(--s200);
-  background:#fafafa; display:flex; justify-content:space-between; align-items:center; }
+.audit-card-body   { padding: 1.25rem; }
+.audit-card-footer { padding: 1rem 1.25rem; border-top:1px solid var(--s200, #e2e8f0);
+  background:var(--s50, #fafafa); display:flex; justify-content:space-between; align-items:center; }
 
-.stat-mini { display:flex; align-items:center; gap:.4rem; font-size:.8rem; color:var(--s500); }
-.stat-mini strong { color:var(--s800); font-weight:700; }
+.stat-mini { display:flex; align-items:center; gap:.4rem; font-size:.85rem; color:var(--s500, #64748b); }
+.stat-mini strong { color:var(--s800, #1e293b); font-weight:700; }
+.stat-mini i { color: var(--theme-accent); }
 
 .rejection-banner {
-  background:#fff1f2; border-radius:10px; padding:.85rem 1rem;
-  border-left:4px solid #ef4444; margin-top:.75rem;
-  font-size:.8rem; color:#7f1d1d;
+  background:#fff1f2; border-radius:8px; padding:.75rem 1rem;
+  border-left:4px solid #ef4444; margin-top:1rem;
+  font-size:.85rem; color:#7f1d1d;
 }
 .rejection-banner strong { display:block; margin-bottom:.2rem; color:#991b1b; }
 
 .empty-state {
   padding:4rem 2rem; text-align:center;
   background:#fff; border-radius:16px;
-  box-shadow:0 2px 12px rgba(0,0,0,.06);
+  box-shadow:var(--shadow-sm, 0 2px 12px rgba(0,0,0,.06));
 }
-.empty-state i { font-size:3rem; color:var(--g300); display:block; margin-bottom:1rem; }
+.empty-state i { font-size:3.5rem; color:var(--s300, #cbd5e1); display:block; margin-bottom:1rem; }
 
-@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-.anim { animation:fadeUp .4s ease both; }
-.anim-1{animation-delay:.05s}.anim-2{animation-delay:.10s}
-.anim-3{animation-delay:.15s}.anim-4{animation-delay:.20s}
+.btn-theme {
+  background: var(--theme-dark);
+  color: white;
+}
+.btn-theme:hover {
+  background: var(--theme-accent);
+  color: white;
+}
 </style>
 {% endblock %}
 
@@ -80,23 +106,23 @@
 <div class="container-fluid pb-5">
 
   <!-- Hero -->
-  <div class="page-hero anim anim-1">
+  <div class="page-hero">
     <i class="fas fa-clipboard-list"></i>
     <div class="flex-grow-1">
       <h4>Audit Reports</h4>
       <p>Submit, track and manage audit reports for your club(s). All submitted reports are reviewed by the Dean.</p>
     </div>
-    <a href="{{ url_for('audit.submit_audit') }}" class="btn btn-light font-weight-700">
-      <i class="fas fa-plus-circle mr-2"></i>New Audit
+    <a href="{{ url_for('audit.submit_audit') }}" class="btn btn-light fw-bold rounded-pill px-4 shadow-sm text-dark">
+      <i class="fas fa-plus-circle me-2"></i>New Audit
     </a>
   </div>
 
   <!-- Club pills -->
   {% if clubs %}
-  <div class="d-flex flex-wrap gap-2 mb-4 anim anim-2">
-    <button class="btn btn-sm btn-primary filter-btn active" data-club="all">All Clubs</button>
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <button class="btn btn-sm btn-theme filter-btn active" data-club="all">All Clubs</button>
     {% for club in clubs %}
-    <button class="btn btn-sm btn-outline-success filter-btn" data-club="{{ club.id }}">
+    <button class="btn btn-sm btn-light border filter-btn" data-club="{{ club.id }}">
       {{ club.name }}
     </button>
     {% endfor %}
@@ -104,22 +130,22 @@
   {% endif %}
 
   {% if reports %}
-  <div class="row" id="auditGrid">
+  <div class="row g-4" id="auditGrid">
     {% for r in reports %}
-    <div class="col-lg-6 mb-3 audit-item anim anim-{{ loop.index % 4 + 1 }}" data-club="{{ r.club_id }}">
-      <div class="audit-card {{ r.status.value }}">
+    <div class="col-lg-6 audit-item" data-club="{{ r.club_id }}">
+      <div class="audit-card {{ r.status.value }} h-100 d-flex flex-column">
 
         <div class="audit-card-header">
           <div>
-            <span style="font-size:.72rem;font-weight:700;color:var(--g700);text-transform:uppercase;letter-spacing:.06em;">
-              {{ r.club.name }}
+            <span class="d-block mb-1" style="font-size:.75rem;font-weight:700;color:var(--s500);text-transform:uppercase;letter-spacing:.05em;">
+              <i class="fas fa-shield-halved me-1"></i> {{ r.club.name }}
             </span>
-            <h6 style="font-family:'Outfit',sans-serif;font-weight:800;margin:.15rem 0 0;font-size:.95rem;color:var(--s800);">
+            <h5 class="fw-bold m-0" style="font-family:'Outfit',sans-serif;color:var(--s900);">
               {{ r.period.value }} {{ r.year }} Audit
               {% if r.revision_number > 1 %}
-              <span style="font-size:.7rem;color:var(--s500);font-weight:500;">(Rev. {{ r.revision_number }})</span>
+              <span class="ms-1 px-2 py-1 bg-light rounded text-muted" style="font-size:0.75rem;">Rev. {{ r.revision_number }}</span>
               {% endif %}
-            </h6>
+            </h5>
           </div>
           <span class="status-pill pill-{{ r.status.value }}">
             {% if r.status.value == 'draft' %}<i class="fas fa-pencil-alt"></i>
@@ -132,43 +158,45 @@
           </span>
         </div>
 
-        <div class="audit-card-body">
-          <div class="d-flex flex-wrap gap-3">
-            <div class="stat-mini"><i class="fas fa-users" style="color:var(--g600);"></i>
-              <strong>{{ r.active_members }}</strong> active members
+        <div class="audit-card-body flex-grow-1">
+          <div class="d-flex flex-wrap gap-4">
+            <div class="stat-mini"><i class="fas fa-users fs-5"></i>
+              <div><strong>{{ r.active_members }}</strong><br><span style="font-size: 0.75rem;">Members</span></div>
             </div>
-            <div class="stat-mini"><i class="fas fa-calendar-check" style="color:var(--g600);"></i>
-              <strong>{{ r.events_held }}</strong> events held
+            <div class="stat-mini"><i class="fas fa-calendar-check fs-5"></i>
+              <div><strong>{{ r.events_held }}</strong><br><span style="font-size: 0.75rem;">Events</span></div>
             </div>
-            <div class="stat-mini"><i class="fas fa-chart-pie" style="color:var(--g600);"></i>
-              <strong>{{ r.compliance_score }}%</strong> compliance
+            <div class="stat-mini"><i class="fas fa-chart-pie fs-5"></i>
+              <div><strong>{{ r.compliance_score }}%</strong><br><span style="font-size: 0.75rem;">Compliance</span></div>
             </div>
           </div>
 
           {% if r.status.value == 'rejected' and r.review_note %}
-          <div class="rejection-banner">
-            <strong><i class="fas fa-exclamation-triangle mr-1"></i>Rejection Reason</strong>
+          <div class="rejection-banner shadow-sm">
+            <strong><i class="fas fa-exclamation-triangle me-1"></i> Rejection Reason</strong>
             {{ r.review_note }}
           </div>
           {% endif %}
         </div>
 
         <div class="audit-card-footer">
-          <small class="text-muted">
+          <small class="text-muted fw-medium">
+            <i class="far fa-clock me-1"></i>
             {% if r.submitted_at %}Submitted {{ r.submitted_at.strftime('%d %b %Y') }}
             {% else %}Created {{ r.created_at.strftime('%d %b %Y') }}{% endif %}
           </small>
           <div class="d-flex gap-2">
             <a href="{{ url_for('audit.audit_detail', report_id=r.id) }}"
-               class="btn btn-sm btn-outline-success">View</a>
+               class="btn btn-sm btn-light border fw-bold rounded-pill px-3">View</a>
             {% if r.status.value in ('draft','rejected') %}
             <a href="{{ url_for('audit.edit_audit', report_id=r.id) }}"
-               class="btn btn-sm btn-primary">
+               class="btn btn-sm btn-theme fw-bold rounded-pill px-3">
               {% if r.status.value == 'rejected' %}Resubmit{% else %}Edit{% endif %}
             </a>
             {% endif %}
           </div>
         </div>
+
       </div>
     </div>
     {% endfor %}
@@ -176,11 +204,11 @@
 
   {% else %}
   <div class="empty-state">
-    <i class="fas fa-clipboard-list"></i>
-    <h5 style="font-family:'Outfit',sans-serif;font-weight:700;color:var(--s800);">No Audits Yet</h5>
-    <p class="text-muted mb-4">Submit your first audit report for Dean review.</p>
-    <a href="{{ url_for('audit.submit_audit') }}" class="btn btn-primary">
-      <i class="fas fa-plus-circle mr-2"></i>Create First Audit
+    <i class="fas fa-inbox text-muted opacity-50"></i>
+    <h4 class="fw-bold mt-3" style="font-family:'Outfit',sans-serif;">No Audits Yet</h4>
+    <p class="text-muted mb-4 mx-auto" style="max-width:400px;">Begin maintaining your club's compliance and financial tracking by submitting your first audit report.</p>
+    <a href="{{ url_for('audit.submit_audit') }}" class="btn btn-theme fw-bold rounded-pill px-4">
+      <i class="fas fa-plus-circle me-2"></i>Create First Audit
     </a>
   </div>
   {% endif %}
@@ -193,14 +221,20 @@
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.filter-btn').forEach(b => {
-      b.classList.remove('active','btn-primary');
-      b.classList.add('btn-outline-success');
+      b.classList.remove('active','btn-theme');
+      b.classList.add('btn-light', 'border');
     });
-    this.classList.add('active','btn-primary');
-    this.classList.remove('btn-outline-success');
+    this.classList.add('active','btn-theme');
+    this.classList.remove('btn-light', 'border');
+    
     const club = this.dataset.club;
     document.querySelectorAll('.audit-item').forEach(card => {
       card.style.display = (club === 'all' || card.dataset.club === club) ? '' : 'none';
+      if(card.style.display === '') {
+        card.style.animation = 'none';
+        card.offsetHeight; // trigger reflow
+        card.style.animation = null; 
+      }
     });
   });
 });

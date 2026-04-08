@@ -30,6 +30,24 @@ def verify_reset_token(token, expiration=3600):
         return None
 
 
+def generate_activation_token(membership_id):
+    serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    return serializer.dumps(membership_id, salt="role-activation-salt")
+
+
+def verify_activation_token(token, expiration=604800): # 1 week expiration
+    serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+
+    try:
+        membership_id = serializer.loads(
+            token,
+            salt="role-activation-salt",
+            max_age=expiration
+        )
+        return membership_id
+    except:
+        return None
+
 # -------------------------
 # STAFF/ADMIN LOGIN
 # -------------------------

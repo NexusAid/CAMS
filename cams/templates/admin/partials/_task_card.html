@@ -1,38 +1,38 @@
-<div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px;">
+<div class="task-card">
     <div class="card-body">
-        <h6 class="fw-bold mb-1">{{ task.title }}</h6>
-        <p class="text-muted small mb-3">{{ task.description }}</p>
+        <h6 class="fw-bold mb-1" style="font-family: 'Syne', sans-serif; font-size: 1.05rem; color: var(--s900);">{{ task.title }}</h6>
+        <p style="font-size: .85rem; color: var(--s500); margin-bottom: 1rem; line-height: 1.4;">{{ task.description }}</p>
         
         <div class="d-flex justify-content-between align-items-center mb-0">
             <div>
                 <span class="badge 
-                    {% if task.status == 'pending' %}badge-warning
-                    {% elif task.status == 'in_progress' %}badge-primary
-                    {% else %}badge-success{% endif %}">
+                    {% if task.status == 'pending' %}b-pending
+                    {% elif task.status == 'in_progress' %}b-progress
+                    {% else %}b-completed{% endif %}">
                     {{ task.status|replace('_', ' ')|title }}
                 </span>
             </div>
             
             <div class="dropdown">
-                <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-sm btn-light border-0 bg-transparent text-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
-                <div class="dropdown-menu dropdown-menu-right">
+                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 12px; font-size: .85rem;">
                     <form action="{{ url_for('dashboard.update_task_status', id=task.id) }}" method="POST">
                         {% if task.status != 'pending' %}
-                        <button type="submit" name="status" value="pending" class="dropdown-item text-warning">
+                        <button type="submit" name="status" value="pending" class="dropdown-item text-warning fw-bold">
                             <i class="fas fa-hourglass-start me-2"></i> Unstart (Pending)
                         </button>
                         {% endif %}
                         
                         {% if task.status != 'in_progress' %}
-                        <button type="submit" name="status" value="in_progress" class="dropdown-item text-primary">
+                        <button type="submit" name="status" value="in_progress" class="dropdown-item text-primary fw-bold">
                             <i class="fas fa-spinner me-2"></i> Start (In Progress)
                         </button>
                         {% endif %}
                         
                         {% if task.status != 'completed' %}
-                        <button type="submit" name="status" value="completed" class="dropdown-item text-success">
+                        <button type="submit" name="status" value="completed" class="dropdown-item text-success fw-bold">
                             <i class="fas fa-check-circle me-2"></i> Complete
                         </button>
                         {% endif %}
@@ -40,7 +40,7 @@
                     {% if current_user.role == 'dean' %}
                     <div class="dropdown-divider"></div>
                     <form action="{{ url_for('dashboard.delete_task', id=task.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this task?');">
-                        <button type="submit" class="dropdown-item text-danger">
+                        <button type="submit" class="dropdown-item text-danger fw-bold">
                             <i class="fas fa-trash-alt me-2"></i> Delete Task
                         </button>
                     </form>
@@ -49,9 +49,10 @@
             </div>
         </div>
         
+        <hr style="opacity: 0.1; margin: .8rem 0;">
         <div class="mt-2 text-muted" style="font-size: 0.75rem;">
-            Assigned to: {{ task.assigned_to.full_name }}<br>
-            By: {{ task.assigned_by.full_name }}
+            <strong>Assigned to:</strong> {{ task.assigned_to.full_name }}<br>
+            <strong>By:</strong> {{ task.assigned_by.full_name }}
         </div>
     </div>
 </div>

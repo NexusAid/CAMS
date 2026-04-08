@@ -3,389 +3,309 @@
 {% block page_title %}{{ election.title }}{% endblock %}
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{{ url_for('elections.election_list') }}">Elections</a></li>
-<li class="breadcrumb-item active">{{ election.title }}</li>
+<li class="breadcrumb-item active">{{ election.title[:15] }}...</li>
 {% endblock %}
 
 {% block extra_css %}
 <style>
+/* Dynamic Adaptive Coloring */
+{% if current_user.role == 'club_leader' %}
+  :root {
+    --theme-dark: var(--amber-d, #d97706);
+    --theme-accent: var(--amber, #f59e0b);
+    --theme-light: var(--amber-l, #fef3c7);
+  }
+{% else %}
+  :root {
+    --theme-dark: var(--g800, #064e24);
+    --theme-accent: var(--g600, #16a34a);
+    --theme-light: var(--g100, #dcfce7);
+  }
+{% endif %}
+
 /* Pipeline strip */
 .pipeline {
-    display: flex; background: white; border-radius: 14px;
-    overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.07);
-    margin-bottom: 1.75rem;
+  display: flex; background: #fff; border-radius: var(--radius-lg, 16px);
+  overflow: hidden; box-shadow: var(--shadow-sm, 0 2px 12px rgba(0,0,0,.05));
+  margin-bottom: 1.75rem; border: 1px solid var(--s200, #e2e8f0);
 }
 .pipeline-step {
-    flex: 1; padding: .9rem .5rem; text-align: center;
-    position: relative; transition: background .2s;
+  flex: 1; padding: 1.25rem .5rem; text-align: center;
+  position: relative; transition: background .2s;
 }
 .pipeline-step:not(:last-child)::after {
-    content: ''; position: absolute; right: 0; top: 50%;
-    transform: translateY(-50%);
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    border-left: 14px solid #e2e8f0;
-    z-index: 2;
+  content: ''; position: absolute; right: 0; top: 50%;
+  transform: translateY(-50%);
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 14px solid var(--s200, #e2e8f0);
+  z-index: 2;
 }
-.pipeline-step.done { background: var(--g50); }
-.pipeline-step.done::after { border-left-color: var(--g50) !important; }
-.pipeline-step.current { background: var(--g600); }
-.pipeline-step.current::after { border-left-color: var(--g600) !important; }
-.pipeline-step.current .ps-label { color: white; }
+.pipeline-step.done { background: var(--s50, #f8fafc); }
+.pipeline-step.done::after { border-left-color: var(--s50, #f8fafc) !important; }
+.pipeline-step.current { background: var(--theme-dark); }
+.pipeline-step.current::after { border-left-color: var(--theme-dark) !important; z-index: 3;}
+.pipeline-step.current .ps-label { color: #fff; }
 .pipeline-step.current .ps-icon { color: rgba(255,255,255,.85); }
-.ps-icon { font-size: .9rem; color: var(--g400); }
-.pipeline-step.done .ps-icon { color: var(--g600); }
-.ps-label { font-size: .7rem; font-weight: 700; color: #94a3b8;
-    text-transform: uppercase; letter-spacing: .05em; display: block; margin-top: .25rem; }
-.pipeline-step.done .ps-label { color: var(--g700); }
+.ps-icon { font-size: 1.2rem; display:block; margin-bottom:.4rem; color: var(--s400, #94a3b8); }
+.pipeline-step.done .ps-icon { color: var(--theme-accent); }
+.ps-label { font-size: .75rem; font-weight: 700; color: var(--s500, #64748b);
+  text-transform: uppercase; letter-spacing: .05em; display: block; }
+.pipeline-step.done .ps-label { color: var(--s800, #1e293b); }
 
 /* Info cards */
-.info-card {
-    background: white; border-radius: 14px;
-    box-shadow: 0 2px 12px rgba(0,0,0,.07);
-    padding: 1.5rem; margin-bottom: 1.25rem;
+.e-info-card {
+  background: #fff; border-radius: var(--radius-md, 14px);
+  box-shadow: var(--shadow-sm, 0 2px 12px rgba(0,0,0,.05));
+  padding: 1.5rem; margin-bottom: 1.25rem; border: 1px solid var(--s200, #e2e8f0);
 }
-.info-card-title {
-    font-family: 'Outfit', sans-serif; font-weight: 700;
-    color: var(--g800); font-size: .95rem;
-    border-bottom: 2px solid var(--g100); padding-bottom: .6rem; margin-bottom: 1rem;
-    display: flex; align-items: center; gap: .5rem;
+.e-card-title {
+  font-family: 'Outfit', sans-serif; font-weight: 700;
+  color: var(--s900, #0f172a); font-size: 1.1rem;
+  border-bottom: 2px solid var(--s100, #f1f5f9); padding-bottom: .75rem; margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: .6rem;
 }
-.info-card-title i { color: var(--g500); }
-
-/* Position card */
-.position-card {
-    border: 1.5px solid var(--g100); border-radius: 10px;
-    padding: 1rem 1.2rem; margin-bottom: .75rem;
-}
-.position-card-title {
-    font-family: 'Outfit', sans-serif; font-weight: 700;
-    color: var(--g800); font-size: .92rem; margin-bottom: .5rem;
-}
+.e-card-title i { color: var(--theme-accent); }
 
 /* Candidate pill */
-.candidate-pill {
-    display: flex; align-items: center; gap: .75rem;
-    padding: .6rem .9rem; border-radius: 10px;
-    background: var(--g50); margin-bottom: .4rem;
-    border: 1.5px solid transparent; transition: border-color .2s;
+.cand-list { display: flex; flex-direction: column; gap: .75rem; }
+.cand-pill {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .85rem 1rem; border-radius: 12px;
+  background: var(--s50, #f8fafc); border: 1.5px solid transparent; transition: border-color .2s;
 }
-.candidate-pill.pending-pill  { background: #fffbeb; }
-.candidate-pill.rejected-pill { background: #fff1f2; opacity: .7; }
-.candidate-pill:hover { border-color: var(--g300); }
-.candidate-avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--g700), var(--g400));
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 700; font-size: .85rem; flex-shrink: 0;
+.cand-pill.pending { background: #fffcf0; border-color:#fef3c7; }
+.cand-pill:hover { border-color: var(--s300); }
+.cand-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-dark), var(--theme-accent));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 1rem; flex-shrink: 0; box-shadow:0 2px 4px rgba(0,0,0,0.1);
 }
-.candidate-name  { font-weight: 600; font-size: .875rem; color: var(--slate800); }
-.candidate-meta  { font-size: .75rem; color: #94a3b8; }
-
-/* Status badges inline */
-.badge-xs {
-    padding: .18rem .55rem; border-radius: 99px;
-    font-size: .65rem; font-weight: 700; letter-spacing: .05em;
-}
+.cand-name  { font-weight: 700; font-size: .95rem; color: var(--s800); line-height: 1.2; }
+.cand-meta  { font-size: .8rem; color: var(--s500, #64748b); position:relative; top:-2px;}
 
 /* Action panel */
-.action-panel {
-    background: linear-gradient(135deg, var(--g800), var(--g600));
-    border-radius: 14px; padding: 1.5rem; color: white;
-    margin-bottom: 1.25rem;
+.action-box {
+  background: linear-gradient(135deg, var(--theme-dark), var(--theme-accent));
+  border-radius: var(--radius-md, 14px); padding: 1.5rem; color: #fff;
+  margin-bottom: 1.25rem; box-shadow: var(--shadow-sm);
 }
-.action-panel h6 { font-family: 'Outfit',sans-serif; font-weight:700; color:white; }
-.action-panel p  { color: rgba(255,255,255,.8); font-size:.875rem; margin-bottom:1rem; }
+.action-box h6 { font-family: 'Outfit',sans-serif; font-weight:800; color:white; font-size:1.1rem; }
+.action-box p  { color: rgba(255,255,255,.9); font-size:.9rem; margin-bottom:1.25rem; line-height:1.5;}
 
-/* Countdown */
-.countdown-box {
-    display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap;
-}
-.countdown-unit {
-    background: rgba(255,255,255,.15); border-radius: 10px;
-    padding: .5rem .9rem; text-align: center; min-width: 60px;
-}
-.countdown-unit .num { font-family:'Outfit',sans-serif; font-weight:800; font-size:1.4rem; color:white; line-height:1; }
-.countdown-unit .lbl { font-size:.6rem; color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:.07em; }
+.btn-theme { background: var(--theme-dark); color: white; border: none; }
+.btn-theme:hover { background: var(--theme-accent); color: white; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="pb-5">
 
-<!-- Pipeline strip -->
-{% set stages = ['draft','nomination','review','voting','closed','published'] %}
-<div class="pipeline">
-    {% for stage in stages %}
-    {% set is_done    = stages.index(stage) < stages.index(election.status.value) %}
-    {% set is_current = stage == election.status.value %}
-    <div class="pipeline-step {% if is_done %}done{% elif is_current %}current{% endif %}">
-        {% if stage == 'draft' %}      <i class="fas fa-pencil-alt ps-icon"></i>
-        {% elif stage == 'nomination' %}<i class="fas fa-user-plus ps-icon"></i>
-        {% elif stage == 'review' %}   <i class="fas fa-search ps-icon"></i>
-        {% elif stage == 'voting' %}   <i class="fas fa-vote-yea ps-icon"></i>
-        {% elif stage == 'closed' %}   <i class="fas fa-lock ps-icon"></i>
-        {% else %}                     <i class="fas fa-trophy ps-icon"></i>
-        {% endif %}
-        <span class="ps-label">{{ stage|title }}</span>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <span class="badge" style="background:var(--theme-light); color:var(--theme-dark);"><i class="fas fa-shield-halved me-1"></i>{{ election.club.name }}</span>
+      <h3 class="fw-bold m-0 mt-2 text-dark" style="font-family:'Outfit',sans-serif;">{{ election.title }}</h3>
     </div>
-    {% endfor %}
-</div>
+  </div>
 
-<div class="row">
+  <!-- Pipeline strip -->
+  {% set stages = ['draft','nomination','review','voting','closed','published'] %}
+  <div class="pipeline">
+      {% for stage in stages %}
+      {% set is_done    = stages.index(stage) < stages.index(election.status.value) %}
+      {% set is_current = stage == election.status.value %}
+      <div class="pipeline-step {% if is_done %}done{% elif is_current %}current{% endif %}">
+          {% if stage == 'draft' %}      <i class="fas fa-pencil-alt ps-icon"></i>
+          {% elif stage == 'nomination' %}<i class="fas fa-user-plus ps-icon"></i>
+          {% elif stage == 'review' %}   <i class="fas fa-search ps-icon"></i>
+          {% elif stage == 'voting' %}   <i class="fas fa-vote-yea ps-icon"></i>
+          {% elif stage == 'closed' %}   <i class="fas fa-lock ps-icon"></i>
+          {% else %}                     <i class="fas fa-trophy ps-icon"></i>
+          {% endif %}
+          <span class="ps-label">{{ stage|replace('_', ' ')|title }}</span>
+      </div>
+      {% endfor %}
+  </div>
 
+  <div class="row g-4">
     <!-- LEFT: Positions & Candidates -->
     <div class="col-lg-8">
+      
+      {% for pos in election.positions %}
+      <div class="e-info-card">
+          <div class="e-card-title d-flex justify-content-between w-100">
+              <div>
+                <i class="fas fa-user-tie border border-1 p-2 rounded bg-light border-secondary"></i>
+                <span class="ms-2">{{ pos.title }}</span>
+              </div>
+              {% if pos.description %}
+              <small class="text-muted fw-normal align-self-end badge bg-light text-dark mb-1 d-none d-md-inline-block">{{ pos.description }}</small>
+              {% endif %}
+          </div>
 
-        {% for pos in election.positions %}
-        <div class="info-card">
-            <div class="info-card-title">
-                <i class="fas fa-user-tie"></i>
-                {{ pos.title }}
-                {% if pos.description %}
-                <small class="text-muted font-weight-normal ml-1">— {{ pos.description }}</small>
-                {% endif %}
-            </div>
+          {% set all_apps = election.club.leadership_applications %}
+          {% set pos_slug = pos.title.lower().replace(' ', '_') %}
+          
+          {% set approved = [] %}
+          {% set pending = [] %}
+          
+          {% for app in all_apps %}
+              {% if app.position == pos_slug and app.status == 'approved' %}{% set _ = approved.append(app) %}
+              {% elif app.position == pos_slug and app.status == 'pending' %}{% set _ = pending.append(app) %}
+              {% endif %}
+          {% endfor %}
 
-            <!-- We get the matching applications passed from the route in `tallies` if closed, 
-                 but for active elections we need to query or pass them. 
-                 Since Jinja can't easily query, we rely on the route to pass the necessary candidate data or we simplify. -->
-            <!-- Note: The existing code relied on `pos.nominations` relationship which was removed. 
-                 To keep it simple without changing the route further, we can fetch all apps for the club and filter in Jinja -->
-            {% set all_apps = election.club.leadership_applications %}
-            {% set pos_slug = pos.title.lower().replace(' ', '_') %}
-            
-            {% set approved = [] %}
-            {% set pending = [] %}
-            {% set rejected = [] %}
-            
-            {% for app in all_apps %}
-                {% if app.position == pos_slug %}
-                    {% if app.status == 'approved' %}{% set _ = approved.append(app) %}
-                    {% elif app.status == 'pending' %}{% set _ = pending.append(app) %}
-                    {% elif app.status == 'rejected' %}{% set _ = rejected.append(app) %}
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
-
+          <div class="cand-list">
             {% if approved %}
-            <p class="text-muted mb-2" style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
-                Approved Candidates ({{ approved|length }})
-            </p>
-            {% for app in approved %}
-            <div class="candidate-pill">
-                {% if app.photo_url %}
-                    <img src="{{ app.photo_url }}" class="candidate-avatar" style="object-fit: cover; border: 2px solid var(--g300);">
-                {% elif app.student.profile_image %}
-                    <img src="{{ app.student.profile_image }}" class="candidate-avatar" style="object-fit: cover; border: 2px solid var(--g300);">
-                {% else %}
-                    <div class="candidate-avatar">{{ app.student.name[0]|upper }}</div>
-                {% endif %}
-                <div class="flex-grow-1">
-                    <div class="candidate-name">{{ app.student.name }}</div>
-                    {% if app.motivation %}
-                    <div class="candidate-meta text-truncate" style="max-width:400px;">
-                        "{{ app.motivation[:80] }}{% if app.motivation|length > 80 %}…{% endif %}"
+                {% for app in approved %}
+                <div class="cand-pill shadow-sm">
+                    {% if app.photo_url or app.student.profile_image %}
+                        <img src="{{ app.photo_url or app.student.profile_image }}" class="cand-avatar" style="object-fit: cover; border: 2px solid var(--theme-accent);">
+                    {% else %}
+                        <div class="cand-avatar">{{ app.student.name[0]|upper }}</div>
+                    {% endif %}
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="cand-name text-truncate">{{ app.student.name }}</div>
+                        {% if app.motivation %}
+                        <div class="cand-meta text-truncate opacity-75">"{{ app.motivation }}"</div>
+                        {% endif %}
+                    </div>
+                    {% if election.status.value in ['closed','published'] %}
+                    <div class="text-end">
+                        <span class="d-block fw-bold text-success fs-5" style="font-family:'Outfit',sans-serif;">{{ app.vote_count }}</span>
+                        <span class="text-muted" style="font-size:0.65rem;">VOTES</span>
                     </div>
                     {% endif %}
                 </div>
-                {% if election.status.value in ['closed','published'] %}
-                <div class="text-right">
-                    <span class="d-block font-weight-800 text-success" style="font-size:1.1rem;font-family:'Outfit',sans-serif;">
-                        {{ app.vote_count }}
-                    </span>
-                    <span style="font-size:.68rem;color:#94a3b8;">votes</span>
-                </div>
-                {% endif %}
-            </div>
-            {% endfor %}
+                {% endfor %}
             {% endif %}
 
             {% if pending and current_user.role in ('admin','dean') %}
-            <p class="text-muted mt-3 mb-2" style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
-                Pending Review ({{ pending|length }})
-            </p>
-            {% for app in pending %}
-            <div class="candidate-pill pending-pill">
-                {% if app.photo_url %}
-                    <img src="{{ app.photo_url }}" class="candidate-avatar" style="object-fit: cover; border: 2px solid #f59e0b;">
-                {% elif app.student.profile_image %}
-                    <img src="{{ app.student.profile_image }}" class="candidate-avatar" style="object-fit: cover; border: 2px solid #f59e0b;">
-                {% else %}
-                    <div class="candidate-avatar" style="background:linear-gradient(135deg,#b45309,#f59e0b);">
-                        {{ app.student.name[0]|upper }}
+                {% for app in pending %}
+                <div class="cand-pill pending shadow-sm">
+                    <div class="cand-avatar" style="background:#f59e0b; color:white;">{{ app.student.name[0]|upper }}</div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="cand-name text-truncate">{{ app.student.name }}</div>
+                        <div class="cand-meta text-truncate opacity-75 text-warning fw-bold">PENDING REVIEW</div>
                     </div>
-                {% endif %}
-                <div class="flex-grow-1">
-                    <div class="candidate-name">{{ app.student.name }}</div>
-                    <div class="candidate-meta">Applied {{ app.created_at.strftime('%d %b %Y') }}</div>
+                    <a href="{{ url_for('dashboard.application_review', app_id=app.id) }}" class="btn btn-sm btn-warning fw-bold text-dark rounded-pill px-3">Review</a>
                 </div>
-                {% if current_user.role in ('admin','dean') %}
-                <a href="{{ url_for('dashboard.application_review', app_id=app.id) }}"
-                   class="btn btn-sm btn-warning">Review</a>
-                {% endif %}
-            </div>
-            {% endfor %}
+                {% endfor %}
             {% endif %}
 
             {% if not approved and not pending %}
-            <p class="text-muted text-center py-3" style="font-size:.85rem;">
-                No applications for this position yet.
-            </p>
+            <div class="text-center py-4 bg-light rounded text-muted">
+                <i class="fas fa-ghost mb-2 fs-3 opacity-25"></i>
+                <p class="mb-0 fw-medium">No candidates registered</p>
+            </div>
             {% endif %}
 
-            <!-- Vote button per position (during voting) -->
             {% if election.is_voting_open and can_vote and pos.id not in voted_positions and approved %}
-            <a href="{{ url_for('elections.vote', election_id=election.id) }}"
-               class="btn btn-primary btn-sm mt-2">
-                <i class="fas fa-vote-yea mr-1"></i> Cast My Vote
+            <a href="{{ url_for('elections.vote', election_id=election.id) }}" class="btn btn-theme fw-bold mt-2 align-self-start rounded-pill px-4 shadow-sm">
+                <i class="fas fa-vote-yea me-2"></i>Cast My Vote
             </a>
             {% elif election.is_voting_open and can_vote and pos.id in voted_positions %}
-            <span class="badge-xs" style="background:#d1fae5;color:#065f33;display:inline-block;margin-top:.5rem;">
-                <i class="fas fa-check-circle mr-1"></i> Voted
-            </span>
+            <span class="badge bg-success bg-opacity-25 text-success align-self-start py-2 px-3 fw-bold border border-success"><i class="fas fa-check-circle me-1"></i>Voted</span>
             {% endif %}
-        </div>
-        {% endfor %}
+          </div>
+      </div>
+      {% endfor %}
     </div>
 
     <!-- RIGHT: Actions & Info -->
     <div class="col-lg-4">
 
-        <!-- Election summary card -->
-        <div class="info-card">
-            <div class="info-card-title"><i class="fas fa-info-circle"></i> Election Info</div>
-            <table class="table table-sm mb-0" style="font-size:.85rem;">
-                <tr><td class="text-muted border-0">Club</td>
-                    <td class="font-weight-600 border-0">{{ election.club.name }}</td></tr>
-                <tr><td class="text-muted">Created By</td>
-                    <td class="font-weight-600">{{ election.creator.name }}</td></tr>
-                <tr><td class="text-muted">Positions</td>
-                    <td class="font-weight-600">{{ election.positions|length }}</td></tr>
-                <tr><td class="text-muted">Total Votes</td>
-                    <td class="font-weight-600">{{ election.total_votes_cast }}</td></tr>
-                {% if election.nomination_start %}
-                <tr><td class="text-muted">Nom. Window</td>
-                    <td class="font-weight-600">
-                        {{ election.nomination_start.strftime('%d %b') }} –
-                        {{ election.nomination_end.strftime('%d %b %Y') if election.nomination_end else '?' }}
-                    </td></tr>
-                {% endif %}
-                {% if election.voting_start %}
-                <tr><td class="text-muted">Vote Window</td>
-                    <td class="font-weight-600">
-                        {{ election.voting_start.strftime('%d %b') }} –
-                        {{ election.voting_end.strftime('%d %b %Y') if election.voting_end else '?' }}
-                    </td></tr>
-                {% endif %}
-            </table>
-        </div>
+      <div class="e-info-card">
+          <div class="e-card-title"><i class="fas fa-info-circle"></i> Timeline Info</div>
+          <table class="table table-sm table-borderless mb-0" style="font-size:.9rem;">
+              <tr><td class="text-muted fw-semibold ps-0">Creator</td>
+                  <td class="fw-bold text-end pe-0">{{ election.creator.name }}</td></tr>
+              <tr><td class="text-muted fw-semibold ps-0">Total Votes</td>
+                  <td class="fw-bold text-end pe-0 badge bg-light text-dark my-1">{{ election.total_votes_cast }}</td></tr>
+              {% if election.nomination_start %}
+              <tr class="border-top"><td class="text-muted fw-semibold ps-0 pt-2 text-uppercase" style="font-size:0.75rem;">Nom. Window</td>
+                  <td class="fw-bold text-end pe-0 pt-2">{{ election.nomination_start.strftime('%d %b') }} – {{ election.nomination_end.strftime('%d %b') if election.nomination_end else '?' }}</td></tr>
+              {% endif %}
+              {% if election.voting_start %}
+              <tr class="border-top"><td class="text-muted fw-semibold ps-0 pt-2 text-uppercase" style="font-size:0.75rem;">Vote Window</td>
+                  <td class="fw-bold text-end pe-0 pt-2">{{ election.voting_start.strftime('%d %b') }} – {{ election.voting_end.strftime('%d %b') if election.voting_end else '?' }}</td></tr>
+              {% endif %}
+          </table>
+      </div>
 
-        <!-- ADMIN action panel -->
-        {% if current_user.role in ['admin', 'dean', 'assistant_admin'] %}
-        <div class="action-panel">
-            {% if election.status.value == 'draft' %}
-            <h6><i class="fas fa-paper-plane mr-2"></i>Open Nominations</h6>
-            <p>Move this election to the nomination stage so members can apply.</p>
-            <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
-                <button type="submit" class="btn btn-light btn-block font-weight-700">
-                    <i class="fas fa-user-plus mr-2"></i>Open Nominations
-                </button>
-            </form>
+      <!-- ADMIN action panel -->
+      {% if current_user.role in ['admin', 'dean', 'assistant_admin'] %}
+      <div class="action-box">
+          {% if election.status.value == 'draft' %}
+          <h6><i class="fas fa-paper-plane me-2"></i>Open Nominations</h6>
+          <p>Move this election to the nomination stage so members can apply.</p>
+          <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
+              <button type="submit" class="btn btn-light w-100 fw-bold rounded-pill text-dark shadow-sm">Open Nominations</button>
+          </form>
 
-            {% elif election.status.value == 'nomination' %}
-            <h6><i class="fas fa-search mr-2"></i>Send to Dean Review</h6>
-            <p>Close nominations and send all submissions to the Dean for approval.</p>
-            <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
-                <button type="submit" class="btn btn-light btn-block font-weight-700">
-                    <i class="fas fa-arrow-right mr-2"></i>Close Nominations
-                </button>
-            </form>
+          {% elif election.status.value == 'nomination' %}
+          <h6><i class="fas fa-search me-2"></i>Send to Dean Review</h6>
+          <p>Close nominations and send all submissions to the Dean for approval.</p>
+          <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
+              <button type="submit" class="btn btn-light w-100 fw-bold rounded-pill text-dark shadow-sm">Close Nominations</button>
+          </form>
 
-            {% elif election.status.value == 'review' %}
-            <h6><i class="fas fa-vote-yea mr-2"></i>Open Voting</h6>
-            <p>Set the voting window and open the election to club members.</p>
-            <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
-                <div class="form-group mb-2">
-                    <label class="text-white" style="font-size:.8rem;font-weight:600;">Voting Opens</label>
-                    <input type="datetime-local" name="voting_start" class="form-control form-control-sm" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label class="text-white" style="font-size:.8rem;font-weight:600;">Voting Closes</label>
-                    <input type="datetime-local" name="voting_end" class="form-control form-control-sm" required>
-                </div>
-                <button type="submit" class="btn btn-light btn-block font-weight-700">
-                    <i class="fas fa-unlock mr-2"></i>Open Voting
-                </button>
-            </form>
+          {% elif election.status.value == 'review' %}
+          <h6><i class="fas fa-vote-yea me-2"></i>Open Voting</h6>
+          <p>Set the voting window and open the election to club members.</p>
+          <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
+              <div class="mb-2">
+                  <label class="text-white opacity-75 mb-1" style="font-size:.8rem;font-weight:600;">Voting Opens</label>
+                  <input type="datetime-local" name="voting_start" class="form-control form-control-sm border-0" required>
+              </div>
+              <div class="mb-3">
+                  <label class="text-white opacity-75 mb-1" style="font-size:.8rem;font-weight:600;">Voting Closes</label>
+                  <input type="datetime-local" name="voting_end" class="form-control form-control-sm border-0" required>
+              </div>
+              <button type="submit" class="btn btn-light w-100 fw-bold rounded-pill text-dark shadow-sm">Open Voting</button>
+          </form>
 
-            {% elif election.status.value == 'voting' %}
-            <h6><i class="fas fa-lock mr-2"></i>Close Voting</h6>
-            <p>End the voting period. Results will be tallied automatically.</p>
-            <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
-                <button type="submit" class="btn btn-light btn-block font-weight-700">
-                    <i class="fas fa-lock mr-2"></i>Close Voting
-                </button>
-            </form>
+          {% elif election.status.value == 'voting' %}
+          <h6><i class="fas fa-lock me-2"></i>Close Voting</h6>
+          <p>End the voting period. Results will be tallied automatically.</p>
+          <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
+              <button type="submit" class="btn btn-light w-100 fw-bold rounded-pill text-danger shadow-sm">Close Voting</button>
+          </form>
 
-            {% elif election.status.value == 'closed' %}
-            <h6><i class="fas fa-trophy mr-2"></i>Publish Results</h6>
-            <p>Make the results publicly visible to all club members.</p>
-            <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
-                <button type="submit" class="btn btn-light btn-block font-weight-700">
-                    <i class="fas fa-bullhorn mr-2"></i>Publish Results
-                </button>
-            </form>
+          {% elif election.status.value == 'closed' %}
+          <h6><i class="fas fa-trophy me-2"></i>Publish Results</h6>
+          <p>Finalize the election and make the results publicly visible to all club members.</p>
+          <form method="POST" action="{{ url_for('elections.election_advance', election_id=election.id) }}">
+              <button type="submit" class="btn btn-light w-100 fw-bold rounded-pill text-dark shadow-sm">Publish Results</button>
+          </form>
 
-            {% elif election.status.value == 'published' %}
-            <h6><i class="fas fa-check-circle mr-2"></i>Election Complete</h6>
-            <p>Results have been published. View the full breakdown below.</p>
-            <a href="{{ url_for('elections.results', election_id=election.id) }}"
-               class="btn btn-light btn-block font-weight-700">
-                <i class="fas fa-chart-bar mr-2"></i>View Full Results
-            </a>
-            {% endif %}
-        </div>
-        {% endif %}
+          {% elif election.status.value == 'published' %}
+          <h6><i class="fas fa-check-circle me-2"></i>Election Complete</h6>
+          <p>Results have been published and the new officials have been appointed.</p>
+          <a href="{{ url_for('elections.results', election_id=election.id) }}" class="btn btn-light w-100 fw-bold rounded-pill text-dark shadow-sm">View Full Results</a>
+          {% endif %}
+      </div>
+      {% endif %}
 
-        <!-- MEMBER: nominate -->
-        {% if election.is_nomination_open and can_stand %}
-        <div class="info-card" style="border:2px solid var(--g300);">
-            <div class="info-card-title"><i class="fas fa-user-plus"></i> Stand for Election</div>
-            <p style="font-size:.875rem;color:#64748b;">
-                Nominations are open. If you are an active member for 1+ year, you can apply.
-            </p>
-            <a href="{{ url_for('student.apply_leadership', election_id=election.id) }}"
-               class="btn btn-primary btn-block">
-                <i class="fas fa-paper-plane mr-2"></i>Submit My Nomination
-            </a>
-        </div>
-        {% endif %}
+      <!-- Actions -->
+      {% if election.is_nomination_open and can_stand %}
+      <div class="e-info-card border-warning">
+          <div class="e-card-title text-warning"><i class="fas fa-user-plus"></i> Stand for Election</div>
+          <p class="text-muted" style="font-size:.875rem;">Nominations are open. As an active member you can apply.</p>
+          <a href="{{ url_for('student.apply_leadership', election_id=election.id) }}" class="btn btn-warning w-100 fw-bold rounded-pill text-dark shadow-sm">Submit Nomination</a>
+      </div>
+      {% endif %}
 
-        <!-- DEAN: review link -->
-        {% if current_user.role in ('admin','dean') and election.status.value == 'review' %}
-        <div class="info-card" style="border:2px solid #fbbf24;">
-            <div class="info-card-title"><i class="fas fa-gavel"></i> Dean Review</div>
-            {% set pending_count = election.club.leadership_applications | selectattr('status','eq','pending') | list | length %}
-            <p style="font-size:.875rem;color:#64748b;">
-                <strong>{{ pending_count }}</strong> application(s) awaiting your review.
-            </p>
-            <a href="{{ url_for('dashboard.application_review_list') }}"
-               class="btn btn-warning btn-block">
-                <i class="fas fa-search mr-2"></i>Review Applications
-            </a>
-        </div>
-        {% endif %}
-
-        <!-- Results link (closed/published) -->
-        {% if election.status.value in ('closed','published') %}
-        <div class="info-card">
-            <div class="info-card-title"><i class="fas fa-chart-bar"></i> Results</div>
-            <a href="{{ url_for('elections.results', election_id=election.id) }}"
-               class="btn btn-primary btn-block">
-                <i class="fas fa-trophy mr-2"></i>View Full Results
-            </a>
-        </div>
-        {% endif %}
+      {% if election.status.value in ('closed','published') %}
+      <div class="e-info-card">
+          <div class="e-card-title"><i class="fas fa-chart-bar"></i> Results</div>
+          <a href="{{ url_for('elections.results', election_id=election.id) }}" class="btn btn-theme w-100 fw-bold rounded-pill shadow-sm">View Full Results</a>
+      </div>
+      {% endif %}
 
     </div>
+  </div>
+
 </div>
 {% endblock %}

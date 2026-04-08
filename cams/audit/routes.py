@@ -51,7 +51,7 @@ def _leader_clubs():
         .join(ClubMembership, ClubMembership.club_id == Club.id)
         .filter(
             ClubMembership.user_id == current_user.id,
-            ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+            ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
             ClubMembership.status == "active",
         )
         .all()
@@ -411,7 +411,7 @@ def _notify_rejection(report: AuditReport, reason: str):
     """
     leaders = ClubMembership.query.filter(
         ClubMembership.club_id == report.club_id,
-        ClubMembership.role.in_(["president", "secretary", "treasurer"]),
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
         ClubMembership.status == "active",
     ).all()
 

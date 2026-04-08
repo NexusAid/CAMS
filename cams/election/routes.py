@@ -15,10 +15,34 @@ from cams.models import (
 elections_bp = Blueprint("elections", __name__, template_folder="templates/elections")
 
 
-# ─────────────────────────────────────────
-# DECORATORS / GUARDS
-# ─────────────────────────────────────────
 from cams.utils.decorators import admin_required, dean_required
+
+def get_election_base_tmpl(user):
+    from flask import session
+    portal = session.get('active_portal')
+    
+    if not getattr(user, 'is_authenticated', False):
+        return "base/base.html"
+        
+    if portal == 'student':
+        return "base/base.html"
+        
+    if user.role in ['admin', 'dean']:
+        return "base/admin_base.html"
+        
+    from cams.models import ClubMembership
+    is_leader = ClubMembership.query.filter(
+        ClubMembership.user_id == user.id,
+        ClubMembership.role.in_(["president", "vice_president", "secretary", "treasurer"]),
+        ClubMembership.status == "active"
+    ).first() is not None
+    
+    if is_leader and portal == 'leader':
+        return "base/club_leader.html"
+        
+    # Default to base.html if none of the above match, or if it's a leader 
+    # but their portal isn't specifically set to 'leader' (though base fallback handles that)
+    return "base/club_leader.html" if is_leader else "base/base.html"
 
 
 # ─────────────────────────────────────────
@@ -31,12 +55,12 @@ def election_list():
     """All elections across all clubs."""
     if current_user.role in ['admin', 'dean']:
         elections = Election.query.order_by(Election.created_at.desc()).all()
-        base_tmpl = "base/admin_base.html"
     else:
         from cams.models import ClubMembership
         my_clubs = [m.club_id for m in ClubMembership.query.filter_by(user_id=current_user.id, status='active').all()]
         elections = Election.query.filter(Election.club_id.in_(my_clubs)).order_by(Election.created_at.desc()).all()
-        base_tmpl = "base/base.html"
+        
+    base_tmpl = get_election_base_tmpl(current_user)
         
     return render_template("elections/election_list.html", elections=elections, base_template=base_tmpl)
 
@@ -55,63 +79,88 @@ def election_create():
     if request.method == "POST":
         title            = request.form.get("title", "").strip()
         description      = request.form.get("description", "").strip()
-        club_id          = request.form.get("club_id", type=int)
+        club_id_raw      = request.form.get("club_id", "").strip()
         nomination_start = _parse_dt(request.form.get("nomination_start"))
         nomination_end   = _parse_dt(request.form.get("nomination_end"))
         position_titles  = request.form.getlist("position_title")
         position_descs   = request.form.getlist("position_description")
 
-        if not title or not club_id or not position_titles:
+        if not title or not club_id_raw or not position_titles:
             flash("Title, club and at least one position are required.", "danger")
             return render_template("elections/election_create.html", clubs=clubs)
 
-        election = Election(
-            title=title,
-            description=description,
-            club_id=club_id,
-            created_by=current_user.id,
-            status=ElectionStatus.NOMINATION,
-            nomination_start=nomination_start,
-            nomination_end=nomination_end,
-        )
-        db.session.add(election)
-        db.session.flush()   # get election.id before commit
+        target_clubs = []
+        if club_id_raw == "ALL":
+            target_clubs = Club.query.filter_by(status='active').all()
+        else:
+            try:
+                cid = int(club_id_raw)
+                club_obj = Club.query.get(cid)
+                if club_obj:
+                    target_clubs.append(club_obj)
+            except ValueError:
+                pass
 
-        for t, d in zip(position_titles, position_descs):
-            if t.strip():
-                db.session.add(ElectionPosition(
-                    election_id=election.id,
-                    title=t.strip(),
-                    description=d.strip()
-                ))
+        if not target_clubs:
+            flash("Invalid club selection or no active clubs available.", "danger")
+            return redirect(url_for('elections.election_create'))
+
+        created_election_ids = []
+
+        for c_obj in target_clubs:
+            election = Election(
+                title=title,
+                description=description,
+                club_id=c_obj.id,
+                created_by=current_user.id,
+                status=ElectionStatus.NOMINATION,
+                nomination_start=nomination_start,
+                nomination_end=nomination_end,
+            )
+            db.session.add(election)
+            db.session.flush()   # get election.id before commit
+
+            for t, d in zip(position_titles, position_descs):
+                if t.strip():
+                    db.session.add(ElectionPosition(
+                        election_id=election.id,
+                        title=t.strip(),
+                        description=d.strip()
+                    ))
+            
+            created_election_ids.append(election.id)
 
         db.session.commit()
         
         # Notify active members
-        members = ClubMembership.query.filter_by(club_id=club_id, status='active').all()
-        club = Club.query.get(club_id)
-        subject = f"New Election: {title}"
-        message = f"An election '{title}' has been created for {club.name}. Nominations are now open. Please review the positions and apply if you are interested!"
-        
-        for m in members:
-            # In-app notification
-            send_notification(
-                title=subject,
-                message=message,
-                notification_type="election_created",
-                priority="high",
-                user_id=m.user_id,
-                club_id=club_id
-            )
-            # Email notification
-            if m.user and m.user.email:
-                try:
-                    send_email(m.user.email, subject, message)
-                except Exception as e:
-                    current_app.logger.error(f"Failed to send email to {m.user.email}: {e}")
+        for c_obj in target_clubs:
+            members = ClubMembership.query.filter_by(club_id=c_obj.id, status='active').all()
+            subject = f"New Election: {title}"
+            message = f"An election '{title}' has been created for {c_obj.name}. Nominations are now open. Please review the positions and apply if you are interested!"
+            
+            for m in members:
+                # In-app notification
+                send_notification(
+                    title=subject,
+                    message=message,
+                    notification_type="election_created",
+                    priority="high",
+                    user_id=m.user_id,
+                    club_id=c_obj.id
+                )
+                # Email notification
+                if m.user and m.user.email:
+                    try:
+                        send_email(m.user.email, subject, message)
+                    except Exception as e:
+                        current_app.logger.error(f"Failed to send email to {m.user.email}: {e}")
 
-        flash(f'Election "{title}" created successfully.', "success")
-        return redirect(url_for("elections.election_detail", election_id=election.id))
+        if len(target_clubs) == 1:
+            flash(f'Election "{title}" created successfully.', "success")
+            return redirect(url_for("elections.election_detail", election_id=created_election_ids[0]))
+        else:
+            flash(f'Successfully created batch elections for {len(target_clubs)} active clubs.', "success")
+            return redirect(url_for("elections.election_list"))
 
     return render_template("elections/election_create.html", clubs=clubs)
 
@@ -152,7 +201,7 @@ def election_detail(election_id):
              if membership:
                  can_stand = True
 
-    base_tmpl = "base/admin_base.html" if current_user.role in ['admin', 'dean'] else "base/base.html"
+    base_tmpl = get_election_base_tmpl(current_user)
     return render_template(
         "elections/election_detail.html",
         election=election,
@@ -369,7 +418,7 @@ def vote(election_id):
         flash("You have already voted in all positions for this election.", "info")
         return redirect(url_for("elections.election_detail", election_id=election_id))
 
-    base_tmpl = "base/admin_base.html" if current_user.role in ['admin', 'dean'] else "base/base.html"
+    base_tmpl = get_election_base_tmpl(current_user)
     return render_template(
         "elections/vote.html",
         election=election,
@@ -408,7 +457,7 @@ def results(election_id):
 
     total_eligible = _count_eligible_voters(election)
 
-    base_tmpl = "base/admin_base.html" if current_user.role in ['admin', 'dean'] else "base/base.html"
+    base_tmpl = get_election_base_tmpl(current_user)
     return render_template(
         "elections/results.html",
         election=election,

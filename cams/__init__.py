@@ -69,6 +69,14 @@ def create_app():
     # -------------------------------------------
     @app.before_request
     def secure_session():
+        # Track the active portal based on requested path
+        if request.path.startswith("/student"):
+            session['active_portal'] = 'student'
+        elif request.path.startswith("/leader"):
+            session['active_portal'] = 'leader'
+        elif request.path.startswith(("/dashboard", "/clubs", "/admin", "/audit")):
+            session['active_portal'] = 'admin'
+
         # Define routes that do not require authentication to access.
         # This includes all login, logout, registration, and static file routes.
         allowed_prefixes = (
