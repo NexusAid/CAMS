@@ -90,6 +90,7 @@ def create_app():
             "/student/activate",
             "/student/forgot_password",
             "/student/reset_password",
+            "/events",
             "/static",
         )
 
@@ -161,6 +162,14 @@ def create_app():
             stats=stats,
             events=latest_events
         )
+
+    # -------------------------------------------
+    # PUBLIC EVENTS ROUTE
+    # -------------------------------------------
+    @app.route("/events")
+    def public_events():
+        events = Event.query.order_by(Event.date.desc()).all()
+        return render_template("public_events.html", events=events)
 
     # -------------------------------------------
     # REGISTER CLI COMMANDS
