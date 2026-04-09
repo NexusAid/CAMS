@@ -1231,8 +1231,18 @@
         }
 
         @media (max-width: 768px) {
-            .nav-links, .nav-actions { display: none; }
-            .nav-toggle { display: block; }
+            .nav-inner { flex-wrap: wrap; }
+            .nav-links, .nav-actions { display: none; width: 100%; flex-direction: column; align-items: stretch; text-align: left; }
+            .nav-links { margin-top: 1rem; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .nav-links a { display: block; padding: 0.75rem 1rem; border-radius: 6px; }
+            .nav-actions { gap: 0.5rem; padding-bottom: 0.5rem;}
+            .nav-actions a { text-align: center; display: block; }
+            .nav-toggle { display: block; color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.2); }
+            
+            /* Mobile Nav Active */
+            .navbar.mobile-menu-open { background: rgba(10,22,40,0.98) !important; padding-bottom: 1rem; }
+            .navbar.mobile-menu-open .nav-links, .navbar.mobile-menu-open .nav-actions { display: flex; }
+
             .feat-cell-5, .feat-cell-4, .feat-cell-3, .feat-cell-7 { grid-column: span 12; }
             .events-row { grid-template-columns: 1fr; }
             .event-card { aspect-ratio: 4/3; }
@@ -1645,9 +1655,18 @@
     timer = setInterval(() => goTo(current + 1), 7000);
 })();
 
-// Navbar scroll
+// Navbar scroll & Mobile Menu
+const navbar = document.getElementById('navbar');
 window.addEventListener('scroll', () => {
-    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    navbar.classList.toggle('scrolled', window.scrollY > 50);
+});
+document.querySelector('.nav-toggle').addEventListener('click', () => {
+    navbar.classList.toggle('mobile-menu-open');
+});
+document.querySelectorAll('.nav-links a').forEach(a => {
+    a.addEventListener('click', () => {
+        navbar.classList.remove('mobile-menu-open');
+    });
 });
 
 // Stat counters

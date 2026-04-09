@@ -218,6 +218,7 @@
 
       <div class="e-info-card">
           <div class="e-card-title"><i class="fas fa-info-circle"></i> Timeline Info</div>
+          <div class="table-responsive">
           <table class="table table-sm table-borderless mb-0" style="font-size:.9rem;">
               <tr><td class="text-muted fw-semibold ps-0">Creator</td>
                   <td class="fw-bold text-end pe-0">{{ election.creator.name }}</td></tr>
@@ -232,6 +233,7 @@
                   <td class="fw-bold text-end pe-0 pt-2">{{ election.voting_start.strftime('%d %b') }} – {{ election.voting_end.strftime('%d %b') if election.voting_end else '?' }}</td></tr>
               {% endif %}
           </table>
+          </div>
       </div>
 
       <!-- ADMIN action panel -->
