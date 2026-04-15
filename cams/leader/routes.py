@@ -394,23 +394,29 @@ def events():
     club_ids = [lead.club_id for lead in leaderships]
 
     from cams.models import Event
-    from sqlalchemy import or_
+    from datetime import timedelta
 
-    now = datetime.utcnow()
+    now = datetime.now()
+    all_events = Event.query.filter(Event.club_id.in_(club_ids)).all()
+    
+    upcoming_events = []
+    active_events = []
+    past_events = []
+    
+    for ev in all_events:
+        end_time = ev.end_date if ev.end_date else ev.date + timedelta(hours=2)
+        if now < ev.date:
+            upcoming_events.append(ev)
+        elif ev.date <= now <= end_time:
+            active_events.append(ev)
+        else:
+            past_events.append(ev)
+            
+    upcoming_events.sort(key=lambda x: x.date)
+    active_events.sort(key=lambda x: x.date)
+    past_events.sort(key=lambda x: x.date, reverse=True)
 
-    # Upcoming events: end_date >= now OR date >= now (if end_date is missing)
-    upcoming_events = Event.query.filter(
-        Event.club_id.in_(club_ids),
-        or_(Event.end_date >= now, Event.date >= now)
-    ).order_by(Event.date).all()
-
-    # Past events: end_date < now OR date < now (if end_date is missing)
-    past_events = Event.query.filter(
-        Event.club_id.in_(club_ids),
-        or_(Event.end_date < now, Event.date < now)
-    ).order_by(Event.date.desc()).all()
-
-    return render_template("club_leader/events.html", upcoming_events=upcoming_events, past_events=past_events, current_time=now)
+    return render_template("club_leader/events.html", upcoming_events=upcoming_events, active_events=active_events, past_events=past_events, current_time=now)
 
 
 # -------------------------------------------------
@@ -436,11 +442,15 @@ def event_attendance(event_id):
         flash("Unauthorized access to this event's attendance.", "danger")
         return redirect(url_for("club_leader.events"))
 
-    # Only allow attendance if event is in the past
-    now = datetime.utcnow()
-    event_conclusion = event.end_date if event.end_date else event.date
-    if event_conclusion > now:
-        flash("You cannot take attendance for an event that hasn't concluded yet.", "warning")
+    from datetime import timedelta
+    
+    now = datetime.now()
+    end_time = event.end_date if event.end_date else event.date + timedelta(hours=2)
+    
+    is_past = now > end_time
+    
+    if now < event.date:
+        flash("You cannot take attendance for an event that hasn't started yet.", "warning")
         return redirect(url_for("club_leader.events"))
 
     # Get active members of the club
@@ -450,6 +460,10 @@ def event_attendance(event_id):
     ).all()
 
     if request.method == "POST":
+        if is_past:
+            flash("Attendance can only be managed during the event. This event has ended.", "warning")
+            return redirect(url_for("club_leader.events"))
+            
         # Delete old attendance records for this event
         Attendance.query.filter_by(event_id=event.id).delete()
         
@@ -477,7 +491,8 @@ def event_attendance(event_id):
         "club_leader/event_attendance.html", 
         event=event, 
         members=members, 
-        attendance_map=attendance_map
+        attendance_map=attendance_map,
+        is_past=is_past
     )
 
 
@@ -601,7 +616,7 @@ def reports():
     inactive_members = sum(1 for m in members if m.status == "inactive")
 
     # Event stats
-    now = datetime.utcnow()
+    now = datetime.now()
     events = Event.query.filter_by(club_id=club.id).all()
     total_events = len(events)
     upcoming_events = [e for e in events if (e.end_date or e.date) >= now]

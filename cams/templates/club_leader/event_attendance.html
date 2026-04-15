@@ -20,6 +20,20 @@
     </div>
 </div>
 
+{% if is_past %}
+<div class="alert alert-secondary border-0 shadow-sm rounded-4 mb-4" role="alert">
+    <div class="d-flex">
+        <div class="me-3">
+            <i class="fas fa-lock fs-4 text-secondary"></i>
+        </div>
+        <div>
+            <h5 class="alert-heading fw-bold mb-1">Attendance Closed</h5>
+            <p class="mb-0">This event has already ended. Attendance records are locked and cannot be modified.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
     <div class="card-header bg-white border-bottom p-4">
         <h5 class="m-0 fw-bold text-dark">
@@ -65,7 +79,7 @@
                                 {% endif %}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <select name="attendance_user_{{ member.user.id }}" class="form-select form-select-sm rounded-pill border {% if status == 'attended' %}bg-success text-white border-success{% elif status == 'apology' %}bg-warning border-warning text-dark{% else %}bg-light border-secondary text-secondary{% endif %}" style="width: 140px; margin: 0 auto; display: inline-block; cursor: pointer; font-weight: 600;" onchange="updateSelectColor(this)">
+                                <select name="attendance_user_{{ member.user.id }}" class="form-select form-select-sm rounded-pill border {% if status == 'attended' %}bg-success text-white border-success{% elif status == 'apology' %}bg-warning border-warning text-dark{% else %}bg-light border-secondary text-secondary{% endif %}" style="width: 140px; margin: 0 auto; display: inline-block; cursor: pointer; font-weight: 600;" onchange="updateSelectColor(this)" {% if is_past %}disabled{% endif %}>
                                     <option value="attended" {% if status == 'attended' %}selected{% endif %}>🟢 Attended</option>
                                     <option value="absent" {% if status == 'absent' %}selected{% endif %}>🔴 Absent</option>
                                     <option value="apology" {% if status == 'apology' %}selected{% endif %}>🟠 Apology</option>
@@ -87,11 +101,15 @@
                 </table>
             </div>
         </div>
-        {% if members %}
+        {% if members and not is_past %}
         <div class="card-footer bg-white border-top p-4 d-flex justify-content-end">
             <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" style="background-color: var(--amber-d); border: none;">
                 <i class="fas fa-save me-2"></i> Save Attendance
             </button>
+        </div>
+        {% elif members and is_past %}
+        <div class="card-footer bg-light border-top p-4 text-center text-muted fw-bold">
+            <i class="fas fa-lock me-2"></i> Attendance is closed for past events.
         </div>
         {% endif %}
     </form>
