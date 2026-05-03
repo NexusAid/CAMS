@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Help Center — CAMS{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Figtree:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --cream: #F5F0E8;
+            --warm-white: #FAF8F4;
+            --ink: #0F0D0A;
+            --ink-60: rgba(15,13,10,0.6);
+            --ink-30: rgba(15,13,10,0.3);
+            --gold: #B8924A;
+            --gold-light: #D4AA6B;
+            --gold-pale: #F0E4CC;
+            --forest: #1E3D2F;
+            --midnight: #0A1628;
+            --border: rgba(184,146,74,0.25);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Figtree', sans-serif;
+            background: var(--warm-white);
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            padding: 1.1rem 0; background: rgba(10,22,40,0.95);
+            border-bottom: 1px solid rgba(184,146,74,0.25);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.25);
+        }
+
+        .nav-inner {
+            max-width: 1280px; margin: 0 auto; padding: 0 2.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .nav-brand {
+            display: flex; align-items: center; gap: 0.75rem; text-decoration: none;
+        }
+
+        .nav-brand-mark {
+            width: 38px; height: 38px; background: var(--forest);
+            border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; color: var(--gold-light); font-size: 1rem;
+        }
+
+        .nav-brand-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 700; font-size: 1.5rem; color: #fff;
+        }
+
+        .nav-brand-text span { color: var(--gold-light); }
+
+        .nav-links { display: flex; align-items: center; gap: 0.25rem; list-style: none; margin-bottom: 0; }
+        .nav-links a {
+            text-decoration: none; color: rgba(255,255,255,0.65);
+            font-size: 0.88rem; font-weight: 500; padding: 0.5rem 1rem;
+            transition: all 0.25s;
+        }
+        .nav-links a:hover { color: #fff; }
+
+        .nav-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+        .btn-ghost {
+            text-decoration: none; color: rgba(255,255,255,0.8);
+            font-size: 0.85rem; font-weight: 500; padding: 0.55rem 1.1rem;
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-ghost-gold {
+            text-decoration: none; color: var(--gold-light);
+            font-size: 0.85rem; font-weight: 500; padding: 0.55rem 1.1rem;
+            border-radius: 8px; border: 1px solid rgba(184,146,74,0.35);
+        }
+        .btn-solid {
+            text-decoration: none; background: var(--forest);
+            color: var(--gold-pale); font-size: 0.85rem; font-weight: 600;
+            padding: 0.55rem 1.4rem; border-radius: 8px;
+        }
+
+        .help-section { padding: 9rem 0 5rem; min-height: calc(100vh - 150px); }
+        .section-inner { max-width: 1280px; margin: 0 auto; padding: 0 2.5rem; }
+
+        /* ── FOOTER ── */
+        footer { background: var(--ink); color: rgba(255,255,255,0.5); padding: 3rem 0 2rem; margin-top: auto;}
+        .footer-inner { max-width: 1280px; margin: 0 auto; padding: 0 2.5rem; }
+        .footer-bottom {
+            display: flex; justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        /* ── RESPONSIVE ── */
+        .nav-toggle { display: none; background: none; border: 1px solid var(--ink-30); border-radius: 6px; padding: 0.4rem 0.65rem; cursor: pointer; }
+        
+        @media (max-width: 768px) {
+            .nav-inner { flex-wrap: wrap; }
+            .nav-links, .nav-actions { display: none; width: 100%; flex-direction: column; align-items: stretch; text-align: left; }
+            .nav-links { margin-top: 1rem; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .nav-links a { display: block; padding: 0.75rem 1rem; border-radius: 6px; }
+            .nav-actions { gap: 0.5rem; padding-bottom: 0.5rem;}
+            .nav-actions a { text-align: center; display: block; }
+            .nav-toggle { display: block; color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.2); position: absolute; right: 2.5rem; top: 1.1rem; }
+            
+            .navbar.mobile-menu-open { background: rgba(10,22,40,0.98) !important; padding-bottom: 1rem; }
+            .navbar.mobile-menu-open .nav-links, .navbar.mobile-menu-open .nav-actions { display: flex; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+    <div class="nav-inner">
+        <a class="nav-brand" href="/">
+            <div class="nav-brand-mark"><i class="bi bi-people-fill"></i></div>
+            <span class="nav-brand-text">CA<span>M</span>S</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Back to Home</a></li>
+            <li><a href="{{ url_for('help.index') }}">Help Center</a></li>
+        </ul>
+        <div class="nav-actions">
+            <a href="/student/login" class="btn-ghost">Student Portal</a>
+            <a href="/club-leader/login" class="btn-ghost-gold"><i class="bi bi-star"></i> Club Leader</a>
+        </div>
+        <button class="nav-toggle" aria-label="Menu"><i class="bi bi-list" style="font-size:1.2rem;"></i></button>
+    </div>
+</nav>
+
+<section class="help-section">
+    <div class="section-inner container">
+        {% block content %}{% endblock %}
+    </div>
+</section>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-bottom">
+            <span>&copy; {{ now.year if now else '2025' }} CAMS — Club and Associations Management System. All rights reserved.</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+const navbar = document.getElementById('navbar');
+document.querySelector('.nav-toggle').addEventListener('click', () => {
+    navbar.classList.toggle('mobile-menu-open');
+});
+</script>
+</body>
+</html>

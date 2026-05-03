@@ -1,0 +1,67 @@
+{% extends "base/help_base.html" %}
+
+{% block title %}Help Center - CAMS{% endblock %}
+{% block page_title %}Help Center{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <div class="card bg-gradient-primary text-white border-0" style="background: linear-gradient(135deg, var(--g900) 0%, var(--g700) 100%);">
+            <div class="card-body p-5 text-center">
+                <h1 class="display-5 text-white fw-bold mb-3" style="font-family: 'Outfit', sans-serif;">How can we help you?</h1>
+                <p class="lead text-white-50 mb-4">Choose a category below to find step-by-step guides for using CAMS.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Student Guide -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.2s;">
+            <div class="card-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" style="width: 60px; height: 60px;">
+                        <i class="fas fa-user-graduate fs-3 text-primary"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-2">Student Guide</h4>
+                <p class="text-muted small mb-4">Learn how to register, join clubs, and vote in elections.</p>
+                <a href="{{ url_for('help.student_guide') }}" class="btn btn-outline-primary rounded-pill w-100">View Guide</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Club Leader Guide -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.2s;">
+            <div class="card-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 rounded-circle" style="width: 60px; height: 60px;">
+                        <i class="fas fa-crown fs-3 text-warning"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-2">Club Leader Guide</h4>
+                <p class="text-muted small mb-4">Learn how to manage memberships, upload compliance documents, and create events.</p>
+                <a href="{{ url_for('help.leader_guide') }}" class="btn btn-outline-primary rounded-pill w-100">View Guide</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Guide -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.2s;">
+            <div class="card-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle" style="width: 60px; height: 60px;">
+                        <i class="fas fa-user-shield fs-3 text-danger"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-2">Admin Guide</h4>
+                <p class="text-muted small mb-4">Learn how to review compliance documents, audits, and manage elections.</p>
+                <a href="{{ url_for('help.admin_guide') }}" class="btn btn-outline-primary rounded-pill w-100">View Guide</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

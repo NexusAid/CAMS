@@ -1327,6 +1327,25 @@
         });
       }, 5000);
 
+      /* Initialize Tooltips */
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+
+      /* Form Submission Loading State */
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn && form.checkValidity()) {
+                const w = btn.offsetWidth;
+                btn.style.width = w + 'px';
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Wait...';
+                btn.disabled = true;
+            }
+        });
+      });
+
       /* Move all modals to body to strictly bypass stacking contexts */
       document.querySelectorAll('.modal').forEach(modal => {
         document.body.appendChild(modal);

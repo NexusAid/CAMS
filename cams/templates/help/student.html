@@ -1,0 +1,52 @@
+{% extends "base/help_base.html" %}
+
+{% block title %}Student Guide - CAMS Help Center{% endblock %}
+{% block page_title %}Student Guide{% endblock %}
+
+{% block breadcrumb %}
+<span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
+<a href="{{ url_for('help.index') }}">Help Center</a>
+<span class="bc-sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
+<span class="bc-page">Student Guide</span>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0"><i class="fas fa-user-graduate me-2"></i> Student Guide</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="lead mb-5">Welcome to the CAMS Student Portal. This guide will help you navigate the system and participate in campus clubs.</p>
+
+                <h5 class="fw-bold mb-3">1. Getting Started: Registration and Login</h5>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-check text-success me-2"></i><strong>How to Register:</strong> Navigate to the CAMS homepage and click on the <strong>Register</strong> button. Fill in the required details (Full Name, Email, Registration Number) and create your account.</li>
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-check text-success me-2"></i><strong>How to Log In:</strong> Use your registered email address and password on the student login page.</li>
+                </ul>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3">2. Joining and Participating in Clubs</h5>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-angle-right text-primary me-2"></i><strong>How to Join a Club:</strong> From your Dashboard, click on <strong>Available Clubs</strong>. Browse the directory, view club details, and click <strong>Request to Join</strong>. Your request will remain pending until a Club Leader approves it.</li>
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-angle-right text-primary me-2"></i><strong>My Memberships:</strong> You can track all your active, pending, and past club memberships from the <strong>My Memberships</strong> section.</li>
+                </ul>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3">3. Participating in Club Elections</h5>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-angle-right text-primary me-2"></i><strong>How to Nominate Yourself:</strong> Navigate to the <strong>Elections</strong> section during an open nomination window. Select a position and submit your application. Note: Final year students may not be eligible to run for office.</li>
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-angle-right text-primary me-2"></i><strong>How to Vote:</strong> During an active voting window, open the election, select your preferred candidates for each position, and click <strong>Cast Vote</strong>. Remember, your vote is secure and anonymous.</li>
+                </ul>
+
+                <div class="mt-5 text-center">
+                    <a href="{{ url_for('help.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i> Back to Help Center</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

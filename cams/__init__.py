@@ -43,6 +43,7 @@ def create_app():
     from cams.leader.routes import club_leader
     from cams.election.routes import elections_bp
     from cams.audit.routes import audit_bp
+    from cams.help.routes import help_bp
 
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(clubs)
@@ -51,6 +52,7 @@ def create_app():
     app.register_blueprint(club_leader)
     app.register_blueprint(elections_bp, url_prefix="/elections")
     app.register_blueprint(audit_bp, url_prefix="/audit")
+    app.register_blueprint(help_bp, url_prefix="/help")
 
     # -------------------------------------------
     # PREVENT BACK & FORWARD BUTTON CACHE
@@ -92,6 +94,7 @@ def create_app():
             "/student/reset_password",
             "/events",
             "/static",
+            "/help",
         )
 
         if request.path == "/" or request.path.startswith(allowed_prefixes):
@@ -120,6 +123,11 @@ def create_app():
     def inject_blueprints():
         from flask import current_app
         return dict(blueprints=current_app.blueprints)
+
+    @app.context_processor
+    def inject_now():
+        from datetime import datetime
+        return dict(now=datetime.now())
 
     @app.context_processor
     def inject_notifications():

@@ -1,0 +1,44 @@
+{% extends "base/help_base.html" %}
+
+{% block title %}Club Leader Guide - CAMS Help Center{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark py-3">
+                <h4 class="mb-0"><i class="fas fa-crown me-2"></i> Club Leader Guide</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="lead mb-5">Welcome to the CAMS Club Leader Portal. This guide will help you manage your club operations effectively.</p>
+
+                <h5 class="fw-bold mb-3">1. Managing Memberships</h5>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-check text-warning me-2"></i><strong>Reviewing Applications:</strong> Navigate to the <strong>Members</strong> section to view pending membership requests. You can approve or reject them to maintain your club's roster.</li>
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-check text-warning me-2"></i><strong>Member Directory:</strong> View all active members and track their participation status.</li>
+                </ul>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3">2. Planning Events</h5>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-angle-right text-dark me-2"></i><strong>Creating Events:</strong> Use the <strong>Events</strong> module to propose new activities. Fill out the event details, required resources, and submit it for Admin approval.</li>
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-angle-right text-dark me-2"></i><strong>Tracking Attendance:</strong> Keep track of who attends your events directly within the platform.</li>
+                </ul>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3">3. Compliance and Documents</h5>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-angle-right text-dark me-2"></i><strong>Document Uploads:</strong> Submit your club constitution, minutes, and financial reports through the <strong>Documents</strong> tab.</li>
+                    <li class="list-group-item px-0 border-0"><i class="fas fa-angle-right text-dark me-2"></i><strong>Compliance Status:</strong> Regularly check your club's compliance score to ensure you meet all university guidelines.</li>
+                </ul>
+
+                <div class="mt-5 text-center">
+                    <a href="{{ url_for('help.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i> Back to Help Center</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

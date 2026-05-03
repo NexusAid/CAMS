@@ -212,6 +212,46 @@
             outline: none;
         }
 
+        /* ── FLOATING LABELS FIXES ── */
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+        .form-floating > .form-control {
+            margin-bottom: 0; /* Override earlier margin */
+            height: calc(3.8rem + 2px);
+            padding: 1.6rem 1.4rem 0.6rem 1.4rem;
+        }
+        .form-floating > label {
+            padding: 1.1rem 1.4rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: var(--text-dim);
+            transform: scale(0.85) translateY(-0.8rem) translateX(0.15rem);
+            background-color: transparent !important;
+        }
+
+        /* ── PASSWORD TOGGLE ── */
+        .password-wrapper {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            cursor: pointer;
+            z-index: 10;
+            transition: color 0.2s;
+            font-size: 1.1rem;
+        }
+        .password-toggle:hover {
+            color: #fff;
+        }
+
         /* Reset autofill styles to dark mode */
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
@@ -420,5 +460,46 @@
 
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Password Toggle
+    function togglePassword(inputId, icon) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+
+    // Auto-dismiss Flash Messages
+    document.addEventListener("DOMContentLoaded", function() {
+        const alerts = document.querySelectorAll('.alert-dismissible');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    });
+
+    // Form Submission Loading State
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn && form.checkValidity()) {
+                const w = btn.offsetWidth;
+                btn.style.width = w + 'px'; // prevent layout shift
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Please wait...';
+                btn.disabled = true;
+                // Since button is disabled, we might need a hidden input to submit its value if any, but standard forms work fine.
+            }
+        });
+    });
+</script>
 </body>
 </html>

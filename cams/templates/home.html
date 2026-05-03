@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAMS — Clubs & Activities Management System</title>
+    <title>CAMS — Club and Associations Management System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Figtree:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -932,6 +932,27 @@
             color: var(--ink);
         }
 
+        .event-card.event-past {
+            opacity: 0.6;
+            filter: grayscale(80%);
+        }
+        
+        .event-card.event-past::after {
+            content: "Passed";
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 0.3rem 0.7rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            z-index: 10;
+        }
+
         .empty-events {
             grid-column: 1 / -1;
             text-align: center;
@@ -1508,7 +1529,7 @@
         {% if events %}
         <div class="events-row">
             {% for event in events %}
-            <div class="event-card reveal">
+            <div class="event-card reveal {% if event.date and event.date < now %}event-past{% endif %}">
                 <div class="event-card-bg">
                     {% if event.image_path %}
                     <img src="{{ url_for('static', filename=event.image_path) }}" alt="{{ event.title }}">
@@ -1599,7 +1620,7 @@
                     <i class="bi bi-people-fill" style="font-size:1.5rem; color:var(--gold);"></i>
                     CA<span>M</span>S
                 </div>
-                <p class="footer-tagline">The official Clubs & Activities Management System for Egerton University. Streamlining club operations and ensuring compliance with university regulations.</p>
+                <p class="footer-tagline">The official Club and Associations Management System for Egerton University. Streamlining club operations and ensuring compliance with university regulations.</p>
                 <div class="footer-socials">
                     <a href="#" class="social-btn" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
                     <a href="#" class="social-btn" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
@@ -1619,9 +1640,9 @@
             <div>
                 <div class="footer-col-title">Resources</div>
                 <ul class="footer-links">
-                    <li><a href="/resources/regulations">University Regulations</a></li>
-                    <li><a href="/resources/guidelines">Club Guidelines</a></li>
-                    <li><a href="/resources/templates">Document Templates</a></li>
+                    <li><a href="/help/student">Student Guide</a></li>
+                    <li><a href="/help/leader">Club Leader Guide</a></li>
+                    <li><a href="/help/admin">Admin Guide</a></li>
                     <li><a href="/help">Help Center</a></li>
                 </ul>
             </div>
@@ -1634,7 +1655,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>&copy; {{ now.year if now else '2025' }} CAMS — Clubs & Activities Management System. All rights reserved.</span>
+            <span>&copy; {{ now.year if now else '2025' }} CAMS — Club and Associations Management System. All rights reserved.</span>
             <span>Egerton University · P.O. Box 536, Egerton 20115, Kenya</span>
         </div>
     </div>
