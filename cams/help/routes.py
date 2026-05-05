@@ -16,13 +16,15 @@ def ask_ai():
         answer = (
             "**Registration & Account Setup:**<br>"
             "1. **Students**: Navigate to the CAMS homepage and click on the **Register** button. You will need your Full Name, Email, and Registration Number (e.g., S13/07803/22).<br>"
-            "2. **Club Leaders, Admins, & Dean Staff**: Accounts for leadership and administration are provisioned manually by the Dean of Students office. Please contact system administrators for access."
+            "   - *Note*: Names must be at least 3 characters long and contain only letters.<br>"
+            "2. **Club Leaders, Admins, & Dean Staff**: Accounts for leadership and administration are provisioned manually by the Dean of Students office. Leaders must activate their roles via an email link sent upon club approval."
         )
-    elif any(k in question for k in ["login", "log in", "sign in", "password", "auth", "authenticate", "forgot password", "reset password", "change password", "can't access", "locked out"]):
+    elif any(k in question for k in ["login", "log in", "sign in", "password", "auth", "authenticate", "forgot password", "reset password", "change password", "can't access", "locked out", "security", "strong password", "ai password", "suggested password", "password suggestion"]):
         answer = (
             "**Login & Authentication:**<br>"
             "- Use your registered email address and password on the respective login portal (Student, Club Leader, or Admin).<br>"
-            "- **Passwords**: For security, CAMS prevents reusing your previous passwords when changing or resetting them. If you are forced to change your password on first login, follow the prompts."
+            "- **AI Password Suggestions**: When registering or changing your password, you can use the **'Suggest AI Password'** feature to instantly generate a secure, high-entropy password.<br>"
+            "- **Password Security**: CAMS prevents reusing your previous passwords. Ensure your password is at least 6 characters long and includes a variety of characters."
         )
     elif any(k in question for k in ["club", "create club", "new club", "register club", "society", "association", "group", "organization", "chapter", "dormant", "dormancy", "start a club", "form a club", "new society", "suspend"]):
         answer = (
@@ -46,19 +48,19 @@ def ask_ai():
             "- **Attendance**: Event attendance is tracked by the system. Students can be marked as `attended`, `absent`, or having sent an `apology`.<br>"
             "- **Public Events**: Approved events are showcased on the public Events calendar for all university members to see."
         )
-    elif any(k in question for k in ["election", "vote", "nominate", "position", "candidate", "campaign", "voting", "poll", "ballot", "run for office", "elect", "leader"]):
+    elif any(k in question for k in ["election", "vote", "nominate", "position", "candidate", "campaign", "voting", "poll", "ballot", "run for office", "elect", "leader", "apply for role", "application"]):
         answer = (
             "**Elections, Nominations & Voting:**<br>"
-            "- **Elections Lifecycle**: Elections go through `draft`, `nomination` (open for applications), `review` (Dean approval), `voting` (active voting window), `closed`, and `published` stages.<br>"
-            "- **Nominations**: Only active club members can nominate themselves. *Final year students (Year 4+) are not eligible to stand for election.*<br>"
-            "- **Voting**: During the active voting window, any active club member can cast exactly one anonymous vote per position. The system calculates winners automatically."
+            "- **Elections Lifecycle**: Elections go through `draft`, `nomination` (open for applications), `review` (Dean approval), `voting`, `closed`, and `published` stages.<br>"
+            "- **Eligibility**: Only active club members can nominate themselves. *Final year students (Year 4+) are not eligible to stand for election* to ensure leadership continuity.<br>"
+            "- **Voting**: During the active voting window, any active club member can cast exactly one anonymous vote per position. Winners are calculated automatically by the system."
         )
-    elif any(k in question for k in ["compliance", "document", "constitution", "minutes", "rules", "regulations", "score", "warning", "non_compliant", "deregistration", "requirements", "guidelines", "bylaws"]):
+    elif any(k in question for k in ["compliance", "document", "constitution", "minutes", "rules", "regulations", "score", "warning", "non_compliant", "deregistration", "requirements", "guidelines", "bylaws", "health", "metrics"]):
         answer = (
             "**Club Compliance & Documents:**<br>"
-            "- CAMS enforces strict compliance rules. Clubs must maintain at least 20 active members and have an active Patron.<br>"
-            "- **Documents Required**: Clubs must upload their Constitution, Meeting Minutes, Patron Letter, Members List, and Rules.<br>"
-            "- **Scoring**: The system calculates a live Compliance Score based on these 8 factors. Falling behind results in warnings or deregistration."
+            "- **Compliance Score**: The system calculates a live score (0-100%) based on 8 factors: Minimum 20 members, Active Patron, Constitution, Minutes, Patron Letter, Financial Reports, Election Records, and Activity (no dormancy).<br>"
+            "- **Status**: Falling below 100% may move a club to `warning`. If issues aren't resolved within 14 days, the club becomes `non_compliant`.<br>"
+            "- **Deregistration**: Chronic non-compliance or dormancy (>180 days without events) can lead to deregistration by the Dean of Students."
         )
     elif any(k in question for k in ["audit", "finance", "money", "report", "budget", "expenses", "income", "funding", "treasury", "funds", "financial", "accounts", "cash"]):
         answer = (
@@ -81,8 +83,10 @@ def ask_ai():
         )
     elif any(k in question for k in ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening", "howdy", "hiya", "what's up", "sup"]):
         answer = "Hello! I am your fully integrated CAMS AI Assistant. I know everything about clubs, events, elections, compliance, financial audits, and university policies. How can I help you today?"
-    elif any(k in question for k in ["thank", "thanks", "appreciate", "cheers", "good job", "awesome", "great"]):
-        answer = "You're very welcome! If you need anything else, I'm always here."
+    elif any(k in question for k in ["thank you", "thanks", "appreciate", "cheers", "good job", "awesome", "great"]):
+        answer = "You're very welcome! If you need anything else, I'm always here to help."
+    elif "welcome" in question:
+        answer = "Thank you! I am happy to be part of the CAMS ecosystem. Let me know if you need help with club registrations, elections, or audits!"
     else:
         answer = (
             "I'm not quite sure how to answer that specific question yet. "

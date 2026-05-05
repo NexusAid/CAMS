@@ -2,6 +2,68 @@
 
 {% block title %}Student Registration - CAMS{% endblock %}
 
+{% block extra_head %}
+<script>
+function suggestAIPassword() {
+    const length = 14;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+    let retVal = "";
+    
+    // Ensure at least one of each required type
+    retVal += "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(Math.floor(Math.random() * 26));
+    retVal += "abcdefghijklmnopqrstuvwxyz".charAt(Math.floor(Math.random() * 26));
+    retVal += "0123456789".charAt(Math.floor(Math.random() * 10));
+    retVal += "!@#$%^&*".charAt(Math.floor(Math.random() * 8));
+    
+    for (let i = 4, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    
+    // Shuffle the result
+    retVal = retVal.split('').sort(function(){return 0.5-Math.random()}).join('');
+    
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm_password');
+    
+    passwordInput.value = retVal;
+    confirmInput.value = retVal;
+    
+    // Change to text type momentarily to show the password, or just flash success
+    passwordInput.type = 'text';
+    confirmInput.type = 'text';
+    
+    // Find icons and update them
+    const icons = document.querySelectorAll('.password-toggle');
+    icons.forEach(icon => {
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    });
+
+    // Create a temporary toast-like notification
+    const feedback = document.createElement('div');
+    feedback.innerHTML = '<i class="fas fa-magic me-2"></i> Strong AI password suggested and applied!';
+    feedback.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #0ea5e9; color: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; font-weight: 600; animation: slideIn 0.3s ease-out;';
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.style.opacity = '0';
+        feedback.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => feedback.remove(), 500);
+    }, 3000);
+}
+
+// Add keyframes for the notification
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
+
 {% block auth_content %}
 <h2 class="auth-form-title">Register</h2>
 <div class="auth-form-subtitle">Create your CAMS account.</div>
@@ -11,13 +73,15 @@
     <div class="form-row">
         <div class="form-col">
             <div class="form-floating">
-                <input type="text" autocomplete="off" class="form-control" id="first_name" name="first_name" placeholder="First Name" required>
+                <input type="text" autocomplete="off" class="form-control" id="first_name" name="first_name" placeholder="First Name" 
+                    required minlength="3" pattern="[A-Za-z]+" title="At least 3 letters, no numbers or special characters">
                 <label for="first_name">First Name</label>
             </div>
         </div>
         <div class="form-col">
             <div class="form-floating">
-                <input type="text" autocomplete="off" class="form-control" id="last_name" name="last_name" placeholder="Last Name" required>
+                <input type="text" autocomplete="off" class="form-control" id="last_name" name="last_name" placeholder="Last Name" 
+                    required minlength="3" pattern="[A-Za-z]+" title="At least 3 letters, no numbers or special characters">
                 <label for="last_name">Last Name</label>
             </div>
         </div>
@@ -55,6 +119,12 @@
                 <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password', this)"></i>
             </div>
         </div>
+    </div>
+
+    <div class="mb-3 text-end">
+        <button type="button" class="btn btn-sm btn-outline-info border-0" onclick="suggestAIPassword()" style="font-size: 0.85rem; border-radius: 12px; background: rgba(13, 202, 240, 0.05);">
+            <i class="fas fa-robot me-1"></i> Suggest AI Password
+        </button>
     </div>
 
     <button type="submit" class="btn-auth">Create Account</button>

@@ -92,6 +92,14 @@ def register():
         course = request.form.get("course")
         password = request.form.get("password")
 
+        # Name Validation: Min 3 characters, alpha only
+        if not first_name or len(first_name) < 3 or not first_name.isalpha():
+            flash("First name must be at least 3 characters and contain only letters.", "danger")
+            return redirect(url_for("student.register"))
+        if not last_name or len(last_name) < 3 or not last_name.isalpha():
+            flash("Last name must be at least 3 characters and contain only letters.", "danger")
+            return redirect(url_for("student.register"))
+
         # Validate reg_no
         import re
         pattern = r"^[A-Za-z]{1}[0-9]{2}/[0-9]{5}/[0-9]{2}$"

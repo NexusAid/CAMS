@@ -543,6 +543,14 @@ def create_assistant():
     email = request.form.get("email")
     password = request.form.get("password")
 
+    # Name Validation: Min 3 characters, alpha only
+    if not first_name or len(first_name) < 3 or not first_name.isalpha():
+        flash("First name must be at least 3 characters and contain only letters.", "danger")
+        return redirect(url_for("dashboard.assistants"))
+    if not last_name or len(last_name) < 3 or not last_name.isalpha():
+        flash("Last name must be at least 3 characters and contain only letters.", "danger")
+        return redirect(url_for("dashboard.assistants"))
+
     if User.query.filter_by(email=email).first():
         flash("Email already registered.", "danger")
         return redirect(url_for("dashboard.assistants"))
